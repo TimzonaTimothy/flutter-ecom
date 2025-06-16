@@ -27,19 +27,18 @@ class PrimaryInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
+    
 
     return Container(
       decoration: BoxDecoration(
-        color: hasBackground ? AppStyles.primaryColor.withOpacity(0.05) : Colors.transparent,
+        // color: hasBackground ? AppStyles.primaryColor.withOpacity(0.05) : Colors.transparent,
         border: Border.all(
           color: AppStyles.primaryColor,
           width: 1,
         ),
         borderRadius: BorderRadius.circular(10),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12,),
       child: TextFormField(
         validator: validator, // moved to TextFormField
         controller: controller,

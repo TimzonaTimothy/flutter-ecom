@@ -24,8 +24,8 @@ class AppStyles {
   );
 
   static TextStyle headLineStyle2 = GoogleFonts.poppins(
-    fontSize: 21,
-    fontWeight: FontWeight.bold,
+    fontSize: 20,
+    fontWeight: FontWeight.w200,
     color: textColor,
   );
 

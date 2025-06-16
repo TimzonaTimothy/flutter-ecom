@@ -20,7 +20,7 @@ class AppDoubleText extends StatelessWidget {
       children: [
         Text(
           bigText,
-          style: AppStyles.headLineStyle2,
+          style: AppStyles.headLineStyle2.copyWith(fontSize: 18, fontWeight: FontWeight.w100),
           overflow: TextOverflow.ellipsis,
         ),
         InkWell(
