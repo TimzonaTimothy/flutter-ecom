@@ -106,6 +106,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       : null,
                   controller: passwordController,
                   hintText: "Password",
+                  obscureText: true,
                 ),
                 const SizedBox(
                   height: 10,

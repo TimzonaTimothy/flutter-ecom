@@ -1,56 +1,3 @@
-// import 'package:flutter/material.dart';
-
-// import '../res/styles/app_styles.dart';
-
-// class PrimaryButton extends StatelessWidget {
-//   final String text;
-//   final VoidCallback onTap;
-//   final double? horizontalPadding;
-//   final double? verticalPadding;
-//   final bool hasBackground;
-//   final bool isLoading;
-
-//   const PrimaryButton({
-//     Key? key,
-//     required this.text,
-//     required this.onTap,
-//     this.horizontalPadding,
-//     this.verticalPadding,
-//     this.hasBackground = true,
-//     this.isLoading = false,
-//   }) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final screenWidth = MediaQuery.of(context).size.width;
-//     final screenHeight = MediaQuery.of(context).size.height;
-
-//     return GestureDetector(
-//       onTap: onTap,
-//       child: Container(
-//         width: double.infinity,
-
-//         padding: EdgeInsets.symmetric(
-//           horizontal: horizontalPadding ?? screenWidth * 0.34,
-//           vertical: verticalPadding ?? screenHeight * 0.008,
-//         ),
-//         decoration: BoxDecoration(
-//           color: hasBackground ? AppStyles.primaryColor : Colors.transparent,
-//           border: Border.all(
-//             color: AppStyles.primaryColor,
-//             width: 2,
-//           ),
-//           borderRadius: BorderRadius.circular(10),
-//         ),
-//         child: isLoading? Center(child: CircularProgressIndicator(color: AppStyles.whiteColor,)): Text(
-//           text,
-//           style: AppStyles.headLineStyle2.copyWith(color: AppStyles.whiteColor),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 
 import '../res/styles/app_styles.dart';
@@ -105,7 +52,9 @@ class PrimaryButton extends StatelessWidget {
           disabledForegroundColor: AppStyles.primaryColor.withOpacity(0.5),
 
           backgroundColor: backgroundColor,
-          side:isBorder? BorderSide(color: AppStyles.primaryColor, width: 2):null,
+          side: isBorder
+              ? BorderSide(color: AppStyles.primaryColor, width: 2)
+              : null,
           padding: EdgeInsets.symmetric(
             horizontal: horizontalPadding ?? screenWidth * 0.34,
             vertical: verticalPadding ?? screenHeight * 0.008,
