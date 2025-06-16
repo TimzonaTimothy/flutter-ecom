@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/app_double_text.dart';
+import '../../base/widgets/primary_button.dart';
 import '../../base/widgets/primary_input.dart';
 import '../controllers/login.dart';
 
@@ -16,7 +17,7 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   bool isChecked = false;
-  final TextEditingController emailController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -28,7 +29,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
     @override
     void dispose() {
-      emailController.dispose();
+      usernameController.dispose();
       passwordController.dispose();
       super.dispose();
     }
@@ -78,17 +79,17 @@ class _SignInScreenState extends State<SignInScreen> {
                   height: 20,
                 ),
                 const AppDoubleText(
-                  bigText: 'Email',
+                  bigText: 'Username',
                 ),
                 const SizedBox(
                   height: 10,
                 ),
                 PrimaryInput(
-                  validator: (value) => value == null || !value.contains('@')
-                      ? 'Enter a valid email'
-                      : null,
-                  controller: emailController,
-                  hintText: "Email",
+                  // validator: (value) => value == null || !value.contains('@')
+                  //     ? 'Enter a valid email'
+                  //     : null,
+                  controller: usernameController,
+                  hintText: "Username",
                 ),
                 const SizedBox(
                   height: 20,
@@ -144,38 +145,24 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 GetBuilder<LoginController>(
                   builder: (loginController) {
-                    if (loginController.isLoad.value) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    return ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
+                    
+                    return PrimaryButton(
+                  verticalPadding: 10,
+                  horizontalPadding: 130,
+                  text: 'Sign In',
+                  isLoading: loginController.isLoad.value,
+                  onTap: () {
+                    if (_formKey.currentState!.validate()) {
                           loginController.loginUser(
-                            emailController.text.trim(),
+                            usernameController.text.trim(),
                             passwordController.text.trim(),
                           );
                         }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 80,
-                          vertical: 12,
-                        ),
-                      ),
-                      child: const Text("Login"),
-                    );
+                  },
+                );
                   },
                 ),
-                // PrimaryButton(
-                //   verticalPadding: 10,
-                //   horizontalPadding: 130,
-                //   text: 'Sign In',
-                //   onTap: () {
-                //     if (_formKey.currentState!.validate()) {
-                //       return;
-                //     }
-                //   },
-                // ),
+                
                 const SizedBox(
                   height: 25,
                 ),

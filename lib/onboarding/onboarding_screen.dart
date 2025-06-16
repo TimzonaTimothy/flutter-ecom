@@ -1,10 +1,7 @@
 import 'package:ecom_app/base/res/styles/app_styles.dart';
-import 'package:ecom_app/home/views/home_screen.dart';
 import 'package:ecom_app/onboarding/welcome_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
-import '../base/utils/app_routes.dart';
 import '../base/widgets/primary_button.dart';
 import 'models/onboarding_model.dart';
 
@@ -128,31 +125,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                       SizedBox(height: screenHeight * 0.03),
 
-                      PrimaryButton(
-                        verticalPadding: 10,
-                        horizontalPadding: 130,
-                        text: 'Next',
-                        onTap: () {
-                          if (currentIndex == contents.length - 1) {
-                            // Navigator.pushReplacement(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //       builder: (_) => const HomeScreen()),
-                            // );
-                            
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const WelcomeScreen()),
-                            );
-                            // Get.toNamed(RouteNames.welcomePage);
-                          } else {
-                            _controller.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          }
-                        },
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: PrimaryButton(
+                          verticalPadding: 10,
+                          horizontalPadding: 130,
+                          text: 'Next',
+                          onTap: () {
+                            if (currentIndex == contents.length - 1) {
+                              // Navigator.pushReplacement(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //       builder: (_) => const HomeScreen()),
+                              // );
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const WelcomeScreen()),
+                              );
+                              // Get.toNamed(RouteNames.welcomePage);
+                            } else {
+                              _controller.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          },
+                        ),
                       ),
                       // SizedBox(height: screenHeight * 0.08),
                     ],

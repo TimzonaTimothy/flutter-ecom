@@ -68,23 +68,23 @@ class WelcomeScreen extends StatelessWidget {
               ),
               SizedBox(height: screenHeight * 0.04),
               PrimaryButton(
-            verticalPadding: 10,
-                        horizontalPadding: 130,
+                isBorder: true,
+                verticalPadding: 10,
+                horizontalPadding: 130,
                 hasBackground: false,
                 text: 'Sign In',
                 onTap: () {
                   Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const SignInScreen()),
-                            );
+                    context,
+                    MaterialPageRoute(builder: (_) => const SignInScreen()),
+                  );
                   // Get.toNamed(RouteNames.signInPage);
                 },
               ),
               SizedBox(height: screenHeight * 0.025),
               PrimaryButton(
-               verticalPadding: 10,
-                        horizontalPadding: 130,
+                verticalPadding: 10,
+                horizontalPadding: 130,
                 text: 'Sign Up',
                 onTap: () {
                   Get.toNamed(RouteNames.signUpPage);
