@@ -22,7 +22,8 @@ class ProductCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-            color: AppStyles.whiteColor, borderRadius: BorderRadius.circular(10)),
+            color: AppStyles.whiteColor,
+            borderRadius: BorderRadius.circular(10)),
         child: SizedBox(
           width: 160,
           child: Column(
