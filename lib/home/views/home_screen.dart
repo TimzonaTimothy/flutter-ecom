@@ -5,34 +5,64 @@ import '../../base/res/media.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/app_double_text.dart';
 import '../../base/widgets/category_scroller.dart';
+import '../../base/widgets/image_sliders.dart';
 import '../../base/widgets/product_card.dart';
+import '../../base/widgets/product_shimmer.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Simulate a delay like fetching from API
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final categories = [
       {'label': 'Men', 'image': AppMedia.welcomeImage},
-      {'label': 'Women', 'image': AppMedia.logo},
+      {'label': 'Women', 'image': AppMedia.onborading3},
       {'label': 'Kids', 'image': AppMedia.welcomeImage},
-      {'label': 'Men', 'image': AppMedia.logo},
+      {'label': 'Men', 'image': AppMedia.onborading3},
       {'label': 'Women', 'image': AppMedia.welcomeImage},
-      {'label': 'Kids', 'image': AppMedia.welcomeImage},
+      {'label': 'Kids', 'image': AppMedia.onborading3},
       {'label': 'Men', 'image': AppMedia.welcomeImage},
-      {'label': 'Women', 'image': AppMedia.welcomeImage},
+      {'label': 'Women', 'image': AppMedia.onborading3},
       {'label': 'Kids', 'image': AppMedia.welcomeImage},
     ];
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
+        automaticallyImplyLeading: false,
         backgroundColor: AppStyles.bgColor,
         title: Container(
           padding: const EdgeInsets.only(left: 10),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+            // mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Location", style: TextStyle(fontSize: 14)),
+              const Padding(
+                padding: EdgeInsets.only(left: 5.0),
+                child: Text("Location",
+                    style: TextStyle(
+                      fontSize: 14,
+                    )),
+              ),
               const SizedBox(height: 4),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -41,12 +71,17 @@ class HomeScreen extends StatelessWidget {
                     Icons.location_on,
                     color: AppStyles.primaryColor,
                   ),
-                  Text(
-                    "Please select a location",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: AppStyles.primaryColor),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.5,
+                    child: Text(
+                      "Please select a location",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          color: AppStyles.primaryColor),
+                    ),
                   ),
                 ],
               ),
@@ -59,9 +94,12 @@ class HomeScreen extends StatelessWidget {
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(50),
                   color: AppStyles.whiteSmokeColor),
-              child: Icon(
-                Icons.notifications,
-                color: AppStyles.textColor,
+              child: Badge.count(
+                count: 10,
+                child: Icon(
+                  Icons.notifications,
+                  color: AppStyles.textColor,
+                ),
               )),
           const SizedBox(
             width: 20,
@@ -70,6 +108,7 @@ class HomeScreen extends StatelessWidget {
       ),
       backgroundColor: AppStyles.bgColor,
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 20),
         shrinkWrap: true,
         children: [
           const SizedBox(
@@ -131,6 +170,16 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(
             height: 20,
           ),
+           Container(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10)
+            ),
+            child: ImageSliders(),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: AppDoubleText(
@@ -153,76 +202,50 @@ class HomeScreen extends StatelessWidget {
             height: 20,
           ),
           Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 20),
-  child: GridView.count(
-    physics: const NeverScrollableScrollPhysics(), // disables GridView scrolling
-    shrinkWrap: true, // makes GridView fit in ListView
-    crossAxisCount: 2,
-    crossAxisSpacing: 15,
-    mainAxisSpacing: 20,
-    childAspectRatio: 0.78, // adjust based on your card height/width
-    children:  [
-      ProductCard(
-        imagePath: AppMedia.welcomeImage,
-        title: 'Summer Jacket Summer Jacket',
-        price: '100',
-        onTap: () {},
-      ),
-      ProductCard(
-        imagePath: AppMedia.welcomeImage,
-        title: 'Winter Hoodie Winter Hoodie',
-        price: '120',
-        onTap: () {},
-      ),
-      ProductCard(
-        imagePath: AppMedia.welcomeImage,
-        title: 'Sneakers Sneakers Sneakers',
-        price: '90',
-        onTap: () {},
-      ),
-      ProductCard(
-        imagePath: AppMedia.welcomeImage,
-        title: 'Raincoat Raincoat Raincoat',
-        price: '80',
-        onTap: () {},
-      ),
-      ProductCard(
-        imagePath: AppMedia.welcomeImage,
-        title: 'Winter Hoodie Winter Hoodie',
-        price: '120',
-        onTap: () {},
-      ),
-      ProductCard(
-        imagePath: AppMedia.welcomeImage,
-        title: 'Sneakers Sneakers Sneakers',
-        price: '90',
-        onTap: () {},
-      ),
-      ProductCard(
-        imagePath: AppMedia.welcomeImage,
-        title: 'Raincoat Raincoat Raincoat',
-        price: '80',
-        onTap: () {},
-      ),
-      ProductCard(
-        imagePath: AppMedia.welcomeImage,
-        title: 'Winter Hoodie Winter Hoodie',
-        price: '120',
-        onTap: () {},
-      ),
-      ProductCard(
-        imagePath: AppMedia.welcomeImage,
-        title: 'Sneakers Sneakers Sneakers',
-        price: '90',
-        onTap: () {},
-      ),
-      
-    ],
-  ),
-),
-
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: isLoading ? const ProductCardShimmer() : _buildProductGrid(),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildProductGrid() {
+    final products = [
+      {'title': 'Summer Jacket', 'price': '100'},
+      {'title': 'Winter Hoodie', 'price': '120'},
+      {'title': 'Sneakers', 'price': '90'},
+      {'title': 'Raincoat', 'price': '80'},
+      {'title': 'Summer Jacket', 'price': '100'},
+      {'title': 'Winter Hoodie', 'price': '120'},
+      {'title': 'Sneakers', 'price': '90'},
+      {'title': 'Raincoat', 'price': '80'},
+      {'title': 'Summer Jacket', 'price': '100'},
+      {'title': 'Winter Hoodie', 'price': '120'},
+      {'title': 'Sneakers', 'price': '90'},
+      {'title': 'Raincoat', 'price': '80'},
+      {'title': 'Summer Jacket', 'price': '100'},
+      {'title': 'Winter Hoodie', 'price': '120'},
+      {'title': 'Sneakers', 'price': '90'},
+      {'title': 'Raincoat', 'price': '80'},
+    ];
+
+    return GridView.count(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      crossAxisCount: 2,
+      crossAxisSpacing: 15,
+      mainAxisSpacing: 20,
+      childAspectRatio: 0.69,
+      children: products.map((product) {
+        return ProductCard(
+          imagePath: AppMedia.welcomeImage,
+          title: product['title']!,
+          price: product['price']!,
+          onTap: () {},
+          onTapWishlist: () {},
+        );
+      }).toList(),
     );
   }
 }

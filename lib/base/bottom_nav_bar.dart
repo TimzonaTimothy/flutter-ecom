@@ -52,20 +52,22 @@ class _BottomNavBarState extends State<BottomNavBar> {
               selectedItemColor: AppStyles.primaryColor,
               unselectedItemColor: AppStyles.greColor,
               showSelectedLabels: true,
-              items: const [
-                BottomNavigationBarItem(
+              items: [
+                const BottomNavigationBarItem(
                     icon: Icon(FluentSystemIcons.ic_fluent_home_regular),
                     activeIcon: Icon(FluentSystemIcons.ic_fluent_home_filled),
                     label: "Home"),
-                BottomNavigationBarItem(
+                const BottomNavigationBarItem(
                     icon: Icon(FluentSystemIcons.ic_fluent_heart_regular),
                     activeIcon: Icon(FluentSystemIcons.ic_fluent_heart_filled),
                     label: "Wishlist"),
                 BottomNavigationBarItem(
-                    icon: Icon(Icons.shopping_cart_outlined),
-                    activeIcon: Icon(Icons.shopping_cart),
+                    icon: Badge.count(
+                        count: 10,
+                        child: const Icon(Icons.shopping_cart_outlined)),
+                    activeIcon: const Icon(Icons.shopping_cart),
                     label: "Carts"),
-                BottomNavigationBarItem(
+                const BottomNavigationBarItem(
                     icon: Icon(FluentSystemIcons.ic_fluent_person_regular),
                     activeIcon: Icon(FluentSystemIcons.ic_fluent_person_filled),
                     label: "Profile"),

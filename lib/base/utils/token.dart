@@ -26,7 +26,7 @@ String? getToken() {
 Future removeToken() async {
   await prefs.remove('token');
   await prefs.remove('refreshToken');
-  showSuccessSnackbar("Logout successful");
+  // showSuccessSnackbar("Logout successful");
   Get.offAll(() => const SignInScreen());
 }
 
