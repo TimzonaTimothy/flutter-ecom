@@ -9,7 +9,7 @@ import '../../auth/views/sign_in.dart';
 import '../../main.dart';
 
 Future saveTokens(String accessToken, String refreshToken) async {
-  log('Saving access token: $accessToken');
+  log('Saving access token: [HIDDEN]');
   log('Saving refresh token: $refreshToken');
   await prefs.setString('token', accessToken);
   await prefs.setString('refreshToken', refreshToken);
@@ -27,7 +27,7 @@ Future removeToken() async {
   await prefs.remove('token');
   await prefs.remove('refreshToken');
   showSuccessSnackbar("Logout successful");
-  Get.to(() => const SignInScreen());
+  Get.offAll(() => const SignInScreen());
 }
 
 Future<void> verifyToken() async {
@@ -54,5 +54,27 @@ Future<void> verifyToken() async {
     // Token is invalid or expired
     await removeToken(); // Clears tokens and redirects
     showFailureSnackbar("Session expired. Please log in again.");
+  }
+}
+
+
+
+Future<bool> verifyTokenOnly() async {
+  final token = getToken();
+  if (token == null) return false;
+
+  final url = Uri.parse('https://yourapi.com/auth/jwt/verify/');
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'token': token}),
+    );
+
+    return response.statusCode == 200;
+  } catch (e) {
+    log("Token verification error: $e");
+    return false;
   }
 }

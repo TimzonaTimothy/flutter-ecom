@@ -4,10 +4,10 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
+import '../../base/bottom_nav_bar.dart';
 import '../../base/res/base_url.dart';
 import '../../base/utils/snackbar.dart';
 import '../../base/utils/token.dart';
-import '../../home/views/home_screen.dart';
 
 class LoginController extends GetxController {
   var isLoad = false.obs;
@@ -32,7 +32,7 @@ class LoginController extends GetxController {
 
         // log('User: ${user.username}, ${user.isActive}');
 
-        Get.offAll(() => const HomeScreen());
+        Get.offAll(() => const BottomNavBar());
         isLoad.value = false;
         update();
         return;
