@@ -118,6 +118,8 @@ class _SignInScreenState extends State<SignInScreen> {
                     Row(
                       children: [
                         Checkbox(
+                          activeColor: AppStyles.primaryColor,
+                          checkColor: AppStyles.whiteColor,
                           value: isChecked,
                           onChanged: (bool? value) {
                             setState(() {

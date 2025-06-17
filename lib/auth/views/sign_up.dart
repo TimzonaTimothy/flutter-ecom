@@ -1,5 +1,7 @@
+import 'package:ecom_app/auth/controllers/register.dart';
 import 'package:ecom_app/auth/views/sign_in.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/app_double_text.dart';
@@ -15,14 +17,26 @@ class SignUpSreen extends StatefulWidget {
 
 class _SignUpSreenState extends State<SignUpSreen> {
   bool isChecked = false;
-  final TextEditingController nameController = TextEditingController();
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    Get.put(RegisterController());
+    super.initState();
+  }
+
+  @override
   void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    emailController.dispose();
     passwordController.dispose();
+    confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -69,7 +83,7 @@ class _SignUpSreenState extends State<SignUpSreen> {
                   height: 20,
                 ),
                 const AppDoubleText(
-                  bigText: 'Name',
+                  bigText: 'First Name',
                 ),
                 const SizedBox(
                   height: 10,
@@ -77,15 +91,37 @@ class _SignUpSreenState extends State<SignUpSreen> {
                 PrimaryInput(
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your name';
+                      return 'Please enter your first name';
                     }
                     if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value.trim())) {
                       return 'Name must contain only letters';
                     }
                     return null;
                   },
-                  controller: nameController,
-                  hintText: "John Doe",
+                  controller: firstNameController,
+                  hintText: "John",
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                const AppDoubleText(
+                  bigText: 'Last Name',
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                PrimaryInput(
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter your last name';
+                    }
+                    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value.trim())) {
+                      return 'Name must contain only letters';
+                    }
+                    return null;
+                  },
+                  controller: lastNameController,
+                  hintText: "Doe",
                 ),
                 const SizedBox(
                   height: 20,
@@ -118,6 +154,24 @@ class _SignUpSreenState extends State<SignUpSreen> {
                       : null,
                   controller: passwordController,
                   hintText: "Password",
+                  obscureText: true,
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                const AppDoubleText(
+                  bigText: 'Confirm Password',
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                PrimaryInput(
+                  validator: (value) => value != passwordController.text
+                      ? 'Password must be same'
+                      : null,
+                  controller: confirmPasswordController,
+                  hintText: "Confirm Password",
+                  obscureText: true,
                 ),
                 const SizedBox(
                   height: 10,
@@ -129,6 +183,8 @@ class _SignUpSreenState extends State<SignUpSreen> {
                     Row(
                       children: [
                         Checkbox(
+                          activeColor: AppStyles.primaryColor,
+                          checkColor: AppStyles.whiteColor,
                           value: isChecked,
                           onChanged: (bool? value) {
                             setState(() {
@@ -157,23 +213,45 @@ class _SignUpSreenState extends State<SignUpSreen> {
                 const SizedBox(
                   height: 10,
                 ),
-                PrimaryButton(
+                GetBuilder<RegisterController>(
+                  builder: (registerController) {
+                    
+                    return PrimaryButton(
                   verticalPadding: 10,
                   horizontalPadding: 130,
                   text: 'Sign Up',
+                  isLoading: registerController.isLoad.value,
                   onTap: () {
                     if (_formKey.currentState!.validate()) {
-                      if (!isChecked) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  "You must agree to the Terms & Conditions")),
-                        );
-                        return;
-                      }
-                    }
+                          registerController.registerUser(
+                            firstNameController.text.trim(),
+                            lastNameController.text.trim(),
+                            emailController.text.trim(),
+                            passwordController.text.trim(),
+                            confirmPasswordController.text.trim(),
+                          );
+                        }
+                  },
+                );
                   },
                 ),
+                // PrimaryButton(
+                //   verticalPadding: 10,
+                //   horizontalPadding: 130,
+                //   text: 'Sign Up',
+                //   onTap: () {
+                //     if (_formKey.currentState!.validate()) {
+                //       if (!isChecked) {
+                //         ScaffoldMessenger.of(context).showSnackBar(
+                //           const SnackBar(
+                //               content: Text(
+                //                   "You must agree to the Terms & Conditions")),
+                //         );
+                //         return;
+                //       }
+                //     }
+                //   },
+                // ),
                 const SizedBox(
                   height: 25,
                 ),
@@ -204,6 +282,9 @@ class _SignUpSreenState extends State<SignUpSreen> {
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(
+                  height: 25,
                 ),
               ],
             ),

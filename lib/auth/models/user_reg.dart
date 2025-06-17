@@ -1,10 +1,12 @@
 class UserRegModel {
-  final String name;
+  final String firstname;
+  final String lastname;
   final String email;
   final String password;
 
   UserRegModel({
-    required this.name,
+    required this.firstname,
+    required this.lastname,
     required this.email,
     required this.password,
   });
@@ -12,7 +14,8 @@ class UserRegModel {
   // Convert UserRegModel to JSON (e.g., to send to an API or save in Firebase)
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
+      'firstname': firstname,
+      'lastname':lastname,
       'email': email,
       'password': password, 
     };
@@ -21,7 +24,8 @@ class UserRegModel {
   // Create UserRegModel from JSON
   factory UserRegModel.fromJson(Map<String, dynamic> json) {
     return UserRegModel(
-      name: json['username'] ?? '',
+      firstname: json['first_name'] ?? '',
+      lastname: json['last_name'] ?? '',
       email: json['email'] ?? '',
       password: json['password'] ?? '',
     );
