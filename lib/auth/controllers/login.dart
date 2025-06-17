@@ -12,14 +12,14 @@ import '../../home/views/home_screen.dart';
 class LoginController extends GetxController {
   var isLoad = false.obs;
 
-  Future<void> loginUser(String username, String password) async {
+  Future<void> loginUser(String email, String password) async {
     isLoad.value = true;
     update();
 
     try {
       final response = await http.post(
         Uri.parse("$baseUrl/auth/jwt/create/"),
-        body: {"username": username, "password": password},
+        body: {"email": email, "password": password},
       );
 
       if (response.statusCode == 200) {

@@ -17,7 +17,7 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   bool isChecked = false;
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -29,7 +29,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
     @override
     void dispose() {
-      usernameController.dispose();
+      emailController.dispose();
       passwordController.dispose();
       super.dispose();
     }
@@ -79,17 +79,17 @@ class _SignInScreenState extends State<SignInScreen> {
                   height: 20,
                 ),
                 const AppDoubleText(
-                  bigText: 'Username',
+                  bigText: 'Email',
                 ),
                 const SizedBox(
                   height: 10,
                 ),
                 PrimaryInput(
-                  // validator: (value) => value == null || !value.contains('@')
-                  //     ? 'Enter a valid email'
-                  //     : null,
-                  controller: usernameController,
-                  hintText: "Username",
+                  validator: (value) => value == null || !value.contains('@')
+                      ? 'Enter a valid email'
+                      : null,
+                  controller: emailController,
+                  hintText: "Email",
                 ),
                 const SizedBox(
                   height: 20,
@@ -157,7 +157,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   onTap: () {
                     if (_formKey.currentState!.validate()) {
                           loginController.loginUser(
-                            usernameController.text.trim(),
+                            emailController.text.trim(),
                             passwordController.text.trim(),
                           );
                         }
