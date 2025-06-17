@@ -15,7 +15,7 @@ class _ImageSlidersState extends State<ImageSliders> {
     return Column(
       children: [
         SizedBox(
-          height: 100,
+          height: 150,
           width: double.infinity,
           child: AnotherCarousel(
             images: const [
@@ -23,7 +23,7 @@ class _ImageSlidersState extends State<ImageSliders> {
               AssetImage(AppMedia.onborading1),
               AssetImage(AppMedia.onborading1),
             ],
-            dotSize: 4, 
+            dotSize: 4,
             indicatorBgPadding: 5.0,
           ),
         )
