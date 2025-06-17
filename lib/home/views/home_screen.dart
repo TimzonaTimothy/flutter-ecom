@@ -153,25 +153,74 @@ class HomeScreen extends StatelessWidget {
             height: 20,
           ),
           Padding(
-            padding: const EdgeInsets.only(left: 20),
-            child: Row(
-              children: [
-                ProductCard(
-                  imagePath: AppMedia.welcomeImage,
-                  title: 'Summer Jacket Jacket Jacket',
-                  price: '100',
-                  onTap: () {},
-                ),
-                const SizedBox(width: 20),
-                ProductCard(
-                  imagePath: AppMedia.welcomeImage,
-                  title: 'Winter Hoodie',
-                  price: '120',
-                  onTap: () {},
-                ),
-              ],
-            ),
-          ),
+  padding: const EdgeInsets.symmetric(horizontal: 20),
+  child: GridView.count(
+    physics: const NeverScrollableScrollPhysics(), // disables GridView scrolling
+    shrinkWrap: true, // makes GridView fit in ListView
+    crossAxisCount: 2,
+    crossAxisSpacing: 15,
+    mainAxisSpacing: 20,
+    childAspectRatio: 0.78, // adjust based on your card height/width
+    children:  [
+      ProductCard(
+        imagePath: AppMedia.welcomeImage,
+        title: 'Summer Jacket Summer Jacket',
+        price: '100',
+        onTap: () {},
+      ),
+      ProductCard(
+        imagePath: AppMedia.welcomeImage,
+        title: 'Winter Hoodie Winter Hoodie',
+        price: '120',
+        onTap: () {},
+      ),
+      ProductCard(
+        imagePath: AppMedia.welcomeImage,
+        title: 'Sneakers Sneakers Sneakers',
+        price: '90',
+        onTap: () {},
+      ),
+      ProductCard(
+        imagePath: AppMedia.welcomeImage,
+        title: 'Raincoat Raincoat Raincoat',
+        price: '80',
+        onTap: () {},
+      ),
+      ProductCard(
+        imagePath: AppMedia.welcomeImage,
+        title: 'Winter Hoodie Winter Hoodie',
+        price: '120',
+        onTap: () {},
+      ),
+      ProductCard(
+        imagePath: AppMedia.welcomeImage,
+        title: 'Sneakers Sneakers Sneakers',
+        price: '90',
+        onTap: () {},
+      ),
+      ProductCard(
+        imagePath: AppMedia.welcomeImage,
+        title: 'Raincoat Raincoat Raincoat',
+        price: '80',
+        onTap: () {},
+      ),
+      ProductCard(
+        imagePath: AppMedia.welcomeImage,
+        title: 'Winter Hoodie Winter Hoodie',
+        price: '120',
+        onTap: () {},
+      ),
+      ProductCard(
+        imagePath: AppMedia.welcomeImage,
+        title: 'Sneakers Sneakers Sneakers',
+        price: '90',
+        onTap: () {},
+      ),
+      
+    ],
+  ),
+),
+
         ],
       ),
     );
