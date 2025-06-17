@@ -8,7 +8,7 @@ class CategoryScroller extends StatelessWidget {
   const CategoryScroller({
     super.key,
     required this.items,
-    this.avatarRadius = 25,
+    this.avatarRadius = 26,
     required this.onTap,
   });
 

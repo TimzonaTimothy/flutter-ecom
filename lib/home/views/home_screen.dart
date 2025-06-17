@@ -5,6 +5,7 @@ import '../../base/res/media.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/app_double_text.dart';
 import '../../base/widgets/category_scroller.dart';
+import '../../base/widgets/product_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -13,9 +14,9 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final categories = [
       {'label': 'Men', 'image': AppMedia.welcomeImage},
-      {'label': 'Women', 'image': AppMedia.welcomeImage},
+      {'label': 'Women', 'image': AppMedia.logo},
       {'label': 'Kids', 'image': AppMedia.welcomeImage},
-      {'label': 'Men', 'image': AppMedia.welcomeImage},
+      {'label': 'Men', 'image': AppMedia.logo},
       {'label': 'Women', 'image': AppMedia.welcomeImage},
       {'label': 'Kids', 'image': AppMedia.welcomeImage},
       {'label': 'Men', 'image': AppMedia.welcomeImage},
@@ -147,7 +148,30 @@ class HomeScreen extends StatelessWidget {
               items: categories,
               onTap: () {},
             ),
-          )
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: Row(
+              children: [
+                ProductCard(
+                  imagePath: AppMedia.welcomeImage,
+                  title: 'Summer Jacket Jacket Jacket',
+                  price: '100',
+                  onTap: () {},
+                ),
+                const SizedBox(width: 20),
+                ProductCard(
+                  imagePath: AppMedia.welcomeImage,
+                  title: 'Winter Hoodie',
+                  price: '120',
+                  onTap: () {},
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
