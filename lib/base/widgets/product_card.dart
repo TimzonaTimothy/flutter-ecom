@@ -37,16 +37,14 @@ class _ProductCardState extends State<ProductCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1), 
-                offset: const Offset(0, 0), 
-                blurRadius: 10,
-      spreadRadius: 1,
-              ),
-            ],
-          color: AppStyles.whiteColor, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          offset: const Offset(0, 0),
+          blurRadius: 10,
+          spreadRadius: 1,
+        ),
+      ], color: AppStyles.whiteColor, borderRadius: BorderRadius.circular(10)),
       child: SizedBox(
         width: 160,
         child: Column(
@@ -98,11 +96,25 @@ class _ProductCardState extends State<ProductCard> {
               onTap: widget.onTap,
               child: Padding(
                 padding: const EdgeInsets.only(left: 8.0, bottom: 8),
-                child: Text(
-                  "\$ ${widget.price}",
-                  style: AppStyles.headLineStyle2
-                      .copyWith(fontWeight: FontWeight.w900),
-                  overflow: TextOverflow.ellipsis,
+                child: Row(
+                  children: [
+                    Text(
+                      "\$${widget.price}",
+                      style: AppStyles.headLineStyle2
+                          .copyWith(fontWeight: FontWeight.w900),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(
+                      width: 3,
+                    ),
+                    Text(
+                      "\$${widget.price}",
+                      style: AppStyles.headLineStyle3.copyWith(
+                          fontWeight: FontWeight.w900,
+                          color: AppStyles.whiteSmokeColor),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               ),
             ),

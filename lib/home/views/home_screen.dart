@@ -170,20 +170,9 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(
             height: 20,
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  offset: const Offset(0, 0),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                ),
-              ],
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const ImageSliders(),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: ImageSliders(),
           ),
           const SizedBox(
             height: 20,

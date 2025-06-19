@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../auth/views/sign_in.dart';
+import '../base/bottom_nav_bar.dart';
 import '../base/res/media.dart';
 import '../base/utils/app_routes.dart';
 import '../base/widgets/primary_button.dart';
@@ -26,6 +27,18 @@ class WelcomeScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: GestureDetector(
+                  onTap: () {
+                   Get.to(() => const BottomNavBar());
+                  },
+                  child: const Text(
+                    'Skip',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
               ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
                   colors: [Colors.black38, Colors.black87],
@@ -98,4 +111,3 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 }
-
