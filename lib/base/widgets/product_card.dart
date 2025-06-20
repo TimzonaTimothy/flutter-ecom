@@ -111,6 +111,7 @@ class _ProductCardState extends State<ProductCard> {
                       "\$${widget.price}",
                       style: AppStyles.headLineStyle3.copyWith(
                           fontWeight: FontWeight.w900,
+                          decoration: TextDecoration.lineThrough,
                           color: AppStyles.whiteSmokeColor),
                       overflow: TextOverflow.ellipsis,
                     ),

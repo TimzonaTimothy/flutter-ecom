@@ -35,15 +35,18 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final categories = [
-      {'label': 'Men', 'image': AppMedia.welcomeImage},
-      {'label': 'Women', 'image': AppMedia.onborading3},
-      {'label': 'Kids', 'image': AppMedia.welcomeImage},
-      {'label': 'Men', 'image': AppMedia.onborading3},
-      {'label': 'Women', 'image': AppMedia.welcomeImage},
-      {'label': 'Kids', 'image': AppMedia.onborading3},
-      {'label': 'Men', 'image': AppMedia.welcomeImage},
-      {'label': 'Women', 'image': AppMedia.onborading3},
-      {'label': 'Kids', 'image': AppMedia.welcomeImage},
+      {'label': 'T-Shirts', 'image': AppMedia.welcomeImage},
+      {'label': 'Sneakers', 'image': AppMedia.onborading3},
+      {'label': 'Caps', 'image': AppMedia.welcomeImage},
+      {'label': 'Watches', 'image': AppMedia.onborading3},
+      {'label': 'Jackets', 'image': AppMedia.welcomeImage},
+      {'label': 'Pants', 'image': AppMedia.onborading3},
+      {'label': 'T-Shirts', 'image': AppMedia.welcomeImage},
+      {'label': 'Sneakers', 'image': AppMedia.onborading3},
+      {'label': 'Caps', 'image': AppMedia.welcomeImage},
+      {'label': 'Watches', 'image': AppMedia.onborading3},
+      {'label': 'Jackets', 'image': AppMedia.welcomeImage},
+      {'label': 'Pants', 'image': AppMedia.onborading3},
     ];
     return Scaffold(
       appBar: AppBar(
