@@ -31,7 +31,8 @@ class WelcomeScreen extends StatelessWidget {
                 alignment: Alignment.topRight,
                 child: GestureDetector(
                   onTap: () {
-                    Get.to(() => const BottomNavBar());
+                    Get.to(() => const BottomNavBar(), transition: Transition.rightToLeftWithFade,
+                    duration: const Duration(milliseconds: 500),);
                   },
                   child: const Text(
                     'Skip',
