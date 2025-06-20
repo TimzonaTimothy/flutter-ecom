@@ -21,6 +21,23 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
+  final categories = [
+    {'label': 'T-Shirts', 'image': AppMedia.welcomeImage},
+    {'label': 'Sneakers', 'image': AppMedia.onborading3},
+    {'label': 'Caps', 'image': AppMedia.welcomeImage},
+    {'label': 'Watches', 'image': AppMedia.onborading3},
+    {'label': 'Jackets', 'image': AppMedia.welcomeImage},
+    {'label': 'Pants', 'image': AppMedia.onborading3},
+    {'label': 'T-Shirts', 'image': AppMedia.welcomeImage},
+    {'label': 'Sneakers', 'image': AppMedia.onborading3},
+    {'label': 'Caps', 'image': AppMedia.welcomeImage},
+    {'label': 'Watches', 'image': AppMedia.onborading3},
+    {'label': 'Jackets', 'image': AppMedia.welcomeImage},
+    {'label': 'Pants', 'image': AppMedia.onborading3},
+  ];
+
+  final List<String> filters = ['All', 'Newest', 'Popular', 'Man', 'Woman'];
+  int selectedIndex = 0;
 
   @override
   void initState() {
@@ -37,24 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final categories = [
-      {'label': 'T-Shirts', 'image': AppMedia.welcomeImage},
-      {'label': 'Sneakers', 'image': AppMedia.onborading3},
-      {'label': 'Caps', 'image': AppMedia.welcomeImage},
-      {'label': 'Watches', 'image': AppMedia.onborading3},
-      {'label': 'Jackets', 'image': AppMedia.welcomeImage},
-      {'label': 'Pants', 'image': AppMedia.onborading3},
-      {'label': 'T-Shirts', 'image': AppMedia.welcomeImage},
-      {'label': 'Sneakers', 'image': AppMedia.onborading3},
-      {'label': 'Caps', 'image': AppMedia.welcomeImage},
-      {'label': 'Watches', 'image': AppMedia.onborading3},
-      {'label': 'Jackets', 'image': AppMedia.welcomeImage},
-      {'label': 'Pants', 'image': AppMedia.onborading3},
-    ];
-
-    final List<String> filters = ['All', 'Newest', 'Popular', 'Man', 'Woman'];
-    int selectedIndex = 0;
-
     return Scaffold(
       appBar: AppBar(
         elevation: 0,

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
+import '../../base/widgets/product_card.dart';
+import '../../base/widgets/product_shimmer.dart';
 
 class ProductDetail extends StatefulWidget {
   const ProductDetail({super.key});
@@ -22,6 +24,21 @@ class _ProductDetailState extends State<ProductDetail> {
     AppMedia.onborading2,
   ];
   int selectedImageIndex = 0;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Simulate a delay like fetching from API
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,6 +216,7 @@ class _ProductDetailState extends State<ProductDetail> {
               const SizedBox(height: 20),
               const AppDoubleText(bigText: 'Similar Products'),
               const SizedBox(height: 10),
+              isLoading ? const ProductCardShimmer() : _buildProductGrid(),
             ]),
         bottomNavigationBar: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -252,5 +270,50 @@ class _ProductDetailState extends State<ProductDetail> {
             ],
           ),
         ));
+  }
+
+  Widget _buildProductGrid() {
+    final products = [
+      {'title': 'Summer Jacket', 'price': '100'},
+      {'title': 'Winter Hoodie', 'price': '120'},
+      {'title': 'Sneakers', 'price': '90'},
+      {'title': 'Raincoat', 'price': '80'},
+      {'title': 'Summer Jacket', 'price': '100'},
+      {'title': 'Winter Hoodie', 'price': '120'},
+      {'title': 'Sneakers', 'price': '90'},
+      {'title': 'Raincoat', 'price': '80'},
+      {'title': 'Summer Jacket', 'price': '100'},
+      {'title': 'Winter Hoodie', 'price': '120'},
+      {'title': 'Sneakers', 'price': '90'},
+      {'title': 'Raincoat', 'price': '80'},
+      {'title': 'Summer Jacket', 'price': '100'},
+      {'title': 'Winter Hoodie', 'price': '120'},
+      {'title': 'Sneakers', 'price': '90'},
+      {'title': 'Raincoat', 'price': '80'},
+    ];
+
+    return GridView.count(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      crossAxisCount: 2,
+      crossAxisSpacing: 15,
+      mainAxisSpacing: 20,
+      childAspectRatio: 0.69,
+      children: products.map((product) {
+        return ProductCard(
+          imagePath: AppMedia.welcomeImage,
+          title: product['title']!,
+          price: product['price']!,
+          onTap: () {
+            Get.to(
+              const ProductDetail(),
+              transition: Transition.rightToLeftWithFade,
+              duration: const Duration(milliseconds: 500),
+            );
+          },
+          onTapWishlist: () {},
+        );
+      }).toList(),
+    );
   }
 }
