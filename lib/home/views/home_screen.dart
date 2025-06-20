@@ -5,6 +5,7 @@ import '../../base/res/media.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/app_double_text.dart';
 import '../../base/widgets/category_scroller.dart';
+import '../../base/widgets/filter_card.dart';
 import '../../base/widgets/image_sliders.dart';
 import '../../base/widgets/product_card.dart';
 import '../../base/widgets/product_shimmer.dart';
@@ -48,6 +49,10 @@ class _HomeScreenState extends State<HomeScreen> {
       {'label': 'Jackets', 'image': AppMedia.welcomeImage},
       {'label': 'Pants', 'image': AppMedia.onborading3},
     ];
+
+    final List<String> filters = ['All', 'Newest', 'Popular', 'Man', 'Woman'];
+  int selectedIndex = 0;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -188,9 +193,11 @@ class _HomeScreenState extends State<HomeScreen> {
               func: () {},
             ),
           ),
+         
           const SizedBox(
             height: 20,
           ),
+           
           Padding(
             padding: const EdgeInsets.only(left: 20),
             child: CategoryScroller(
@@ -201,6 +208,8 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(
             height: 20,
           ),
+         FilterChipsRow(),
+    SizedBox(height:20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: isLoading ? const ProductCardShimmer() : _buildProductGrid(),
