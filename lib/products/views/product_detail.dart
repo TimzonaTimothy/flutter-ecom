@@ -5,19 +5,25 @@ import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
 
-class ProductDetail extends StatelessWidget {
+class ProductDetail extends StatefulWidget {
   const ProductDetail({super.key});
 
   @override
+  State<ProductDetail> createState() => _ProductDetailState();
+}
+
+class _ProductDetailState extends State<ProductDetail> {
+  final List<String> imageList = [
+    AppMedia.onborading1,
+    AppMedia.onborading2,
+    AppMedia.onborading3,
+    AppMedia.welcomeImage,
+    AppMedia.onborading1,
+    AppMedia.onborading2,
+  ];
+  int selectedImageIndex = 0;
+  @override
   Widget build(BuildContext context) {
-    final List<String> imageList = [
-      AppMedia.onborading1,
-      AppMedia.onborading2,
-      AppMedia.onborading3,
-      AppMedia.welcomeImage,
-      AppMedia.onborading1,
-      AppMedia.onborading2,
-    ];
     return Scaffold(
         backgroundColor: AppStyles.bgColor,
         appBar: AppBar(
@@ -65,20 +71,19 @@ class ProductDetail extends StatelessWidget {
               //         const SizedBox(width: 10),
               //   ),
               // ),
+
               Stack(
                 children: [
-                  // Background large image
                   ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: Image.asset(
-                      AppMedia.onborading2,
+                      // AppMedia.onborading2,
+                      imageList[selectedImageIndex],
                       height: 300,
                       width: double.infinity,
                       fit: BoxFit.cover,
                     ),
                   ),
-
-                  // Bottom thumbnails
                   Positioned(
                     bottom: 10,
                     left: 0,
@@ -94,15 +99,25 @@ class ProductDetail extends StatelessWidget {
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 5),
                         itemCount: imageList.length,
-                        itemBuilder: (context, index) => ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: Image.asset(
-                            imageList[index],
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                selectedImageIndex =
+                                    index; // update displayed image
+                              });
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: Image.asset(
+                                imageList[index],
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          );
+                        },
                         separatorBuilder: (context, index) =>
                             const SizedBox(width: 5),
                       ),
