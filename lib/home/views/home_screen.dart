@@ -1,5 +1,6 @@
 import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../base/res/media.dart';
 import '../../base/res/styles/app_styles.dart';
@@ -9,6 +10,7 @@ import '../../base/widgets/filter_card.dart';
 import '../../base/widgets/image_sliders.dart';
 import '../../base/widgets/product_card.dart';
 import '../../base/widgets/product_shimmer.dart';
+import '../../products/views/product_detail.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -252,7 +254,9 @@ class _HomeScreenState extends State<HomeScreen> {
           imagePath: AppMedia.welcomeImage,
           title: product['title']!,
           price: product['price']!,
-          onTap: () {},
+          onTap: () {
+            Get.to(ProductDetail());
+          },
           onTapWishlist: () {},
         );
       }).toList(),
