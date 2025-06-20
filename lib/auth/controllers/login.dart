@@ -32,7 +32,11 @@ class LoginController extends GetxController {
 
         // log('User: ${user.username}, ${user.isActive}');
 
-        Get.offAll(() => const BottomNavBar());
+        Get.offAll(
+          () => const BottomNavBar(),
+          transition: Transition.rightToLeftWithFade,
+          duration: const Duration(milliseconds: 500),
+        );
         isLoad.value = false;
         update();
         return;

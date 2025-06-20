@@ -1,3 +1,4 @@
+import 'package:ecom_app/onboarding/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -26,13 +27,12 @@ class _SplashScreenState extends State<SplashScreen> {
     // redirect();
   }
 
-
-Future<void> verifyTokenAndNavigate() async {
+  Future<void> verifyTokenAndNavigate() async {
     final token = getToken();
 
     if (token == null) {
-      // Get.offAll(() => const SignInScreen()); 
-       Get.toNamed(RouteNames.onboardingPage);
+      // Get.offAll(() => const SignInScreen());
+      Get.toNamed(RouteNames.onboardingPage);
       return;
     }
 
@@ -41,15 +41,16 @@ Future<void> verifyTokenAndNavigate() async {
       Get.offAll(() => const BottomNavBar());
     } else {
       await removeToken();
-      // Get.offAll(() => const SignInScreen()); 
-       Get.toNamed(RouteNames.onboardingPage);
+      // Get.offAll(() => const SignInScreen());
+      Get.offAll(const OnboardingScreen());
+      //  Get.toNamed(RouteNames.onboardingPage);
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       backgroundColor: AppStyles.bgColor,
+      backgroundColor: AppStyles.bgColor,
       body: ClipRRect(
         child: Center(
           // child: SvgPicture.asset(AppMedia.logo),

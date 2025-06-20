@@ -1,6 +1,7 @@
 import 'package:ecom_app/base/res/styles/app_styles.dart';
 import 'package:ecom_app/onboarding/welcome_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../base/widgets/primary_button.dart';
 import 'models/onboarding_model.dart';
@@ -139,12 +140,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               //       builder: (_) => const HomeScreen()),
                               // );
 
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => const WelcomeScreen()),
-                              );
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //       builder: (_) => const WelcomeScreen()),
+                              // );
                               // Get.toNamed(RouteNames.welcomePage);
+                              Get.to(
+                                const WelcomeScreen(),
+                                transition: Transition.rightToLeftWithFade,
+                                duration: const Duration(milliseconds: 500),
+                              );
                             } else {
                               _controller.nextPage(
                                 duration: const Duration(milliseconds: 300),

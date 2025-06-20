@@ -21,7 +21,8 @@ class _SignUpSreenState extends State<SignUpSreen> {
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -215,14 +216,13 @@ class _SignUpSreenState extends State<SignUpSreen> {
                 ),
                 GetBuilder<RegisterController>(
                   builder: (registerController) {
-                    
                     return PrimaryButton(
-                  verticalPadding: 10,
-                  horizontalPadding: 130,
-                  text: 'Sign Up',
-                  isLoading: registerController.isLoad.value,
-                  onTap: () {
-                    if (_formKey.currentState!.validate()) {
+                      verticalPadding: 10,
+                      horizontalPadding: 130,
+                      text: 'Sign Up',
+                      isLoading: registerController.isLoad.value,
+                      onTap: () {
+                        if (_formKey.currentState!.validate()) {
                           registerController.registerUser(
                             firstNameController.text.trim(),
                             lastNameController.text.trim(),
@@ -231,8 +231,8 @@ class _SignUpSreenState extends State<SignUpSreen> {
                             confirmPasswordController.text.trim(),
                           );
                         }
-                  },
-                );
+                      },
+                    );
                   },
                 ),
                 // PrimaryButton(
@@ -266,11 +266,16 @@ class _SignUpSreenState extends State<SignUpSreen> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const SignInScreen()),
+                          Get.to(
+                            const SignInScreen(),
+                            transition: Transition.rightToLeftWithFade,
+                            duration: const Duration(milliseconds: 500),
                           );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //       builder: (_) => const SignInScreen()),
+                          // );
                         },
                         child: Text(
                           "Sign In",

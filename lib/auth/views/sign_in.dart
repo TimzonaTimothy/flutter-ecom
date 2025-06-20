@@ -22,25 +22,23 @@ class _SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
 
   @override
-    void initState() {
-      Get.put(LoginController());
-      super.initState();
-    }
+  void initState() {
+    Get.put(LoginController());
+    super.initState();
+  }
 
-    @override
-    void dispose() {
-      emailController.dispose();
-      passwordController.dispose();
-      super.dispose();
-    }
-
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    
     return Scaffold(
       backgroundColor: AppStyles.bgColor,
       body: SingleChildScrollView(
@@ -148,24 +146,22 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 GetBuilder<LoginController>(
                   builder: (loginController) {
-                    
                     return PrimaryButton(
-                  verticalPadding: 10,
-                  horizontalPadding: 130,
-                  text: 'Sign In',
-                  isLoading: loginController.isLoad.value,
-                  onTap: () {
-                    if (_formKey.currentState!.validate()) {
+                      verticalPadding: 10,
+                      horizontalPadding: 130,
+                      text: 'Sign In',
+                      isLoading: loginController.isLoad.value,
+                      onTap: () {
+                        if (_formKey.currentState!.validate()) {
                           loginController.loginUser(
                             emailController.text.trim(),
                             passwordController.text.trim(),
                           );
                         }
-                  },
-                );
+                      },
+                    );
                   },
                 ),
-                
                 const SizedBox(
                   height: 25,
                 ),
@@ -180,11 +176,16 @@ class _SignInScreenState extends State<SignInScreen> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const SignUpSreen()),
+                          Get.to(
+                            const SignUpSreen(),
+                            transition: Transition.rightToLeftWithFade,
+                            duration: const Duration(milliseconds: 500),
                           );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //       builder: (_) => const SignUpSreen()),
+                          // );
                         },
                         child: Text(
                           "Sign Up",

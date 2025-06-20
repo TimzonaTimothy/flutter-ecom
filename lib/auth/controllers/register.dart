@@ -12,11 +12,11 @@ class RegisterController extends GetxController {
   var isLoad = false.obs;
 
   Future<void> registerUser(
-     String firstname,
-      String lastname,
-     String email,
-     String password,
-     String confirmPassword,
+    String firstname,
+    String lastname,
+    String email,
+    String password,
+    String confirmPassword,
   ) async {
     isLoad.value = true;
     update();
@@ -36,7 +36,11 @@ class RegisterController extends GetxController {
       if (response.statusCode == 201) {
         showSuccessSnackbar("Registration successful. Please login.");
         log('Registration success: ${response.body}');
-        Get.offAll(() => const SignInScreen());
+        Get.offAll(
+          () => const SignInScreen(),
+          transition: Transition.rightToLeftWithFade,
+          duration: const Duration(milliseconds: 500),
+        );
         isLoad.value = false;
         update();
       } else {

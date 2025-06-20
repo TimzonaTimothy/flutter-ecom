@@ -1,3 +1,4 @@
+import 'package:ecom_app/auth/views/sign_up.dart';
 import 'package:ecom_app/base/res/styles/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -5,7 +6,6 @@ import 'package:get/get.dart';
 import '../auth/views/sign_in.dart';
 import '../base/bottom_nav_bar.dart';
 import '../base/res/media.dart';
-import '../base/utils/app_routes.dart';
 import '../base/widgets/primary_button.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -31,7 +31,7 @@ class WelcomeScreen extends StatelessWidget {
                 alignment: Alignment.topRight,
                 child: GestureDetector(
                   onTap: () {
-                   Get.to(() => const BottomNavBar());
+                    Get.to(() => const BottomNavBar());
                   },
                   child: const Text(
                     'Skip',
@@ -87,11 +87,16 @@ class WelcomeScreen extends StatelessWidget {
                 hasBackground: false,
                 text: 'Sign In',
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const SignInScreen()),
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(builder: (_) => const SignInScreen()),
+                  // );
                   // Get.toNamed(RouteNames.signInPage);
+                  Get.to(
+                    const SignInScreen(),
+                    transition: Transition.rightToLeftWithFade,
+                    duration: const Duration(milliseconds: 500),
+                  );
                 },
               ),
               SizedBox(height: screenHeight * 0.025),
@@ -100,7 +105,12 @@ class WelcomeScreen extends StatelessWidget {
                 horizontalPadding: 130,
                 text: 'Sign Up',
                 onTap: () {
-                  Get.toNamed(RouteNames.signUpPage);
+                  // Get.toNamed(RouteNames.signUpPage, );
+                  Get.to(
+                    const SignUpSreen(),
+                    transition: Transition.rightToLeftWithFade,
+                    duration: const Duration(milliseconds: 500),
+                  );
                 },
               ),
               SizedBox(height: screenHeight * 0.05),

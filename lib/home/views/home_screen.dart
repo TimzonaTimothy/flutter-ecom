@@ -255,7 +255,11 @@ class _HomeScreenState extends State<HomeScreen> {
           title: product['title']!,
           price: product['price']!,
           onTap: () {
-            Get.to(ProductDetail());
+            Get.to(
+              const ProductDetail(),
+              transition: Transition.rightToLeftWithFade,
+              duration: const Duration(milliseconds: 500),
+            );
           },
           onTapWishlist: () {},
         );
