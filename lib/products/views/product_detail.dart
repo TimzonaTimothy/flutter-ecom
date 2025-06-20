@@ -187,6 +187,7 @@ class _ProductDetailState extends State<ProductDetail> {
             const SizedBox(height: 10),
             Wrap(
               spacing: 10,
+              runSpacing: 10.0,
               children: ["S", "M", "L", "XL", "XXL", "XXXL"].map((size) {
                 final isSelected = size == isSelectedSize;
                 return GestureDetector(
