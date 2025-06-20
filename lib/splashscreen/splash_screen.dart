@@ -31,18 +31,30 @@ class _SplashScreenState extends State<SplashScreen> {
     final token = getToken();
 
     if (token == null) {
-      // Get.offAll(() => const SignInScreen());
-      Get.toNamed(RouteNames.onboardingPage);
+      Get.offAll(
+        () => const OnboardingScreen(),
+        transition: Transition.rightToLeftWithFade,
+        duration: const Duration(milliseconds: 500),
+      );
+      // Get.toNamed(RouteNames.onboardingPage);
       return;
     }
 
     final isValid = await verifyTokenOnly(); // separated validation logic
     if (isValid) {
-      Get.offAll(() => const BottomNavBar());
+      Get.offAll(
+        () => const BottomNavBar(),
+        transition: Transition.rightToLeftWithFade,
+        duration: const Duration(milliseconds: 500),
+      );
     } else {
       await removeToken();
       // Get.offAll(() => const SignInScreen());
-      Get.offAll(const OnboardingScreen());
+      Get.offAll(
+        const OnboardingScreen(),
+        transition: Transition.rightToLeftWithFade,
+        duration: const Duration(milliseconds: 500),
+      );
       //  Get.toNamed(RouteNames.onboardingPage);
     }
   }
