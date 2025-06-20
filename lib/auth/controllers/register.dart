@@ -23,7 +23,7 @@ class RegisterController extends GetxController {
 
     try {
       final response = await http.post(
-        Uri.parse("$baseUrl/auth/users/"),
+        Uri.parse("$baseUrl/api/v1/auth/users/"),
         body: {
           "first_name": firstname,
           "last_name": lastname,
