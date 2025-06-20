@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     final List<String> filters = ['All', 'Newest', 'Popular', 'Man', 'Woman'];
-  int selectedIndex = 0;
+    int selectedIndex = 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -193,11 +193,9 @@ class _HomeScreenState extends State<HomeScreen> {
               func: () {},
             ),
           ),
-         
           const SizedBox(
             height: 20,
           ),
-           
           Padding(
             padding: const EdgeInsets.only(left: 20),
             child: CategoryScroller(
@@ -208,8 +206,11 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(
             height: 20,
           ),
-         FilterChipsRow(),
-    SizedBox(height:20),
+          const Padding(
+            padding: EdgeInsets.only(left: 20),
+            child: FilterChipsRow(),
+          ),
+          const SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: isLoading ? const ProductCardShimmer() : _buildProductGrid(),
