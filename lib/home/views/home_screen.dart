@@ -10,6 +10,7 @@ import '../../base/widgets/filter_card.dart';
 import '../../base/widgets/image_sliders.dart';
 import '../../base/widgets/product_card.dart';
 import '../../base/widgets/product_shimmer.dart';
+import '../../products/controllers/product_controller.dart';
 import '../../products/views/product_detail.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -42,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    Get.put(ProductsController());
     // Simulate a delay like fetching from API
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
@@ -51,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -241,28 +244,34 @@ class _HomeScreenState extends State<HomeScreen> {
       {'title': 'Raincoat', 'price': '80'},
     ];
 
-    return GridView.count(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      crossAxisCount: 2,
-      crossAxisSpacing: 15,
-      mainAxisSpacing: 20,
-      childAspectRatio: 0.69,
-      children: products.map((product) {
-        return ProductCard(
-          imagePath: AppMedia.welcomeImage,
-          title: product['title']!,
-          price: product['price']!,
-          onTap: () {
-            Get.to(
-              const ProductDetail(),
-              transition: Transition.rightToLeftWithFade,
-              duration: const Duration(milliseconds: 500),
-            );
-          },
-          onTapWishlist: () {},
-        );
-      }).toList(),
+    return GetBuilder<ProductsController>(
+      initState: (state) {
+        ProductsController.instance.getProduct();
+      },
+                  builder: (productsController) {
+      return GridView.count(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        crossAxisCount: 2,
+        crossAxisSpacing: 15,
+        mainAxisSpacing: 20,
+        childAspectRatio: 0.69,
+        children: productsController.products.map((product) {
+          return ProductCard(
+            imagePath: AppMedia.welcomeImage,
+            title: product.title!,
+            price: product.originalPrice.toString()!,
+            onTap: () {
+              Get.to(
+                const ProductDetail(),
+                transition: Transition.rightToLeftWithFade,
+                duration: const Duration(milliseconds: 500),
+              );
+            },
+            onTapWishlist: () {},
+          );
+        }).toList(),
+      );}
     );
   }
 }

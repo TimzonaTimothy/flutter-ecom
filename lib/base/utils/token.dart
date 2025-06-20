@@ -78,3 +78,12 @@ Future<bool> verifyTokenOnly() async {
     return false;
   }
 }
+
+Map<String, String> authHeader() {
+  final authToken = getToken();
+
+  Map<String, String> res = {
+    'Authorization': 'Bearer $authToken',
+  };
+  return res;
+}

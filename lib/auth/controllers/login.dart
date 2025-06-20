@@ -18,7 +18,7 @@ class LoginController extends GetxController {
 
     try {
       final response = await http.post(
-        Uri.parse("$baseUrl/api/v1/auth/jwt/create/"),
+        Uri.parse("$baseUrl/auth/jwt/create/"),
         body: {"email": email, "password": password},
       );
 

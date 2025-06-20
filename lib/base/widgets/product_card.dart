@@ -24,6 +24,7 @@ class ProductCard extends StatefulWidget {
 class _ProductCardState extends State<ProductCard> {
   bool isFavorite = false;
 
+
   void _toggleFavorite() {
     setState(() {
       isFavorite = !isFavorite;
