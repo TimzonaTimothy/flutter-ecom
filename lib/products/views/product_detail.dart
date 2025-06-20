@@ -95,7 +95,7 @@ class ProductDetail extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 5),
                         itemCount: imageList.length,
                         itemBuilder: (context, index) => ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(6),
                           child: Image.asset(
                             imageList[index],
                             width: 60,
