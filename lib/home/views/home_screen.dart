@@ -225,24 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProductGrid() {
-    final products = [
-      {'title': 'Summer Jacket', 'price': '100'},
-      {'title': 'Winter Hoodie', 'price': '120'},
-      {'title': 'Sneakers', 'price': '90'},
-      {'title': 'Raincoat', 'price': '80'},
-      {'title': 'Summer Jacket', 'price': '100'},
-      {'title': 'Winter Hoodie', 'price': '120'},
-      {'title': 'Sneakers', 'price': '90'},
-      {'title': 'Raincoat', 'price': '80'},
-      {'title': 'Summer Jacket', 'price': '100'},
-      {'title': 'Winter Hoodie', 'price': '120'},
-      {'title': 'Sneakers', 'price': '90'},
-      {'title': 'Raincoat', 'price': '80'},
-      {'title': 'Summer Jacket', 'price': '100'},
-      {'title': 'Winter Hoodie', 'price': '120'},
-      {'title': 'Sneakers', 'price': '90'},
-      {'title': 'Raincoat', 'price': '80'},
-    ];
+    
 
     return GetBuilder<ProductsController>(
       initState: (state) {
@@ -257,13 +240,19 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisSpacing: 20,
         childAspectRatio: 0.69,
         children: productsController.products.map((product) {
+          final imageUrl = (product.imageUrls != null && product.imageUrls!.isNotEmpty)
+            ? product.imageUrls!.first
+            : AppMedia.welcomeImage;
           return ProductCard(
-            imagePath: AppMedia.welcomeImage,
+            // imagePath: AppMedia.welcomeImage, 
+            imagePath: imageUrl,
             title: product.title!,
-            price: product.originalPrice.toString()!,
+            price: product.originalPrice!,
+            oldPrice:product.discountPrice!,
             onTap: () {
-              Get.to(
-                const ProductDetail(),
+              Get.to( () =>
+                // const ProductDetail(), 
+                ProductDetail(product: product),
                 transition: Transition.rightToLeftWithFade,
                 duration: const Duration(milliseconds: 500),
               );

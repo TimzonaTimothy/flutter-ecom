@@ -1,15 +1,45 @@
+class BrandModel {
+  final int id;
+  final String title;
+
+  BrandModel({required this.id, required this.title});
+
+  factory BrandModel.fromJson(Map<String, dynamic> json) {
+    return BrandModel(
+      id: json['id'],
+      title: json['title'],
+    );
+  }
+}
+
+class CategoryModel {
+  final int id;
+  final String title;
+
+  CategoryModel({required this.id, required this.title});
+
+  factory CategoryModel.fromJson(Map<String, dynamic> json) {
+    return CategoryModel(
+      id: json['id'],
+      title: json['title'],
+    );
+  }
+}
+
+
+
 class ProductModel {
   final int id;
-  final int category;
-  final int brand;
+    final CategoryModel category;
+  final BrandModel brand;
   final String title;
   final String slug;
   final String? description;
   final int stock;
   final bool isFeatured;
   final bool isAvailable;
-  final double? originalPrice;
-  final double? discountPrice;
+  final String? originalPrice;
+  final String? discountPrice;
   final double rating;
   final String productType;
   final List<String>? colors;
@@ -42,16 +72,16 @@ class ProductModel {
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
       id: json['id'],
-      category: json['category'],
-      brand: json['brand'],
+      category: CategoryModel.fromJson(json['category']),
+      brand: BrandModel.fromJson(json['brand']),
       title: json['title'],
       slug: json['slug'],
       description: json['description'],
       stock: json['stock'],
       isFeatured: json['is_featured'],
       isAvailable: json['is_available'],
-      originalPrice: json['original_price']?.toDouble(),
-      discountPrice: json['discount_price']?.toDouble(),
+      originalPrice: json['original_price'],
+      discountPrice: json['discount_price'],
       rating: json['rating']?.toDouble() ?? 1.0,
       productType: json['product_type'],
       colors: (json['colors'] as List?)?.map((e) => e.toString()).toList(),

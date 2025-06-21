@@ -1,28 +1,35 @@
 import 'package:ecom_app/base/res/media.dart';
 import 'package:ecom_app/base/widgets/app_double_text.dart';
+import 'package:ecom_app/home/views/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/product_card.dart';
 import '../../base/widgets/product_shimmer.dart';
+import '../controllers/product_controller.dart';
+import '../models/product_model.dart';
 
 class ProductDetail extends StatefulWidget {
-  const ProductDetail({super.key});
+  final ProductModel product;
+  const ProductDetail({super.key, required this.product});
 
   @override
   State<ProductDetail> createState() => _ProductDetailState();
 }
 
 class _ProductDetailState extends State<ProductDetail> {
-  final List<String> imageList = [
-    AppMedia.onborading1,
-    AppMedia.onborading2,
-    AppMedia.onborading3,
-    AppMedia.welcomeImage,
-    AppMedia.onborading1,
-    AppMedia.onborading2,
-  ];
+  // final List<String> imageList = [
+  //   AppMedia.onborading1,
+  //   AppMedia.onborading2,
+  //   AppMedia.onborading3,
+  //   AppMedia.welcomeImage,
+  //   AppMedia.onborading1,
+  //   AppMedia.onborading2,
+  // ];
+
+  late List<String> imageList;
+
   int selectedImageIndex = 0;
   String isSelectedSize = "S";
   String isSelectedColor = "Black";
@@ -32,6 +39,20 @@ class _ProductDetailState extends State<ProductDetail> {
   void initState() {
     super.initState();
     // Simulate a delay like fetching from API
+
+    imageList = widget.product.imageUrls ?? [];
+ 
+
+ // Register controller if not already
+  if (!Get.isRegistered<ProductsController>()) {
+    Get.put(ProductsController());
+  }
+
+  // Fetch similar products here, safely outside GetBuilder
+  Future.delayed(Duration.zero, () {
+    ProductsController.instance.getProduct();
+  });
+
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         setState(() {
@@ -95,7 +116,7 @@ class _ProductDetailState extends State<ProductDetail> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: Image.asset(
+                  child: Image.network(
                     // AppMedia.onborading2,
                     imageList[selectedImageIndex],
                     height: 300,
@@ -127,7 +148,7 @@ class _ProductDetailState extends State<ProductDetail> {
                           },
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(6),
-                            child: Image.asset(
+                            child: Image.network(
                               imageList[index],
                               width: 60,
                               height: 60,
@@ -146,17 +167,18 @@ class _ProductDetailState extends State<ProductDetail> {
             const SizedBox(height: 16),
             Row(
               children: [
-                Text("Female’s Style",
+                Text(
+                    '${widget.product.category.title} / ${widget.product.brand.title}',
                     style: TextStyle(color: AppStyles.greColor)),
                 const Spacer(),
                 Icon(Icons.star, color: AppStyles.primaryColor, size: 20),
                 const SizedBox(width: 4),
-                const Text("4.5",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(widget.product.rating.toStringAsFixed(1),
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 10),
-            Text("Light Brown Jacket",
+            Text(widget.product.title,
                 style: AppStyles.headLineStyle2
                     .copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
@@ -166,8 +188,7 @@ class _ProductDetailState extends State<ProductDetail> {
             const SizedBox(height: 4),
             Text.rich(
               TextSpan(
-                text:
-                    "Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit ametLorem ipsum dolor sit amet Lorem ipsum dolor sit amet ... ",
+                text: widget.product.description ?? "No description available",
                 // style: AppStyles.textStyle.copyWith(fontSize: 14),
                 children: [
                   TextSpan(
@@ -188,7 +209,7 @@ class _ProductDetailState extends State<ProductDetail> {
             Wrap(
               spacing: 10,
               runSpacing: 10.0,
-              children: ["S", "M", "L", "XL", "XXL", "XXXL"].map((size) {
+              children: (widget.product.sizes ?? []).map((size) {
                 final isSelected = size == isSelectedSize;
                 return GestureDetector(
                   onTap: () {
@@ -221,8 +242,7 @@ class _ProductDetailState extends State<ProductDetail> {
             Wrap(
               spacing: 10,
               runSpacing: 10.0,
-              children: ["Brown", "Red", "Orange", "White", "Black", "Yellow"]
-                  .map((color) {
+              children: (widget.product.colors ?? []).map((color) {
                 final isSelected = color == isSelectedColor;
                 return GestureDetector(
                   onTap: () {
@@ -276,7 +296,7 @@ class _ProductDetailState extends State<ProductDetail> {
                       fontWeight: FontWeight.w900,
                       color: AppStyles.whiteSmokeColor),
                 ),
-                Text("\$83.97",
+                Text('\$${widget.product.originalPrice}',
                     style: AppStyles.headLineStyle3.copyWith(
                       fontWeight: FontWeight.w900,
                     )),
@@ -309,48 +329,82 @@ class _ProductDetailState extends State<ProductDetail> {
     );
   }
 
-  Widget _buildProductGrid() {
-    final products = [
-      {'title': 'Summer Jacket', 'price': '100'},
-      {'title': 'Winter Hoodie', 'price': '120'},
-      {'title': 'Sneakers', 'price': '90'},
-      {'title': 'Raincoat', 'price': '80'},
-      {'title': 'Summer Jacket', 'price': '100'},
-      {'title': 'Winter Hoodie', 'price': '120'},
-      {'title': 'Sneakers', 'price': '90'},
-      {'title': 'Raincoat', 'price': '80'},
-      {'title': 'Summer Jacket', 'price': '100'},
-      {'title': 'Winter Hoodie', 'price': '120'},
-      {'title': 'Sneakers', 'price': '90'},
-      {'title': 'Raincoat', 'price': '80'},
-      {'title': 'Summer Jacket', 'price': '100'},
-      {'title': 'Winter Hoodie', 'price': '120'},
-      {'title': 'Sneakers', 'price': '90'},
-      {'title': 'Raincoat', 'price': '80'},
-    ];
+  // Widget _buildProductGrid() {
+   
+  //   return GetBuilder<ProductsController>(
+  //     initState: (_) {
+  //     ProductsController.instance.getProduct(); // fetch products
+  //   },
+  //      builder: (productsController) {
+  //     final products = productsController.products
+  //         .where((p) => p.id != widget.product.id) // optionally exclude current product
+  //         .toList();
 
-    return GridView.count(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      crossAxisCount: 2,
-      crossAxisSpacing: 15,
-      mainAxisSpacing: 20,
-      childAspectRatio: 0.69,
-      children: products.map((product) {
-        return ProductCard(
-          imagePath: AppMedia.welcomeImage,
-          title: product['title']!,
-          price: product['price']!,
-          onTap: () {
-            Get.to(
-              const ProductDetail(),
-              transition: Transition.rightToLeftWithFade,
-              duration: const Duration(milliseconds: 500),
-            );
-          },
-          onTapWishlist: () {},
-        );
-      }).toList(),
-    );
-  }
+  //     return GridView.count(
+  //       physics: const NeverScrollableScrollPhysics(),
+  //       shrinkWrap: true,
+  //       crossAxisCount: 2,
+  //       crossAxisSpacing: 15,
+  //       mainAxisSpacing: 20,
+  //       childAspectRatio: 0.69,
+  //       children: products.map((product) {
+  //         final imageUrl = (product.imageUrls != null && product.imageUrls!.isNotEmpty)
+  //             ? product.imageUrls!.first
+  //             : AppMedia.welcomeImage;
+  //         return ProductCard(
+  //          imagePath: imageUrl,
+  //           title: product.title ?? '',
+  //           price: product.originalPrice ?? '0',
+  //           oldPrice: product.discountPrice ?? '0',
+  //           onTap: () {
+  //             Get.to( () =>
+  //               // const ProductDetail(product: products,),
+  //               const HomeScreen(),
+  //               transition: Transition.rightToLeftWithFade,
+  //               duration: const Duration(milliseconds: 500),
+  //             );
+  //           },
+  //           onTapWishlist: () {},
+  //         );
+  //       }).toList(),
+  //     );}
+  //   );
+  // } 
+
+  Widget _buildProductGrid() {
+  return GetBuilder<ProductsController>(
+    builder: (productsController) {
+      final products = productsController.products
+          .where((p) => p.id != widget.product.id)
+          .toList();
+
+      return GridView.count(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        crossAxisCount: 2,
+        crossAxisSpacing: 15,
+        mainAxisSpacing: 20,
+        childAspectRatio: 0.69,
+        children: products.map((product) {
+          final imageUrl = (product.imageUrls != null && product.imageUrls!.isNotEmpty)
+              ? product.imageUrls!.first
+              : AppMedia.welcomeImage;
+          return ProductCard(
+            imagePath: imageUrl,
+            title: product.title ?? '',
+            price: product.originalPrice ?? '0',
+            oldPrice: product.discountPrice ?? '0',
+            onTap: () {
+              Get.to(() => ProductDetail(product: product),
+                  transition: Transition.rightToLeftWithFade,
+                  duration: const Duration(milliseconds: 500));
+            },
+            onTapWishlist: () {},
+          );
+        }).toList(),
+      );
+    },
+  );
+}
+
 }

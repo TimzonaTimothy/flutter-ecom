@@ -6,6 +6,7 @@ class ProductCard extends StatefulWidget {
   final String imagePath;
   final String title;
   final String price;
+  final String oldPrice;
   final VoidCallback? onTap;
   final VoidCallback? onTapWishlist;
 
@@ -14,6 +15,7 @@ class ProductCard extends StatefulWidget {
       required this.imagePath,
       required this.title,
       required this.price,
+      required this.oldPrice,
       required this.onTap,
       required this.onTapWishlist});
 
@@ -73,7 +75,8 @@ class _ProductCardState extends State<ProductCard> {
                   color: AppStyles.whiteColor,
                   borderRadius: BorderRadius.circular(10),
                   image: DecorationImage(
-                    image: AssetImage(widget.imagePath),
+                    // image: AssetImage(widget.imagePath), 
+                    image: NetworkImage(widget.imagePath),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -109,7 +112,7 @@ class _ProductCardState extends State<ProductCard> {
                       width: 3,
                     ),
                     Text(
-                      "\$${widget.price}",
+                      "\$${widget.oldPrice}",
                       style: AppStyles.headLineStyle3.copyWith(
                           fontWeight: FontWeight.w900,
                           decoration: TextDecoration.lineThrough,
