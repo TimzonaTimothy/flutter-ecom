@@ -99,7 +99,7 @@ class _ProductCardState extends State<ProductCard> {
             GestureDetector(
               onTap: widget.onTap,
               child: Padding(
-                padding: const EdgeInsets.only(left: 8.0, bottom: 8),
+                padding: const EdgeInsets.only(left: 8.0, bottom: 8, ),
                 child: Row(
                   children: [
                     Text(
@@ -111,13 +111,16 @@ class _ProductCardState extends State<ProductCard> {
                     const SizedBox(
                       width: 3,
                     ),
-                    Text(
-                      "\$${widget.oldPrice}",
-                      style: AppStyles.headLineStyle3.copyWith(
-                          fontWeight: FontWeight.w900,
-                          decoration: TextDecoration.lineThrough,
-                          color: AppStyles.whiteSmokeColor),
-                      overflow: TextOverflow.ellipsis,
+                    Flexible(
+                      child: Text(
+                        "\$${widget.oldPrice}",
+                        style: AppStyles.headLineStyle3.copyWith(
+                            fontWeight: FontWeight.w500,
+                            decoration: TextDecoration.lineThrough,
+                            color: AppStyles.whiteSmokeColor),
+                        overflow: TextOverflow.ellipsis,
+                        
+                      ),
                     ),
                   ],
                 ),
