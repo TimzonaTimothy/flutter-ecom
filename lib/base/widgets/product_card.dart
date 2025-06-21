@@ -99,7 +99,7 @@ class _ProductCardState extends State<ProductCard> {
             GestureDetector(
               onTap: widget.onTap,
               child: Padding(
-                padding: const EdgeInsets.only(left: 8.0, bottom: 8, ),
+                padding: const EdgeInsets.only(left: 8.0, bottom: 8, right: 8),
                 child: Row(
                   children: [
                     Text(
