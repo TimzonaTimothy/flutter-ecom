@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../base/res/styles/app_styles.dart';
 
 class NotificationScreen extends StatelessWidget {
+  const NotificationScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final notificationsToday = [
@@ -14,27 +19,33 @@ class NotificationScreen extends StatelessWidget {
     ];
 
     return Scaffold(
+      backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
-        leading: BackButton(),
-        title: Text('Notification'),
+        backgroundColor: AppStyles.bgColor,
+        elevation: 0,
+        title: Text("Notification", style: AppStyles.headLineStyle2),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Get.back();
+          },
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Chip(
-              label: Text("2 NEW", style: TextStyle(color: Colors.white)),
-              backgroundColor: Colors.brown,
+              label: const Text("2 NEW", style: TextStyle(color: Colors.white)),
+              backgroundColor: AppStyles.primaryColor,
             ),
           )
         ],
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: Colors.black,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _buildSection("TODAY", notificationsToday),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           _buildSection("YESTERDAY", notificationsYesterday),
         ],
       ),
@@ -47,13 +58,14 @@ class NotificationScreen extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-            Spacer(),
-            Text("Mark all as read", style: TextStyle(color: Colors.brown)),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            const Spacer(),
+            Text("Mark all as read",
+                style: TextStyle(color: AppStyles.primaryColor)),
           ],
         ),
-        SizedBox(height: 8),
-        ...items.map((item) => _buildNotificationTile(item)).toList(),
+        const SizedBox(height: 8),
+        ...items.map((item) => _buildNotificationTile(item)),
       ],
     );
   }
@@ -71,20 +83,23 @@ class NotificationScreen extends StatelessWidget {
           CircleAvatar(
             radius: 24,
             backgroundColor: Colors.grey[200],
-            child: Icon(item.icon, color: Colors.brown),
+            child: Icon(item.icon, color: AppStyles.primaryColor),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Expanded(child: Text(item.title, style: TextStyle(fontWeight: FontWeight.bold))),
-                    Text(item.time, style: TextStyle(color: Colors.grey)),
+                    Expanded(
+                        child: Text(item.title,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold))),
+                    Text(item.time, style: const TextStyle(color: Colors.grey)),
                   ],
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
