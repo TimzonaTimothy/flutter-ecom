@@ -32,11 +32,14 @@ class NotificationScreen extends StatelessWidget {
           },
         ),
         actions: [
+
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Chip(
               label: const Text("2 NEW", style: TextStyle(color: Colors.white)),
               backgroundColor: AppStyles.primaryColor,
+              elevation: 0,
+              
             ),
           )
         ],

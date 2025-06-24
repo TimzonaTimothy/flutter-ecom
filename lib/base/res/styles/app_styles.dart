@@ -12,7 +12,7 @@ class AppStyles {
   static Color whiteColor = const Color(0xFFFFFFFF);
 
   static TextStyle textStyle = GoogleFonts.poppins(
-    fontSize: 16,
+    fontSize: 12,
     color: textColor,
     fontWeight: FontWeight.w500,
   );
