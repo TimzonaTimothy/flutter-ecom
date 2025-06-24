@@ -10,6 +10,7 @@ import '../../base/widgets/filter_card.dart';
 import '../../base/widgets/image_sliders.dart';
 import '../../base/widgets/product_card.dart';
 import '../../base/widgets/product_shimmer.dart';
+import '../../notification/views/notification_screen.dart';
 import '../../products/controllers/product_controller.dart';
 import '../../products/views/product_detail.dart';
 
@@ -118,18 +119,23 @@ int selectedFilterIndex = 0;
           ),
         ),
         actions: [
-          Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(50),
-                  color: AppStyles.whiteSmokeColor),
-              child: Badge.count(
-                count: 10,
-                child: Icon(
-                  Icons.notifications,
-                  color: AppStyles.textColor,
-                ),
-              )),
+          GestureDetector(
+            onTap: (){
+              Get.to(NotificationScreen());
+            },
+            child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    color: AppStyles.whiteSmokeColor),
+                child: Badge.count(
+                  count: 10,
+                  child: Icon(
+                    Icons.notifications,
+                    color: AppStyles.textColor,
+                  ),
+                )),
+          ),
           const SizedBox(
             width: 20,
           )
