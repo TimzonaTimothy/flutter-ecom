@@ -15,55 +15,72 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   List<Map<String, dynamic>> cartItems = [
     {
-      "title": "Brown Jacket",
+      "title": "Men Blue Dial Analogue Watch - FCN00046H",
       "price": 83.97,
       "size": "XL",
       "image":
-          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
+      "quantity": 1,
     },
     {
       "title": "Brown Suite",
       "price": 120.00,
       "size": "XL",
       "image":
-          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
+      "quantity": 1,
     },
     {
       "title": "Brown Jacket",
       "price": 83.97,
       "size": "XL",
       "image":
-          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
+      "quantity": 1,
     },
     {
       "title": "Brown Suite",
       "price": 120.00,
       "size": "XL",
       "image":
-          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
+      "quantity": 1,
     },
     {
       "title": "Brown Jacket",
       "price": 83.97,
       "size": "XL",
       "image":
-          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
+      "quantity": 1,
     },
     {
       "title": "Brown Suite",
       "price": 120.00,
       "size": "XL",
       "image":
-          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
+      "quantity": 1,
     },
     {
       "title": "Brown Jacket",
       "price": 83.97,
       "size": "XL",
       "image":
-          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
+      "quantity": 1,
     },
   ];
+
+  final double deliveryFee = 25.00;
+  final double discount = 35.00;
+
+  double getCartSubTotal() {
+    return cartItems.fold(
+      0.0,
+      (sum, item) => sum + (item['price'] * item['quantity']),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,11 +142,20 @@ class _CartScreenState extends State<CartScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(item['title'] ?? '',
-                                        style: const TextStyle(
+                                        style: AppStyles.textStyle.copyWith(
                                             fontWeight: FontWeight.bold)),
                                     const SizedBox(height: 4),
-                                    Text("Size: ${item['size']}"),
-                                    Text("Price: \$${item['price']}"),
+                                    Text(
+                                      "Size: ${item['size']}",
+                                      style: AppStyles.textStyle.copyWith(
+                                          color: AppStyles.whiteSmokeColor,
+                                          fontSize: 12),
+                                    ),
+                                    Text(
+                                      "Price: \$${item['price']}",
+                                      style: AppStyles.textStyle.copyWith(
+                                          fontWeight: FontWeight.bold),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -174,7 +200,7 @@ class _CartScreenState extends State<CartScreen> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8),
+                            horizontal: 20.0, vertical: 8),
                         child: Row(
                           children: [
                             ClipRRect(
@@ -191,9 +217,13 @@ class _CartScreenState extends State<CartScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(item['title']?.toString() ?? '',
-                                      style: AppStyles.textStyle.copyWith(
-                                          fontWeight: FontWeight.bold)),
+                                  Text(
+                                    item['title']?.toString() ?? '',
+                                    style: AppStyles.textStyle
+                                        .copyWith(fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                  ),
                                   Text("Size: ${item['size']}",
                                       style: AppStyles.textStyle.copyWith(
                                           color: AppStyles.whiteSmokeColor,
@@ -207,19 +237,54 @@ class _CartScreenState extends State<CartScreen> {
                             ),
                             Row(
                               children: [
-                                IconButton(
-                                    icon: const Icon(Icons.remove, size: 18),
-                                    onPressed: () {}),
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      if (cartItems[index]['quantity'] > 1) {
+                                        cartItems[index]['quantity']--;
+                                      }
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5),
+                                      color: AppStyles.whiteSmokeColor,
+                                    ),
+                                    child: Icon(
+                                      Icons.remove,
+                                      size: 18,
+                                      color: AppStyles.textColor,
+                                    ),
+                                  ),
+                                ),
                                 Container(
                                   padding:
                                       const EdgeInsets.symmetric(horizontal: 8),
-                                  child: const Text("1",
-                                      style: TextStyle(
+                                  child: Text(
+                                      cartItems[index]['quantity'].toString(),
+                                      style: const TextStyle(
                                           fontWeight: FontWeight.bold)),
                                 ),
-                                IconButton(
-                                    icon: const Icon(Icons.add, size: 18),
-                                    onPressed: () {}),
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      cartItems[index]['quantity']++;
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5),
+                                      color: AppStyles.primaryColor,
+                                    ),
+                                    child: Icon(
+                                      Icons.add,
+                                      size: 18,
+                                      color: AppStyles.whiteColor,
+                                    ),
+                                  ),
+                                )
                               ],
                             )
                           ],
@@ -287,12 +352,16 @@ class _CartScreenState extends State<CartScreen> {
                 const SizedBox(height: 20),
                 _buildPriceRow(
                   "Sub-Total",
-                  "\$407.94",
+                  // "\$407.94",
+                  "\$${getCartSubTotal().toStringAsFixed(2)}",
                 ),
-                _buildPriceRow("Delivery Fee", "\$25.00"),
-                _buildPriceRow("Discount", "-\$35.00"),
+                _buildPriceRow("Delivery Fee", "\$$deliveryFee"),
+                _buildPriceRow("Discount", "\$$discount"),
                 Divider(color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
-                _buildPriceRow("Total Cost", "\$397.94", isBold: true),
+                _buildPriceRow("Total Cost",
+                    "\$${(getCartSubTotal() + deliveryFee - discount).toStringAsFixed(2)}",
+                    // "\$397.94",
+                    isBold: true),
                 const SizedBox(height: 20),
                 PrimaryButton(
                   verticalPadding: 10,

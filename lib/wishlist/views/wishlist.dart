@@ -31,7 +31,6 @@ class _WishListScreenState extends State<WishListScreen> {
     return allProducts.reversed.toList(); // For demo
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +47,6 @@ class _WishListScreenState extends State<WishListScreen> {
           },
         ),
       ),
-      
       body: ListView(
         shrinkWrap: true,
         padding: const EdgeInsets.only(bottom: 20),
@@ -66,7 +64,7 @@ class _WishListScreenState extends State<WishListScreen> {
           //   child: FilterChipsRow(),
           // ),
 
-           Padding(
+          Padding(
             padding: const EdgeInsets.only(left: 20),
             child: FilterChipsRow(
               filters: filters,
@@ -128,7 +126,7 @@ class _WishListScreenState extends State<WishListScreen> {
     ];
 
     return GridView.count(
-      key: ValueKey<int>(selectedFilterIndex), 
+      key: ValueKey<int>(selectedFilterIndex),
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       crossAxisCount: 2,
