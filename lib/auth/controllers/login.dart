@@ -41,9 +41,15 @@ class LoginController extends GetxController {
         update();
         return;
       } else {
-        showFailureSnackbar(
-          jsonDecode(response.body)['detail'] ?? 'Login failed',
-        );
+        // showFailureSnackbar(
+        //   jsonDecode(response.body)['detail'] ?? 'Login failed',
+        // );
+        final data = jsonDecode(response.body);
+        final errorMessage = data['error']?['details']?['detail'] ??
+            data['detail'] ??
+            'Login failed';
+
+        showFailureSnackbar(errorMessage);
       }
 
       log('Data ${response.body}');

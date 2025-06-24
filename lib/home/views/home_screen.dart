@@ -37,8 +37,25 @@ class _HomeScreenState extends State<HomeScreen> {
     {'label': 'Pants', 'image': AppMedia.onborading3},
   ];
 
+
+int selectedFilterIndex = 0;
+
   final List<String> filters = ['All', 'Newest', 'Popular', 'Man', 'Woman'];
-  int selectedIndex = 0;
+
+  final List<Map<String, String>> allProducts = [
+    {'title': 'Summer Jacket', 'price': '100'},
+    {'title': 'Winter Hoodie', 'price': '120'},
+    {'title': 'Sneakers', 'price': '90'},
+    {'title': 'Raincoat', 'price': '80'},
+    // Add category key if you want to filter by category
+  ];
+
+  List<Map<String, String>> get filteredProducts {
+    // Replace with real filter logic
+    if (selectedFilterIndex == 0) return allProducts; // "All"
+    return allProducts.reversed.toList(); // For demo
+  }
+
 
   @override
   void initState() {
@@ -210,9 +227,17 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(
             height: 20,
           ),
-          const Padding(
+           Padding(
             padding: EdgeInsets.only(left: 20),
-            child: FilterChipsRow(),
+            child: FilterChipsRow(
+              filters: filters,
+              selectedIndex: selectedFilterIndex,
+              onSelected: (index) {
+                setState(() {
+                  selectedFilterIndex = index;
+                });
+              },
+            ),
           ),
           const SizedBox(height: 20),
           Padding(

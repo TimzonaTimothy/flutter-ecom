@@ -26,7 +26,6 @@ class ProductCard extends StatefulWidget {
 class _ProductCardState extends State<ProductCard> {
   bool isFavorite = false;
 
-
   void _toggleFavorite() {
     setState(() {
       isFavorite = !isFavorite;
@@ -75,7 +74,7 @@ class _ProductCardState extends State<ProductCard> {
                   color: AppStyles.whiteColor,
                   borderRadius: BorderRadius.circular(10),
                   image: DecorationImage(
-                    // image: AssetImage(widget.imagePath), 
+                    // image: AssetImage(widget.imagePath),
                     image: NetworkImage(widget.imagePath),
                     fit: BoxFit.cover,
                   ),
@@ -88,7 +87,7 @@ class _ProductCardState extends State<ProductCard> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
-                  widget.title,
+                  widget.title ?? "Untitled Product",
                   style: AppStyles.headLineStyle4.copyWith(
                       fontWeight: FontWeight.bold, color: AppStyles.greColor),
                   overflow: TextOverflow.ellipsis,
@@ -103,7 +102,7 @@ class _ProductCardState extends State<ProductCard> {
                 child: Row(
                   children: [
                     Text(
-                      "\$${widget.price}",
+                      "\$${widget.price ?? '0.00'}",
                       style: AppStyles.headLineStyle2
                           .copyWith(fontWeight: FontWeight.w900),
                       overflow: TextOverflow.ellipsis,
@@ -113,13 +112,12 @@ class _ProductCardState extends State<ProductCard> {
                     ),
                     Flexible(
                       child: Text(
-                        "\$${widget.oldPrice}",
+                        "\$${widget.oldPrice ?? '0.00'}",
                         style: AppStyles.headLineStyle3.copyWith(
                             fontWeight: FontWeight.w500,
                             decoration: TextDecoration.lineThrough,
                             color: AppStyles.whiteSmokeColor),
                         overflow: TextOverflow.ellipsis,
-                        
                       ),
                     ),
                   ],
