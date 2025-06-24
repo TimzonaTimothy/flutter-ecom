@@ -88,7 +88,7 @@ class _WishListScreenState extends State<WishListScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 1000),
               transitionBuilder: (Widget child, Animation<double> animation) {
                 final offsetAnimation = Tween<Offset>(
                         begin: const Offset(1.0, 0.0), end: Offset.zero)

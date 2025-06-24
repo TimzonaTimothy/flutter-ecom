@@ -1,6 +1,7 @@
 import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
 
+import '../cart/views/cart_screen.dart';
 import '../home/views/home_screen.dart';
 import '../wishlist/views/wishlist.dart';
 import 'res/styles/app_styles.dart';
@@ -16,7 +17,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   final appScreens = [
     const HomeScreen(),
     const WishListScreen(),
-    const Center(child: Text("Cart")),
+    const CartScreen(),
     const Center(child: Text("Profile")),
   ];
 
