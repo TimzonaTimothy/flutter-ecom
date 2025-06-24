@@ -48,6 +48,7 @@ class _WishListScreenState extends State<WishListScreen> {
           },
         ),
       ),
+      
       body: ListView(
         shrinkWrap: true,
         padding: const EdgeInsets.only(bottom: 20),

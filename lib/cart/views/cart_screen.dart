@@ -1,36 +1,86 @@
+import 'package:ecom_app/base/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-class CartScreen extends StatelessWidget {
+import '../../base/res/styles/app_styles.dart';
+import '../../base/utils/snackbar.dart';
+
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final cartItems = [
-      {
-        "title": "Brown Jacket",
-        "price": 83.97,
-        "size": "XL",
-        "image":
-            "https://cdn.pixabay.com/photo/2016/11/29/04/17/adult-1867889_1280.jpg"
-      },
-      {
-        "title": "Brown Suite",
-        "price": 120.00,
-        "size": "XL",
-        "image":
-            "https://cdn.pixabay.com/photo/2017/03/27/13/27/man-2178721_1280.jpg"
-      },
-    ];
+  State<CartScreen> createState() => _CartScreenState();
+}
 
+class _CartScreenState extends State<CartScreen> {
+  List<Map<String, dynamic>> cartItems = [
+    {
+      "title": "Brown Jacket",
+      "price": 83.97,
+      "size": "XL",
+      "image":
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+    },
+    {
+      "title": "Brown Suite",
+      "price": 120.00,
+      "size": "XL",
+      "image":
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+    },
+    {
+      "title": "Brown Jacket",
+      "price": 83.97,
+      "size": "XL",
+      "image":
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+    },
+    {
+      "title": "Brown Suite",
+      "price": 120.00,
+      "size": "XL",
+      "image":
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+    },
+    {
+      "title": "Brown Jacket",
+      "price": 83.97,
+      "size": "XL",
+      "image":
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+    },
+    {
+      "title": "Brown Suite",
+      "price": 120.00,
+      "size": "XL",
+      "image":
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+    },
+    {
+      "title": "Brown Jacket",
+      "price": 83.97,
+      "size": "XL",
+      "image":
+          "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg"
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text("My Cart", style: TextStyle(color: Colors.black)),
-        centerTitle: true,
-        leading: const BackButton(color: Colors.black),
+        backgroundColor: AppStyles.bgColor,
         elevation: 0,
+        title: Text("My Cart", style: AppStyles.headLineStyle2),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Get.back();
+          },
+        ),
       ),
-      backgroundColor: Colors.white,
       body: Column(
         children: [
           Expanded(
@@ -47,117 +97,209 @@ class CartScreen extends StatelessWidget {
                     child: const Icon(Icons.delete, color: Colors.white),
                   ),
                   direction: DismissDirection.endToStart,
-                  onDismissed: (_) {},
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.network(
-                           item['image']?.toString() ?? '',
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                  confirmDismiss: (_) async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) {
+                        return AlertDialog(
+                          backgroundColor: AppStyles.bgColor,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          title: const Text("Confirm Delete"),
+                          content: Row(
                             children: [
-                              Text(item['title']?.toString() ?? '',
-                                  style: const TextStyle(
-                                      fontSize: 16, fontWeight: FontWeight.bold)),
-                              Text("Size: ${item['size']}",
-                                  style: const TextStyle(color: Colors.grey)),
-                              const SizedBox(height: 4),
-                              Text("\$${item['price']}",
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  item['image']?.toString() ?? '',
+                                  width: 60,
+                                  height: 60,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(item['title'] ?? '',
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 4),
+                                    Text("Size: ${item['size']}"),
+                                    Text("Price: \$${item['price']}"),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                        Row(
-                          children: [
-                            IconButton(
-                                icon: const Icon(Icons.remove, size: 18),
-                                onPressed: () {}),
-                            Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                              child: const Text("1",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold)),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: Text("Cancel",
+                                  style: AppStyles.textStyle
+                                      .copyWith(color: AppStyles.primaryColor)),
                             ),
-                            IconButton(
-                                icon: const Icon(Icons.add, size: 18),
-                                onPressed: () {}),
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppStyles.primaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: Text("Delete",
+                                  style: AppStyles.textStyle
+                                      .copyWith(color: AppStyles.whiteColor)),
+                            ),
                           ],
-                        )
-                      ],
-                    ),
+                        );
+                      },
+                    );
+
+                    if (confirm != true) {
+                      setState(() {});
+                    } else {
+                      setState(() {
+                        cartItems.removeAt(index);
+                      });
+
+                      showSuccessSnackbar("${item['title']} removed from cart");
+                    }
+                    return null;
+                  },
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                item['image']?.toString() ?? '',
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(item['title']?.toString() ?? '',
+                                      style: AppStyles.textStyle.copyWith(
+                                          fontWeight: FontWeight.bold)),
+                                  Text("Size: ${item['size']}",
+                                      style: AppStyles.textStyle.copyWith(
+                                          color: AppStyles.whiteSmokeColor,
+                                          fontSize: 12)),
+                                  const SizedBox(height: 4),
+                                  Text("\$${item['price']}",
+                                      style: AppStyles.textStyle.copyWith(
+                                          fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                IconButton(
+                                    icon: const Icon(Icons.remove, size: 18),
+                                    onPressed: () {}),
+                                Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  child: const Text("1",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                ),
+                                IconButton(
+                                    icon: const Icon(Icons.add, size: 18),
+                                    onPressed: () {}),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                      Divider(
+                          color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
+                    ],
                   ),
                 );
               },
             ),
           ),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppStyles.bgColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  offset: const Offset(0, -3),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: "Promo Code",
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
+                Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppStyles.whiteSmokeColor)),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            hintText: "Promo Code",
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.brown,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 3.0),
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppStyles.primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text("Apply",
+                              style: AppStyles.textStyle
+                                  .copyWith(color: AppStyles.whiteColor)),
                         ),
                       ),
-                      child: const Text("Apply"),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                _buildPriceRow("Sub-Total", "\$407.94"),
-                _buildPriceRow("Delivery Fee", "\$25.00"),
-                _buildPriceRow("Discount", "-\$35.00"),
-                const Divider(thickness: 1),
-                _buildPriceRow("Total Cost", "\$397.94", isBold: true),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.brown,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30)),
-                    ),
-                    onPressed: () {},
-                    child: const Text(
-                      "Proceed to Checkout",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
+                _buildPriceRow(
+                  "Sub-Total",
+                  "\$407.94",
+                ),
+                _buildPriceRow("Delivery Fee", "\$25.00"),
+                _buildPriceRow("Discount", "-\$35.00"),
+                Divider(color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
+                _buildPriceRow("Total Cost", "\$397.94", isBold: true),
+                const SizedBox(height: 20),
+                PrimaryButton(
+                  verticalPadding: 10,
+                  horizontalPadding: 130,
+                  text: 'Proceed',
+                  onTap: () {},
+                ),
               ],
             ),
           ),
@@ -173,13 +315,9 @@ class CartScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: TextStyle(
-                  color: Colors.grey[700],
-                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
+              style: AppStyles.textStyle.copyWith(color: AppStyles.greColor)),
           Text(value,
-              style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
+              style: AppStyles.textStyle.copyWith(fontWeight: FontWeight.w700)),
         ],
       ),
     );
