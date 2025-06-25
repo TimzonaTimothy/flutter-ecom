@@ -3,10 +3,10 @@ import 'package:ecom_app/base/res/styles/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../auth/views/sign_in.dart';
-import '../base/bottom_nav_bar.dart';
-import '../base/res/media.dart';
-import '../base/widgets/primary_button.dart';
+import '../../auth/views/sign_in.dart';
+import '../../base/bottom_nav_bar.dart';
+import '../../base/res/media.dart';
+import '../../base/widgets/primary_button.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});

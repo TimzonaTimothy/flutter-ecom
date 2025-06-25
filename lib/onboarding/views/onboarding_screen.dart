@@ -1,10 +1,10 @@
 import 'package:ecom_app/base/res/styles/app_styles.dart';
-import 'package:ecom_app/onboarding/welcome_screen.dart';
+import 'package:ecom_app/onboarding/views/welcome_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../base/widgets/primary_button.dart';
-import 'models/onboarding_model.dart';
+import '../../base/widgets/primary_button.dart';
+import '../models/onboarding_model.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});

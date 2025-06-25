@@ -78,7 +78,8 @@ class NotificationScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+       
+        color:  AppStyles.whiteColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

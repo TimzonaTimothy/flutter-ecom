@@ -1,4 +1,4 @@
-import 'package:ecom_app/onboarding/onboarding_screen.dart';
+import 'package:ecom_app/onboarding/views/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

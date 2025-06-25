@@ -132,7 +132,7 @@ class _WishListScreenState extends State<WishListScreen> {
       crossAxisCount: 2,
       crossAxisSpacing: 15,
       mainAxisSpacing: 20,
-      childAspectRatio: 0.69,
+      childAspectRatio: 0.79,
       children: products.map((product) {
         return ProductCard(
           imagePath:

@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import '../../auth/views/sign_in.dart';
 import '../../auth/views/sign_up.dart';
 import '../../home/views/home_screen.dart';
-import '../../onboarding/onboarding_screen.dart';
-import '../../onboarding/welcome_screen.dart';
+import '../../onboarding/views/onboarding_screen.dart';
+import '../../onboarding/views/welcome_screen.dart';
 import '../../splashscreen/splash_screen.dart';
 
 class RouteNames {

@@ -13,6 +13,7 @@ import '../../base/widgets/product_shimmer.dart';
 import '../../notification/views/notification_screen.dart';
 import '../../products/controllers/product_controller.dart';
 import '../../products/views/product_detail.dart';
+import '../../products/views/product_filter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,8 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {'label': 'Pants', 'image': AppMedia.onborading3},
   ];
 
-
-int selectedFilterIndex = 0;
+  int selectedFilterIndex = 0;
 
   final List<String> filters = ['All', 'Newest', 'Popular', 'Man', 'Woman'];
 
@@ -57,7 +57,6 @@ int selectedFilterIndex = 0;
     return allProducts.reversed.toList(); // For demo
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -71,7 +70,6 @@ int selectedFilterIndex = 0;
       }
     });
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -120,8 +118,8 @@ int selectedFilterIndex = 0;
         ),
         actions: [
           GestureDetector(
-            onTap: (){
-              Get.to(NotificationScreen());
+            onTap: () {
+              Get.to(const NotificationScreen());
             },
             child: Container(
                 padding: const EdgeInsets.all(10),
@@ -187,16 +185,25 @@ int selectedFilterIndex = 0;
                 const SizedBox(
                   width: 10,
                 ),
-                Container(
-                  height: 40,
-                  width: 40,
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                      color: AppStyles.textColor,
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Icon(
-                    FluentSystemIcons.ic_fluent_filter_filled,
-                    color: AppStyles.whiteColor,
+                GestureDetector(
+                  onTap: () {
+                    Get.to(
+                      FilterScreen(),
+                      transition: Transition.rightToLeftWithFade,
+                      duration: const Duration(milliseconds: 500),
+                    );
+                  },
+                  child: Container(
+                    height: 40,
+                    width: 40,
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                        color: AppStyles.textColor,
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Icon(
+                      FluentSystemIcons.ic_fluent_filter_filled,
+                      color: AppStyles.whiteColor,
+                    ),
                   ),
                 )
               ],
@@ -233,8 +240,8 @@ int selectedFilterIndex = 0;
           const SizedBox(
             height: 20,
           ),
-           Padding(
-            padding: EdgeInsets.only(left: 20),
+          Padding(
+            padding: const EdgeInsets.only(left: 20),
             child: FilterChipsRow(
               filters: filters,
               selectedIndex: selectedFilterIndex,
@@ -256,34 +263,32 @@ int selectedFilterIndex = 0;
   }
 
   Widget _buildProductGrid() {
-    
-
-    return GetBuilder<ProductsController>(
-      initState: (state) {
-        ProductsController.instance.getProduct();
-      },
-                  builder: (productsController) {
+    return GetBuilder<ProductsController>(initState: (state) {
+      ProductsController.instance.getProduct();
+    }, builder: (productsController) {
       return GridView.count(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         crossAxisCount: 2,
         crossAxisSpacing: 15,
         mainAxisSpacing: 20,
-        childAspectRatio: 0.69,
+        childAspectRatio: 0.79,
         children: productsController.products.map((product) {
-          final imageUrl = (product.imageUrls != null && product.imageUrls!.isNotEmpty)
-            ? product.imageUrls!.first
-            : AppMedia.welcomeImage;
+          final imageUrl =
+              (product.imageUrls != null && product.imageUrls!.isNotEmpty)
+                  ? product.imageUrls!.first
+                  : AppMedia.welcomeImage;
           return ProductCard(
-            // imagePath: AppMedia.welcomeImage, 
+            // imagePath: AppMedia.welcomeImage,
             imagePath: imageUrl,
-            title: product.title!,
+            title: product.title,
             price: product.originalPrice!,
-            oldPrice:product.discountPrice!,
+            oldPrice: product.discountPrice!,
             onTap: () {
-              Get.to( () =>
-                // const ProductDetail(), 
-                ProductDetail(product: product),
+              Get.to(
+                () =>
+                    // const ProductDetail(),
+                    ProductDetail(product: product),
                 transition: Transition.rightToLeftWithFade,
                 duration: const Duration(milliseconds: 500),
               );
@@ -291,7 +296,7 @@ int selectedFilterIndex = 0;
             onTapWishlist: () {},
           );
         }).toList(),
-      );}
-    );
+      );
+    });
   }
 }
