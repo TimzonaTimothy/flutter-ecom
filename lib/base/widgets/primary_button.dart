@@ -10,6 +10,7 @@ class PrimaryButton extends StatelessWidget {
   final bool hasBackground;
   final bool isLoading;
   final bool isBorder;
+  final Color? textColor;
 
   const PrimaryButton({
     super.key,
@@ -20,6 +21,7 @@ class PrimaryButton extends StatelessWidget {
     this.hasBackground = true,
     this.isLoading = false,
     this.isBorder = false,
+    this.textColor,
   });
 
   @override
@@ -27,20 +29,19 @@ class PrimaryButton extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Determine button background color based on hasBackground, enabled state, etc.
     Color backgroundColor;
     if (!hasBackground) {
       backgroundColor = Colors.transparent;
     } else if (onTap == null) {
-      // Disabled state
+      
       backgroundColor = AppStyles.primaryColor.withOpacity(0.5);
     } else {
       backgroundColor = AppStyles.primaryColor;
     }
 
-    // Determine text color
-    Color textColor =
-        hasBackground ? AppStyles.whiteColor : AppStyles.primaryColor;
+    
+    final Color finalTextColor = textColor ??
+        (hasBackground ? AppStyles.whiteColor : AppStyles.primaryColor);
 
     return SizedBox(
       width: double.infinity,
@@ -70,13 +71,13 @@ class PrimaryButton extends StatelessWidget {
                 height: 20,
                 width: 20,
                 child: CircularProgressIndicator(
-                  color: textColor,
+                  color: finalTextColor,
                   strokeWidth: 2,
                 ),
               )
             : Text(
                 text,
-                style: AppStyles.headLineStyle2.copyWith(color: textColor),
+                style: AppStyles.headLineStyle2.copyWith(color: finalTextColor),
               ),
       ),
     );

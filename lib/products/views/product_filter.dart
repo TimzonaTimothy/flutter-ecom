@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import '../../base/res/styles/app_styles.dart';
 
 class FilterScreen extends StatefulWidget {
+  const FilterScreen({super.key});
+
   @override
   _FilterScreenState createState() => _FilterScreenState();
 }
@@ -20,7 +22,13 @@ class _FilterScreenState extends State<FilterScreen> {
   RangeValues priceRange = const RangeValues(7, 100);
 
   int selectedRating = 0;
-  final ratings = ['4.5 and above', '4.0 - 4.5', '3.5 - 4.0', '3.0 - 3.5', '2.5 - 3.0'];
+  final ratings = [
+    '4.5 and above',
+    '4.0 - 4.5',
+    '3.5 - 4.0',
+    '3.0 - 3.5',
+    '2.5 - 3.0'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -44,63 +52,69 @@ class _FilterScreenState extends State<FilterScreen> {
           )
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            _buildSection('Brands', brands, selectedBrand, (i) => setState(() => selectedBrand = i)),
-            _buildSection('Gender', gender, selectedGender, (i) => setState(() => selectedGender = i)),
-            _buildSection('Sort by', sortBy, selectedSort, (i) => setState(() => selectedSort = i)),
-            const SizedBox(height: 20),
-            Text('Pricing Range', style: TextStyle(fontWeight: FontWeight.bold)),
-            RangeSlider(
-              values: priceRange,
-              min: 2,
-              max: 150,
-              divisions: 10,
-              labels: RangeLabels(
-                priceRange.start.round().toString(),
-                priceRange.end.round().toString(),
+      body: ListView(
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
+        shrinkWrap: true,
+        children: [
+          _buildSection('Brands', brands, selectedBrand,
+              (i) => setState(() => selectedBrand = i)),
+          _buildSection('Gender', gender, selectedGender,
+              (i) => setState(() => selectedGender = i)),
+          _buildSection('Sort by', sortBy, selectedSort,
+              (i) => setState(() => selectedSort = i)),
+          const SizedBox(height: 20),
+          const Text('Pricing Range',
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          RangeSlider(
+            values: priceRange,
+            min: 2,
+            max: 150,
+            divisions: 10,
+            labels: RangeLabels(
+              priceRange.start.round().toString(),
+              priceRange.end.round().toString(),
+            ),
+            activeColor: AppStyles.primaryColor,
+            onChanged: (values) {
+              setState(() {
+                priceRange = values;
+              });
+            },
+          ),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('2'),
+              Text('7'),
+              Text('22'),
+              Text('50'),
+              Text('100'),
+              Text('150+'),
+            ],
+          ),
+          const SizedBox(height: 20),
+          const Text('Reviews', style: TextStyle(fontWeight: FontWeight.bold)),
+          ...List.generate(ratings.length, (i) {
+            return RadioListTile(
+              value: i,
+              groupValue: selectedRating,
+              onChanged: (val) => setState(() => selectedRating = val!),
+              title: Row(
+                children: [
+                  Row(
+                    children: List.generate(
+                        5,
+                        (_) => const Icon(Icons.star,
+                            color: Colors.amber, size: 20)),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(ratings[i]),
+                ],
               ),
-              activeColor: Colors.brown,
-              onChanged: (values) {
-                setState(() {
-                  priceRange = values;
-                });
-              },
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text('2'),
-                Text('7'),
-                Text('22'),
-                Text('50'),
-                Text('100'),
-                Text('150+'),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Text('Reviews', style: TextStyle(fontWeight: FontWeight.bold)),
-            ...List.generate(ratings.length, (i) {
-              return RadioListTile(
-                value: i,
-                groupValue: selectedRating,
-                onChanged: (val) => setState(() => selectedRating = val!),
-                title: Row(
-                  children: [
-                    Row(
-                      children: List.generate(5, (_) => Icon(Icons.star, color: Colors.amber, size: 20)),
-                    ),
-                    SizedBox(width: 10),
-                    Text(ratings[i]),
-                  ],
-                ),
-                activeColor: Colors.brown,
-              );
-            }),
-          ],
-        ),
+              activeColor: AppStyles.primaryColor,
+            );
+          }),
+        ],
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
@@ -108,28 +122,53 @@ class _FilterScreenState extends State<FilterScreen> {
           children: [
             Expanded(
               child: OutlinedButton(
+                style: ButtonStyle(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(20), // ✅ Rounded corners
+                    ),
+                  ),
+                  side: WidgetStateProperty.all(
+                    BorderSide(
+                      color: AppStyles.primaryColor, // ✅ Border color
+                      width: 0.5,
+                    ),
+                  ),
+                ),
                 onPressed: () {
                   setState(() {
                     selectedBrand = 0;
                     selectedGender = 0;
                     selectedSort = 1;
-                    priceRange = RangeValues(7, 100);
+                    priceRange = const RangeValues(7, 100);
                     selectedRating = 0;
                   });
                 },
-                child: Text('Reset Filter'),
+                child: Text(
+                  'Reset Filter',
+                  style: AppStyles.textStyle
+                      .copyWith(color: AppStyles.primaryColor),
+                ),
               ),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.brown,
+              child: ElevatedButton.icon(
+                onPressed: () {},
+                label: Text(
+                  "Apply",
+                  style:
+                      AppStyles.textStyle.copyWith(color: AppStyles.whiteColor),
                 ),
-                onPressed: () {
-                  // apply filter logic
-                },
-                child: Text('Apply'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppStyles.primaryColor,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
               ),
             ),
           ],
@@ -138,11 +177,12 @@ class _FilterScreenState extends State<FilterScreen> {
     );
   }
 
-  Widget _buildSection(String title, List<String> items, int selected, Function(int) onSelected) {
+  Widget _buildSection(String title, List<String> items, int selected,
+      Function(int) onSelected) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+        Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -151,9 +191,18 @@ class _FilterScreenState extends State<FilterScreen> {
               label: Text(items[i]),
               selected: selected == i,
               onSelected: (_) => onSelected(i),
-              selectedColor: Colors.brown,
+              selectedColor: AppStyles.primaryColor,
               backgroundColor: Colors.grey.shade200,
-              labelStyle: TextStyle(color: selected == i ? Colors.white : Colors.black),
+              labelStyle:
+                  TextStyle(color: selected == i ? Colors.white : Colors.black),
+              shape: RoundedRectangleBorder(
+                side: BorderSide(
+                  color: selected == i
+                      ? AppStyles.primaryColor
+                      : Colors.grey.shade400,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
             );
           }),
         ),
