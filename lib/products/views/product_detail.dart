@@ -384,7 +384,7 @@ class _ProductDetailState extends State<ProductDetail> {
         crossAxisCount: 2,
         crossAxisSpacing: 15,
         mainAxisSpacing: 20,
-        childAspectRatio: 0.69,
+        childAspectRatio: 0.79,
         children: products.map((product) {
           final imageUrl = (product.imageUrls != null && product.imageUrls!.isNotEmpty)
               ? product.imageUrls!.first

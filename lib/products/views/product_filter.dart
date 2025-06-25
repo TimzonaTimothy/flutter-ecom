@@ -37,7 +37,7 @@ class _FilterScreenState extends State<FilterScreen> {
       appBar: AppBar(
         backgroundColor: AppStyles.bgColor,
         elevation: 0,
-        title: Text("Product Details", style: AppStyles.headLineStyle2),
+        title: Text("Filter", style: AppStyles.headLineStyle2),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
