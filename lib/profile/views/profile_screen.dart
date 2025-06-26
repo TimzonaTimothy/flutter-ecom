@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../base/res/styles/app_styles.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -6,13 +9,19 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+       backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
-        leading: const Icon(Icons.arrow_back),
-        centerTitle: true,
-        title: const Text('Profile'),
-        backgroundColor: Colors.white,
+        backgroundColor: AppStyles.bgColor,
         elevation: 0,
-        foregroundColor: Colors.black,
+        title: Text("Profile", style: AppStyles.headLineStyle2),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Get.back();
+          },
+        ),
+        
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -25,23 +34,20 @@ class ProfileScreen extends StatelessWidget {
                 CircleAvatar(
                   radius: 50,
                   backgroundImage: NetworkImage(
-                    "https://i.pravatar.cc/300", // Replace with user's image
+                    "https://i.pravatar.cc/300",
                   ),
                 ),
                 CircleAvatar(
                   radius: 16,
-                  backgroundColor: Colors.brown,
+                  backgroundColor: AppStyles.primaryColor,
                   child: const Icon(Icons.edit, size: 16, color: Colors.white),
                 ),
               ],
             ),
             const SizedBox(height: 10),
-            const Text(
+             Text(
               "Esther Howard",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppStyles.headLineStyle2,
             ),
             const SizedBox(height: 30),
             _buildListTile(Icons.person_outline, "Your profile"),
@@ -62,7 +68,7 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildListTile(IconData icon, String title) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(vertical: 2),
-      leading: Icon(icon, color: Colors.brown),
+      leading: Icon(icon, color: AppStyles.primaryColor),
       title: Text(
         title,
         style: const TextStyle(fontSize: 16),

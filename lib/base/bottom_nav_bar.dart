@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../cart/views/cart_screen.dart';
 import '../home/views/home_screen.dart';
+import '../profile/views/profile_screen.dart';
 import '../wishlist/views/wishlist.dart';
 import 'res/styles/app_styles.dart';
 
@@ -18,7 +19,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     const HomeScreen(),
     const WishListScreen(),
     const CartScreen(),
-    const Center(child: Text("Profile")),
+    const ProfileScreen(),
   ];
 
   //change index
