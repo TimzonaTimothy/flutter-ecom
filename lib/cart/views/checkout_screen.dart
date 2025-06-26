@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../base/res/styles/app_styles.dart';
+import '../../base/widgets/primary_button.dart';
 
 class CheckoutPage extends StatelessWidget {
   const CheckoutPage({super.key});
@@ -8,83 +12,101 @@ class CheckoutPage extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
+      backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
-        leading: const Icon(Icons.arrow_back),
-        centerTitle: true,
-        title: const Text("Checkout"),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: AppStyles.bgColor,
         elevation: 0,
+        title: Text("Checkout", style: AppStyles.headLineStyle2),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Get.back();
+          },
+        ),
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            backgroundColor: Colors.brown,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          onPressed: () {
-            // Navigate to payment
+        
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: PrimaryButton(
+          verticalPadding: 10,
+          horizontalPadding: 130,
+          text: 'Continue',
+          onTap: () {
+            //   Get.to(
+            //   const CheckoutPage(),
+            //   transition: Transition.rightToLeftWithFade,
+            //   duration: const Duration(milliseconds: 500),
+            // );
           },
-          child: const Text(
-            "Continue to Payment",
-            style: TextStyle(color: Colors.white),
-          ),
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         children: [
-          const Text("Shipping Address", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text("Shipping Address", style: AppStyles.headLineStyle3),
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.location_on_outlined, color: Colors.brown),
+              Icon(Icons.location_on_outlined, color: AppStyles.primaryColor),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text("Home", style: TextStyle(fontWeight: FontWeight.w600)),
-                    SizedBox(height: 2),
-                    Text("1901 Thornridge Cir. Shiloh, Hawaii 81063"),
+                  children: [
+                    const Text("Home",
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 2),
+                    Text(
+                      "1901 Thornridge Cir. Shiloh, Hawaii 81063",
+                      style: AppStyles.textStyle,
+                    ),
                   ],
                 ),
               ),
               TextButton(
                 onPressed: () {},
-                child: const Text("CHANGE"),
+                child: Text("CHANGE",
+                    style: AppStyles.headLineStyle4
+                        .copyWith(color: AppStyles.primaryColor)),
               )
             ],
           ),
-          const Divider(height: 32),
-          const Text("Choose Shipping Type", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Divider(
+              color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
+          Text("Choose Shipping Type", style: AppStyles.headLineStyle3),
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.local_shipping_outlined, color: Colors.brown),
+              Icon(Icons.local_shipping_outlined,
+                  color: AppStyles.primaryColor),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text("Economy", style: TextStyle(fontWeight: FontWeight.w600)),
-                    SizedBox(height: 2),
-                    Text("Estimated Arrival  25 August 2023"),
+                  children: [
+                    const Text("Economy",
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 2),
+                    Text("Estimated Arrival  25 August 2023",
+                        style: AppStyles.textStyle),
                   ],
                 ),
               ),
               TextButton(
                 onPressed: () {},
-                child: const Text("CHANGE"),
+                child: Text(
+                  "CHANGE",
+                  style: AppStyles.headLineStyle4
+                      .copyWith(color: AppStyles.primaryColor),
+                ),
               )
             ],
           ),
-          const Divider(height: 32),
-          const Text("Order List", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Divider(
+              color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
+          const Text("Order List",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           ..._buildOrderItems(),
         ],
@@ -98,19 +120,43 @@ class CheckoutPage extends StatelessWidget {
         "title": "Brown Jacket",
         "size": "XL",
         "price": "\$83.97",
-        "image": "https://via.placeholder.com/80x80.png?text=1",
+        "image":
+            "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
       },
       {
         "title": "Brown Suite",
         "size": "XL",
         "price": "\$120",
-        "image": "https://via.placeholder.com/80x80.png?text=2",
+        "image":
+            "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
       },
       {
         "title": "Brown Jacket",
         "size": "XL",
         "price": "\$83.97",
-        "image": "https://via.placeholder.com/80x80.png?text=3",
+        "image":
+            "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
+      },
+      {
+        "title": "Brown Jacket",
+        "size": "XL",
+        "price": "\$83.97",
+        "image":
+            "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
+      },
+      {
+        "title": "Brown Suite",
+        "size": "XL",
+        "price": "\$120",
+        "image":
+            "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
+      },
+      {
+        "title": "Brown Jacket",
+        "size": "XL",
+        "price": "\$83.97",
+        "image":
+            "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
       },
     ];
 
@@ -134,10 +180,12 @@ class CheckoutPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item['title']!, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      Text(item['title']!,
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
                       Text("Size: ${item['size']}"),
                       const SizedBox(height: 4),
-                      Text(item['price']!, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(item['price']!,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),

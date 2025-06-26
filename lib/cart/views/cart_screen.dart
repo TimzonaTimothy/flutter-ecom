@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
 import '../../base/utils/snackbar.dart';
+import 'checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -367,7 +368,14 @@ class _CartScreenState extends State<CartScreen> {
                   verticalPadding: 10,
                   horizontalPadding: 130,
                   text: 'Proceed',
-                  onTap: () {},
+                  onTap: () {
+                    
+                    Get.to(
+                    const CheckoutPage(),
+                    transition: Transition.rightToLeftWithFade,
+                    duration: const Duration(milliseconds: 500),
+                  );
+                  },
                 ),
               ],
             ),
