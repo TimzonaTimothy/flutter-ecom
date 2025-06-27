@@ -103,8 +103,8 @@ class _SignInScreenState extends State<SignInScreen> {
                       ? 'Password must be at least 6 characters'
                       : null,
                   controller: passwordController,
-                  hintText: "Password",
                   obscureText: true,
+                  hintText: "Password",
                 ),
                 const SizedBox(
                   height: 10,

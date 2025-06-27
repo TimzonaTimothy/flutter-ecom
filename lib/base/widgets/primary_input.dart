@@ -52,12 +52,14 @@ class _PrimaryInputState extends State<PrimaryInput> {
         // color: widget.hasBackground ? AppStyles.primaryColor.withOpacity(0.05) : Colors.transparent,
         border: Border.all(
           color: AppStyles.primaryColor,
-          width: 1,
+          width: 0.5,
         ),
         borderRadius: BorderRadius.circular(10),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: TextFormField(
+        textAlignVertical: TextAlignVertical.center,
+        textAlign: TextAlign.start, 
         validator: widget.validator,
         controller: widget.controller,
         obscureText: _obscureText,

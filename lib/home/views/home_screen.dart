@@ -15,6 +15,7 @@ import '../../products/controllers/product_controller.dart';
 import '../../products/views/product_detail.dart';
 import '../../products/views/product_filter.dart';
 import 'location_screen.dart';
+import 'search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -94,12 +95,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 4),
               GestureDetector(
-                onTap: (){
+                onTap: () {
                   Get.to(
-                  const LocationScreen(),
-                  transition: Transition.rightToLeftWithFade,
-                  duration: const Duration(milliseconds: 500),
-                );
+                    const LocationScreen(),
+                    transition: Transition.rightToLeftWithFade,
+                    duration: const Duration(milliseconds: 500),
+                  );
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -164,31 +165,40 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: Container(
-                    height: 40,
-                    decoration: BoxDecoration(
-                        color: AppStyles.whiteColor,
-                        borderRadius: BorderRadius.circular(10),
-                        border:
-                            Border.all(width: 1, color: AppStyles.whiteColor)),
-                    child: Row(
-                      children: [
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Icon(
-                          Icons.search,
-                          color: AppStyles.whiteSmokeColor,
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Text(
-                          'Search',
-                          style: AppStyles.textStyle
-                              .copyWith(color: AppStyles.whiteSmokeColor),
-                        )
-                      ],
+                  child: GestureDetector(
+                    onTap: () {
+                      Get.to(
+                        const SearchScreen(),
+                        transition: Transition.rightToLeftWithFade,
+                        duration: const Duration(milliseconds: 500),
+                      );
+                    },
+                    child: Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                          color: AppStyles.whiteColor,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              width: 1, color: AppStyles.whiteColor)),
+                      child: Row(
+                        children: [
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Icon(
+                            Icons.search,
+                            color: AppStyles.whiteSmokeColor,
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            'Search',
+                            style: AppStyles.textStyle
+                                .copyWith(color: AppStyles.whiteSmokeColor),
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -198,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 GestureDetector(
                   onTap: () {
                     Get.to(
-                      FilterScreen(),
+                      const FilterScreen(),
                       transition: Transition.rightToLeftWithFade,
                       duration: const Duration(milliseconds: 500),
                     );

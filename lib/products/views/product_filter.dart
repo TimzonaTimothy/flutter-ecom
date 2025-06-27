@@ -45,12 +45,6 @@ class _FilterScreenState extends State<FilterScreen> {
             Get.back();
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite_border, color: Colors.black),
-            onPressed: () {},
-          )
-        ],
       ),
       body: ListView(
         padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
@@ -123,6 +117,10 @@ class _FilterScreenState extends State<FilterScreen> {
             Expanded(
               child: OutlinedButton(
                 style: ButtonStyle(
+                  padding: WidgetStateProperty.all(
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14)),
+                  backgroundColor: WidgetStateProperty.all(
+                      AppStyles.primaryColor.withOpacity(0.1)),
                   shape: WidgetStateProperty.all(
                     RoundedRectangleBorder(
                       borderRadius:
@@ -147,7 +145,7 @@ class _FilterScreenState extends State<FilterScreen> {
                 },
                 child: Text(
                   'Reset Filter',
-                  style: AppStyles.textStyle
+                  style: AppStyles.headLineStyle3
                       .copyWith(color: AppStyles.primaryColor),
                 ),
               ),
@@ -158,8 +156,8 @@ class _FilterScreenState extends State<FilterScreen> {
                 onPressed: () {},
                 label: Text(
                   "Apply",
-                  style:
-                      AppStyles.textStyle.copyWith(color: AppStyles.whiteColor),
+                  style: AppStyles.headLineStyle3
+                      .copyWith(color: AppStyles.whiteColor),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppStyles.primaryColor,
