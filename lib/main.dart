@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       title: 'Ecommerce',
       theme: ThemeData(
        textTheme: GoogleFonts.poppinsTextTheme(),
-        colorScheme: ColorScheme.fromSeed(seedColor: AppStyles.primaryColor),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppStyles.bgColor),
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,

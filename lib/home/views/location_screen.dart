@@ -68,7 +68,8 @@ class LocationScreen extends StatelessWidget {
                 isBorder: true,
                 verticalPadding: 10,
                 horizontalPadding: 10,
-                hasBackground: false,
+                backgroundColor: AppStyles.bgColor,
+              textColor: AppStyles.primaryColor ,
                 text: 'Enter Location Manually',
                 onTap: () {
                   Get.to(

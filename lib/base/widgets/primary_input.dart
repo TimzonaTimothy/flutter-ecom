@@ -49,7 +49,7 @@ class _PrimaryInputState extends State<PrimaryInput> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        // color: widget.hasBackground ? AppStyles.primaryColor.withOpacity(0.05) : Colors.transparent,
+        
         border: Border.all(
           color: AppStyles.primaryColor,
           width: 0.5,
@@ -73,6 +73,7 @@ class _PrimaryInputState extends State<PrimaryInput> {
             color: AppStyles.textColor.withOpacity(0.6),
           ),
           border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
           suffixIcon: widget.obscureText
               ? IconButton(
                   icon: Icon(

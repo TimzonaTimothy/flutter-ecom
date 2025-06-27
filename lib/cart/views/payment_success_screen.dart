@@ -71,7 +71,9 @@ class PaymentSuccessScreen extends StatelessWidget {
               isBorder: true,
               verticalPadding: 10,
               horizontalPadding: 80,
-              hasBackground: false,
+              
+              backgroundColor: AppStyles.bgColor,
+              textColor: AppStyles.primaryColor ,
               text: 'View E-Receipt',
               onTap: () {
                 Get.to(

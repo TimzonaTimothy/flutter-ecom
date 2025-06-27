@@ -61,10 +61,10 @@ class NotificationScreen extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(title, style: AppStyles.headLineStyle3.copyWith(fontWeight: FontWeight.bold, fontSize: 14)),
             const Spacer(),
             Text("Mark all as read",
-                style: TextStyle(color: AppStyles.primaryColor)),
+                style: AppStyles.headLineStyle3.copyWith(color: AppStyles.primaryColor, fontWeight: FontWeight.bold, fontSize: 14)),
           ],
         ),
         const SizedBox(height: 8),
@@ -99,14 +99,14 @@ class NotificationScreen extends StatelessWidget {
                     Expanded(
                         child: Text(item.title,
                             style:
-                                const TextStyle(fontWeight: FontWeight.bold))),
-                    Text(item.time, style: const TextStyle(color: Colors.grey)),
+                                AppStyles.headLineStyle4.copyWith(color: AppStyles.blackColor))),
+                    Text(item.time, style: AppStyles.headLineStyle4),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  style: AppStyles.textStyle,
                 ),
               ],
             ),

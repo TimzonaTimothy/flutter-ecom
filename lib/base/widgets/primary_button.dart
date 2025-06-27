@@ -52,7 +52,7 @@ class PrimaryButton extends StatelessWidget {
 
           backgroundColor: resolvedBackgroundColor,
           side: isBorder
-              ? BorderSide(color: AppStyles.primaryColor, width: 2)
+              ? BorderSide(color: AppStyles.primaryColor, width: 1)
               : null,
           padding: EdgeInsets.symmetric(
             horizontal: horizontalPadding ?? screenWidth * 0.34,
