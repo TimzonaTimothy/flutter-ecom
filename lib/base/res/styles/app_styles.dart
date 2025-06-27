@@ -6,7 +6,7 @@ Color primary = const Color(0xFFFF8901);
 class AppStyles {
   static Color primaryColor = primary;
   static Color bgColor = const Color(0xFFeeedf2);
-  static Color textColor = const Color(0xFF000000);
+  static Color textColor = const Color(0xFF757575);
   static Color greColor = const Color(0xFF555555);
   static Color whiteSmokeColor = const Color(0xFFB3B3B3);
   static Color whiteColor = const Color(0xFFFFFFFF);

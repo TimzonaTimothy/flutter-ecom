@@ -14,6 +14,7 @@ import '../../notification/views/notification_screen.dart';
 import '../../products/controllers/product_controller.dart';
 import '../../products/views/product_detail.dart';
 import '../../products/views/product_filter.dart';
+import 'location_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -92,26 +93,35 @@ class _HomeScreenState extends State<HomeScreen> {
                     )),
               ),
               const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.location_on,
-                    color: AppStyles.primaryColor,
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.5,
-                    child: Text(
-                      "Please select a location",
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                          color: AppStyles.primaryColor),
+              GestureDetector(
+                onTap: (){
+                  Get.to(
+                  const LocationScreen(),
+                  transition: Transition.rightToLeftWithFade,
+                  duration: const Duration(milliseconds: 500),
+                );
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      color: AppStyles.primaryColor,
                     ),
-                  ),
-                ],
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      child: Text(
+                        "Please select a location",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            color: AppStyles.primaryColor),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
