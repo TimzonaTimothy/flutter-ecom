@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/primary_button.dart';
+import 'payment_success_screen.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
   const PaymentMethodsScreen({super.key});
@@ -82,11 +83,11 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               horizontalPadding: 100,
               text: 'Confirm Payment',
               onTap: () {
-                //   Get.to(
-                //   const (),
-                //   transition: Transition.rightToLeftWithFade,
-                //   duration: const Duration(milliseconds: 500),
-                // );
+                  Get.to(
+                  const PaymentSuccessScreen(),
+                  transition: Transition.rightToLeftWithFade,
+                  duration: const Duration(milliseconds: 500),
+                );
               },
             ),
           ),
