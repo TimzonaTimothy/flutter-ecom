@@ -366,8 +366,8 @@ class _CartScreenState extends State<CartScreen> {
                 const SizedBox(height: 20),
                 PrimaryButton(
                   verticalPadding: 10,
-                  horizontalPadding: 130,
-                  text: 'Proceed',
+                  horizontalPadding: 10,
+                  text: 'Proceed to checkout',
                   onTap: () {
                     
                     Get.to(

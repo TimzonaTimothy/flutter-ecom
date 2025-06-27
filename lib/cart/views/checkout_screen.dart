@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/primary_button.dart';
 import 'shipping_address_screen.dart';
+import 'shipping_type.dart';
 
 class CheckoutPage extends StatelessWidget {
   const CheckoutPage({super.key});
@@ -31,14 +32,14 @@ class CheckoutPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: PrimaryButton(
           verticalPadding: 10,
-          horizontalPadding: 130,
+          horizontalPadding: 100,
           text: 'Continue',
           onTap: () {
-              Get.to(
-              const ShippingAddressScreen(),
-              transition: Transition.rightToLeftWithFade,
-              duration: const Duration(milliseconds: 500),
-            );
+            //   Get.to(
+            //   const (),
+            //   transition: Transition.rightToLeftWithFade,
+            //   duration: const Duration(milliseconds: 500),
+            // );
           },
         ),
       ),
@@ -66,7 +67,13 @@ class CheckoutPage extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Get.to(
+              const ShippingAddressScreen(),
+              transition: Transition.rightToLeftWithFade,
+              duration: const Duration(milliseconds: 500),
+            );
+                },
                 child: Text("CHANGE",
                     style: AppStyles.headLineStyle4
                         .copyWith(color: AppStyles.primaryColor)),
@@ -95,7 +102,14 @@ class CheckoutPage extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                
+                  onPressed: () {
+                  Get.to(
+              const ShippingType(),
+              transition: Transition.rightToLeftWithFade,
+              duration: const Duration(milliseconds: 500),
+            );
+                },
                 child: Text(
                   "CHANGE",
                   style: AppStyles.headLineStyle4

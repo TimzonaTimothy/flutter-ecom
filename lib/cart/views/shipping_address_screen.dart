@@ -1,4 +1,9 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../base/res/styles/app_styles.dart';
+import '../../base/widgets/primary_button.dart';
 
 class ShippingAddressScreen extends StatefulWidget {
   const ShippingAddressScreen({super.key});
@@ -32,18 +37,25 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
-        leading: const BackButton(color: Colors.black),
-        title: const Text("Shipping Address", style: TextStyle(color: Colors.black)),
-        centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: AppStyles.bgColor,
         elevation: 0,
+        title: Text("Shipping Address", style: AppStyles.headLineStyle2),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Get.back();
+          },
+        ),
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView.separated(
-              padding: const EdgeInsets.all(16),
+              shrinkWrap: true,
+              padding: const EdgeInsets.all(20),
               itemCount: addresses.length,
               separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
@@ -61,37 +73,47 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: OutlinedButton.icon(
-              onPressed: () {
-                // Add new address logic
-              },
-              icon: const Icon(Icons.add, color: Colors.brown),
-              label: const Text("Add New Shipping Address",
-                  style: TextStyle(color: Colors.brown)),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.brown),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: DottedBorder(
+                color: AppStyles.primaryColor,
+                borderType: BorderType.RRect,
+                radius: const Radius.circular(12),
+                dashPattern: const [6, 3], // [dash width, gap]
+                strokeWidth: 1.5,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                   
+                  },
+                  icon: Icon(Icons.add, color: AppStyles.primaryColor),
+                  label: Text(
+                    "Add New Shipping Address",
+                    style: TextStyle(color: AppStyles.primaryColor),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide.none, 
+                    padding: const EdgeInsets.symmetric(
+                         horizontal: 60),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor: AppStyles.primaryColor.withOpacity(0.1),
+                  ),
+                ),
+              )),
           const SizedBox(height: 16),
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: ElevatedButton(
-              onPressed: () {
-                // Apply selected address
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: PrimaryButton(
+              verticalPadding: 10,
+              horizontalPadding: 100,
+              text: 'Apply',
+              onTap: () {
+                //   Get.to(
+                //   const (),
+                //   transition: Transition.rightToLeftWithFade,
+                //   duration: const Duration(milliseconds: 500),
+                // );
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.brown,
-                minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30)),
-              ),
-              child: const Text("Apply",
-                  style: TextStyle(fontSize: 16, color: Colors.white)),
             ),
           ),
         ],
@@ -120,18 +142,17 @@ class AddressCard extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          Icon(Icons.location_pin, color: Colors.brown),
+          Icon(Icons.location_pin, color: AppStyles.primaryColor),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style:
-                        const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    style: AppStyles.headLineStyle3),
                 const SizedBox(height: 4),
                 Text(address,
-                    style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                    style: AppStyles.textStyle.copyWith(color: AppStyles.whiteSmokeColor)),
               ],
             ),
           ),
@@ -139,8 +160,10 @@ class AddressCard extends StatelessWidget {
             value: true,
             groupValue: isSelected,
             onChanged: (_) => onTap(),
-            activeColor: Colors.brown,
+            activeColor: AppStyles.primaryColor,
           ),
+          Divider(
+                          color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
         ],
       ),
     );

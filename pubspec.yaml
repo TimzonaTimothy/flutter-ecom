@@ -45,6 +45,7 @@ dependencies:
   another_carousel_pro: ^1.0.2
   http_parser: ^4.0.2
   image_picker: ^1.1.2
+  dotted_border: ^2.1.0
 
 dev_dependencies:
   flutter_test:
