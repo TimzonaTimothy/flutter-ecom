@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
 import '../../home/views/home_screen.dart';
+import 'password_manager_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -59,7 +60,13 @@ class ProfileScreen extends StatelessWidget {
             _buildListTile(Icons.shopping_bag_outlined, "My Orders", (){}),
             _buildListTile(Icons.settings_outlined, "Settings", (){}),
              _buildListTile(Icons.notifications, "Notification", (){}),
-              _buildListTile(Icons.password, "Password Manager", (){}),
+              _buildListTile(Icons.password, "Password Manager", (){
+                Get.to(
+              const PasswordManagerScreen(),
+              transition: Transition.rightToLeftWithFade,
+              duration: const Duration(milliseconds: 500),
+            );
+              }),
             _buildListTile(Icons.help_outline, "Help Center", (){}),
             _buildListTile(Icons.privacy_tip_outlined, "Privacy Policy", (){}),
             _buildListTile(Icons.group_outlined, "Invites Friends", (){}),
@@ -72,25 +79,21 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildListTile(IconData icon, String title, VoidCallback onTap) {
-    return GestureDetector(
-      onTap:onTap,
-      child: Column(
-        children: [
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(vertical: 2),
-            leading: Icon(icon, color: AppStyles.primaryColor),
-            title: Text(
-              title,
-              style: const TextStyle(fontSize: 16),
-            ),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              // Handle navigation
-            },
+    return Column(
+      children: [
+        ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 2),
+          leading: Icon(icon, color: AppStyles.primaryColor),
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 16),
           ),
-          Divider(height: 0, color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
-        ],
-      ),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: onTap
+          
+        ),
+        Divider(height: 0, color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
+      ],
     );
   }
 }
