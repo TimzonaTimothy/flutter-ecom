@@ -32,14 +32,16 @@ class NotificationScreen extends StatelessWidget {
           },
         ),
         actions: [
-
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Chip(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                side: BorderSide.none,
+              ),
               label: const Text("2 NEW", style: TextStyle(color: Colors.white)),
               backgroundColor: AppStyles.primaryColor,
               elevation: 0,
-              
             ),
           )
         ],
@@ -47,6 +49,12 @@ class NotificationScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _buildSection("TODAY", notificationsToday),
+          const SizedBox(height: 24),
+          _buildSection("YESTERDAY", notificationsYesterday),
+          _buildSection("TODAY", notificationsToday),
+          const SizedBox(height: 24),
+          _buildSection("YESTERDAY", notificationsYesterday),
           _buildSection("TODAY", notificationsToday),
           const SizedBox(height: 24),
           _buildSection("YESTERDAY", notificationsYesterday),
@@ -61,10 +69,15 @@ class NotificationScreen extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(title, style: AppStyles.headLineStyle3.copyWith(fontWeight: FontWeight.bold, fontSize: 14)),
+            Text(title,
+                style: AppStyles.headLineStyle3
+                    .copyWith(fontWeight: FontWeight.bold, fontSize: 14)),
             const Spacer(),
             Text("Mark all as read",
-                style: AppStyles.headLineStyle3.copyWith(color: AppStyles.primaryColor, fontWeight: FontWeight.bold, fontSize: 14)),
+                style: AppStyles.headLineStyle3.copyWith(
+                    color: AppStyles.primaryColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14)),
           ],
         ),
         const SizedBox(height: 8),
@@ -78,8 +91,7 @@ class NotificationScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-       
-        color:  AppStyles.whiteColor,
+        color: AppStyles.whiteColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -98,8 +110,8 @@ class NotificationScreen extends StatelessWidget {
                   children: [
                     Expanded(
                         child: Text(item.title,
-                            style:
-                                AppStyles.headLineStyle4.copyWith(color: AppStyles.blackColor))),
+                            style: AppStyles.headLineStyle4
+                                .copyWith(color: AppStyles.blackColor))),
                     Text(item.time, style: AppStyles.headLineStyle4),
                   ],
                 ),
