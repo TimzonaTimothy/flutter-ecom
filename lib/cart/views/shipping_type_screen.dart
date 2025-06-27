@@ -1,4 +1,3 @@
-import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -28,7 +27,6 @@ class _ShippingTypeState extends State<ShippingType> {
       "label": "Cargo",
       "estimated": "Estimated Arrival 22 August 2025",
     },
-   
   ];
 
   @override
@@ -69,7 +67,6 @@ class _ShippingTypeState extends State<ShippingType> {
               },
             ),
           ),
-          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: PrimaryButton(
@@ -119,11 +116,11 @@ class ShippingTypeCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(label,
-                        style: AppStyles.headLineStyle3),
+                    Text(label, style: AppStyles.headLineStyle3),
                     const SizedBox(height: 4),
                     Text(estimated,
-                        style: AppStyles.textStyle.copyWith(color: AppStyles.whiteSmokeColor)),
+                        style: AppStyles.textStyle
+                            .copyWith(color: AppStyles.whiteSmokeColor)),
                   ],
                 ),
               ),
@@ -133,12 +130,10 @@ class ShippingTypeCard extends StatelessWidget {
                 onChanged: (_) => onTap(),
                 activeColor: AppStyles.primaryColor,
               ),
-              Divider(
-                              color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
+             
             ],
           ),
-          Divider(
-                          color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
+          Divider(color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
         ],
       ),
     );

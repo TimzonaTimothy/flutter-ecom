@@ -69,7 +69,6 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                     });
                   },
                 );
-                
               },
             ),
           ),
@@ -82,18 +81,15 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                 dashPattern: const [6, 3], // [dash width, gap]
                 strokeWidth: 1.5,
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                   
-                  },
+                  onPressed: () {},
                   icon: Icon(Icons.add, color: AppStyles.primaryColor),
                   label: Text(
                     "Add New Shipping Address",
                     style: TextStyle(color: AppStyles.primaryColor),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide.none, 
-                    padding: const EdgeInsets.symmetric(
-                         horizontal: 60),
+                    side: BorderSide.none,
+                    padding: const EdgeInsets.symmetric(horizontal: 60),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -151,12 +147,11 @@ class AddressCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(label,
-                        style: AppStyles.headLineStyle3),
+                    Text(label, style: AppStyles.headLineStyle3),
                     const SizedBox(height: 4),
                     Text(address,
-                        style: AppStyles.textStyle.copyWith(color: AppStyles.whiteSmokeColor)),
-                        
+                        style: AppStyles.textStyle
+                            .copyWith(color: AppStyles.whiteSmokeColor)),
                   ],
                 ),
               ),
@@ -166,11 +161,9 @@ class AddressCard extends StatelessWidget {
                 onChanged: (_) => onTap(),
                 activeColor: AppStyles.primaryColor,
               ),
-              
             ],
           ),
-          Divider(
-                          color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
+          Divider(color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
         ],
       ),
     );

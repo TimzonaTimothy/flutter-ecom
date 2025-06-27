@@ -83,7 +83,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               horizontalPadding: 80,
               text: 'Confirm Payment',
               onTap: () {
-                  Get.to(
+                Get.to(
                   const PaymentSuccessScreen(),
                   transition: Transition.rightToLeftWithFade,
                   duration: const Duration(milliseconds: 500),
@@ -138,10 +138,9 @@ class PaymentTypeCard extends StatelessWidget {
                 onChanged: (_) => onTap(),
                 activeColor: AppStyles.primaryColor,
               ),
-              Divider(color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
             ],
           ),
-          Divider(color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
+          Divider(height: 0, color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
         ],
       ),
     );

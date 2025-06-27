@@ -59,7 +59,7 @@ class PaymentSuccessScreen extends StatelessWidget {
               horizontalPadding: 100,
               text: 'View Order',
               onTap: () {
-                  Get.to(
+                Get.to(
                   const (),
                   transition: Transition.rightToLeftWithFade,
                   duration: const Duration(milliseconds: 500),

@@ -1,3 +1,4 @@
+import 'package:ecom_app/home/views/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -43,13 +44,17 @@ class _WishListScreenState extends State<WishListScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Get.back();
+            Get.to(
+              const HomeScreen(),
+              transition: Transition.rightToLeftWithFade,
+              duration: const Duration(milliseconds: 500),
+            );
           },
         ),
       ),
       body: ListView(
         shrinkWrap: true,
-        padding: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.only(bottom: 20, top: 20),
         children: [
           // Padding(
           //   padding: const EdgeInsets.only(left: 20),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
+import '../../home/views/home_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -9,7 +10,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       backgroundColor: AppStyles.bgColor,
+      backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
         backgroundColor: AppStyles.bgColor,
         elevation: 0,
@@ -17,11 +18,14 @@ class ProfileScreen extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Get.back();
+           onPressed: () {
+            Get.to(
+              const HomeScreen(),
+              transition: Transition.rightToLeftWithFade,
+              duration: const Duration(milliseconds: 500),
+            );
           },
         ),
-        
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -31,7 +35,7 @@ class ProfileScreen extends StatelessWidget {
             Stack(
               alignment: Alignment.bottomRight,
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 50,
                   backgroundImage: NetworkImage(
                     "https://i.pravatar.cc/300",
@@ -45,7 +49,7 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-             Text(
+            Text(
               "Esther Howard",
               style: AppStyles.headLineStyle2,
             ),
@@ -66,17 +70,22 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildListTile(IconData icon, String title) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(vertical: 2),
-      leading: Icon(icon, color: AppStyles.primaryColor),
-      title: Text(
-        title,
-        style: const TextStyle(fontSize: 16),
-      ),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: () {
-        // Handle navigation
-      },
+    return Column(
+      children: [
+        ListTile(
+          contentPadding: const EdgeInsets.symmetric(vertical: 2),
+          leading: Icon(icon, color: AppStyles.primaryColor),
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 16),
+          ),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: () {
+            // Handle navigation
+          },
+        ),
+        Divider(height: 0, color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
+      ],
     );
   }
 }

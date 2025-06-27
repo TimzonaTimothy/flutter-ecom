@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
 import '../../base/utils/snackbar.dart';
+import '../../home/views/home_screen.dart';
 import 'checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
@@ -95,7 +96,11 @@ class _CartScreenState extends State<CartScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Get.back();
+            Get.to(
+              const HomeScreen(),
+              transition: Transition.rightToLeftWithFade,
+              duration: const Duration(milliseconds: 500),
+            );
           },
         ),
       ),

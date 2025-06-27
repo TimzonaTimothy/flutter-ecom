@@ -29,14 +29,13 @@ class CheckoutPage extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: Padding(
-        
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: PrimaryButton(
           verticalPadding: 10,
           horizontalPadding: 100,
           text: 'Continue',
           onTap: () {
-              Get.to(
+            Get.to(
               const PaymentMethodsScreen(),
               transition: Transition.rightToLeftWithFade,
               duration: const Duration(milliseconds: 500),
@@ -70,10 +69,10 @@ class CheckoutPage extends StatelessWidget {
               TextButton(
                 onPressed: () {
                   Get.to(
-              const ShippingAddressScreen(),
-              transition: Transition.rightToLeftWithFade,
-              duration: const Duration(milliseconds: 500),
-            );
+                    const ShippingAddressScreen(),
+                    transition: Transition.rightToLeftWithFade,
+                    duration: const Duration(milliseconds: 500),
+                  );
                 },
                 child: Text("CHANGE",
                     style: AppStyles.headLineStyle4
@@ -103,13 +102,12 @@ class CheckoutPage extends StatelessWidget {
                 ),
               ),
               TextButton(
-                
-                  onPressed: () {
+                onPressed: () {
                   Get.to(
-              const ShippingType(),
-              transition: Transition.rightToLeftWithFade,
-              duration: const Duration(milliseconds: 500),
-            );
+                    const ShippingType(),
+                    transition: Transition.rightToLeftWithFade,
+                    duration: const Duration(milliseconds: 500),
+                  );
                 },
                 child: Text(
                   "CHANGE",
