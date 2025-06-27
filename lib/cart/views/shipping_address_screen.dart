@@ -69,6 +69,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                     });
                   },
                 );
+                
               },
             ),
           ),
@@ -140,27 +141,33 @@ class AddressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Row(
+      child: Column(
         children: [
-          Icon(Icons.location_pin, color: AppStyles.primaryColor),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label,
-                    style: AppStyles.headLineStyle3),
-                const SizedBox(height: 4),
-                Text(address,
-                    style: AppStyles.textStyle.copyWith(color: AppStyles.whiteSmokeColor)),
-              ],
-            ),
-          ),
-          Radio(
-            value: true,
-            groupValue: isSelected,
-            onChanged: (_) => onTap(),
-            activeColor: AppStyles.primaryColor,
+          Row(
+            children: [
+              Icon(Icons.location_pin, color: AppStyles.primaryColor),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label,
+                        style: AppStyles.headLineStyle3),
+                    const SizedBox(height: 4),
+                    Text(address,
+                        style: AppStyles.textStyle.copyWith(color: AppStyles.whiteSmokeColor)),
+                        
+                  ],
+                ),
+              ),
+              Radio(
+                value: true,
+                groupValue: isSelected,
+                onChanged: (_) => onTap(),
+                activeColor: AppStyles.primaryColor,
+              ),
+              
+            ],
           ),
           Divider(
                           color: AppStyles.whiteSmokeColor.withOpacity(0.2)),

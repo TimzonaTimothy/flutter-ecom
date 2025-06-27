@@ -38,7 +38,7 @@ class _ShippingTypeState extends State<ShippingType> {
       appBar: AppBar(
         backgroundColor: AppStyles.bgColor,
         elevation: 0,
-        title: Text("Shipping Address", style: AppStyles.headLineStyle2),
+        title: Text("Shipping Type", style: AppStyles.headLineStyle2),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -69,35 +69,7 @@ class _ShippingTypeState extends State<ShippingType> {
               },
             ),
           ),
-          Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: DottedBorder(
-                color: AppStyles.primaryColor,
-                borderType: BorderType.RRect,
-                radius: const Radius.circular(12),
-                dashPattern: const [6, 3], // [dash width, gap]
-                strokeWidth: 1.5,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                   
-                  },
-                  icon: Icon(Icons.add, color: AppStyles.primaryColor),
-                  label: Text(
-                    "Add New Shipping Address",
-                    style: TextStyle(color: AppStyles.primaryColor),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide.none, 
-                    padding: const EdgeInsets.symmetric(
-                         horizontal: 60),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    backgroundColor: AppStyles.primaryColor.withOpacity(0.1),
-                  ),
-                ),
-              )),
-          const SizedBox(height: 16),
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: PrimaryButton(
@@ -137,27 +109,33 @@ class AddressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Row(
+      child: Column(
         children: [
-          Icon(Icons.flight, color: AppStyles.primaryColor),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label,
-                    style: AppStyles.headLineStyle3),
-                const SizedBox(height: 4),
-                Text(estimated,
-                    style: AppStyles.textStyle.copyWith(color: AppStyles.whiteSmokeColor)),
-              ],
-            ),
-          ),
-          Radio(
-            value: true,
-            groupValue: isSelected,
-            onChanged: (_) => onTap(),
-            activeColor: AppStyles.primaryColor,
+          Row(
+            children: [
+              Icon(Icons.flight, color: AppStyles.primaryColor),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label,
+                        style: AppStyles.headLineStyle3),
+                    const SizedBox(height: 4),
+                    Text(estimated,
+                        style: AppStyles.textStyle.copyWith(color: AppStyles.whiteSmokeColor)),
+                  ],
+                ),
+              ),
+              Radio(
+                value: true,
+                groupValue: isSelected,
+                onChanged: (_) => onTap(),
+                activeColor: AppStyles.primaryColor,
+              ),
+              Divider(
+                              color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
+            ],
           ),
           Divider(
                           color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
