@@ -13,9 +13,9 @@ class ShippingType extends StatefulWidget {
 }
 
 class _ShippingTypeState extends State<ShippingType> {
-  int selectedAddressIndex = 0;
+  int selectedSippmentTypeIndex = 0;
 
-  final List<Map<String, String>> addresses = [
+  final List<Map<String, String>> shippingTypes = [
     {
       "label": "Economy",
       "estimated": "Estimated Arrival 25 August 2025",
@@ -53,16 +53,16 @@ class _ShippingTypeState extends State<ShippingType> {
             child: ListView.separated(
               shrinkWrap: true,
               padding: const EdgeInsets.all(20),
-              itemCount: addresses.length,
+              itemCount: shippingTypes.length,
               separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
-                return AddressCard(
-                  label: addresses[index]['label']!,
-                  estimated: addresses[index]['estimated']!,
-                  isSelected: selectedAddressIndex == index,
+                return ShippingTypeCard(
+                  label: shippingTypes[index]['label']!,
+                  estimated: shippingTypes[index]['estimated']!,
+                  isSelected: selectedSippmentTypeIndex == index,
                   onTap: () {
                     setState(() {
-                      selectedAddressIndex = index;
+                      selectedSippmentTypeIndex = index;
                     });
                   },
                 );
@@ -91,13 +91,13 @@ class _ShippingTypeState extends State<ShippingType> {
   }
 }
 
-class AddressCard extends StatelessWidget {
+class ShippingTypeCard extends StatelessWidget {
   final String label;
   final String estimated;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const AddressCard({
+  const ShippingTypeCard({
     super.key,
     required this.label,
     required this.estimated,

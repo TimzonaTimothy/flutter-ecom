@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/primary_button.dart';
+import 'payment_methods_screen.dart';
 import 'shipping_address_screen.dart';
 import 'shipping_type_screen.dart';
 
@@ -35,11 +36,11 @@ class CheckoutPage extends StatelessWidget {
           horizontalPadding: 100,
           text: 'Continue',
           onTap: () {
-            //   Get.to(
-            //   const (),
-            //   transition: Transition.rightToLeftWithFade,
-            //   duration: const Duration(milliseconds: 500),
-            // );
+              Get.to(
+              const PaymentMethodsScreen(),
+              transition: Transition.rightToLeftWithFade,
+              duration: const Duration(milliseconds: 500),
+            );
           },
         ),
       ),
