@@ -65,7 +65,7 @@ class _PrimaryInputState extends State<PrimaryInput> {
         obscureText: _obscureText,
         keyboardType: widget.keyboardType,
         maxLength: widget.maxLength,
-        style: AppStyles.textStyle.copyWith(color: AppStyles.textColor),
+        style: AppStyles.textStyle.copyWith(color: AppStyles.textColor, fontSize: 16),
         decoration: InputDecoration(
           counterText: '',
           hintText: widget.hintText,

@@ -14,12 +14,18 @@ class PasswordManagerScreen extends StatefulWidget {
 }
 
 class _PasswordManagerScreenState extends State<PasswordManagerScreen> {
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController currentPasswordController =
+      TextEditingController();
+  final TextEditingController newPasswordController = TextEditingController();
+  final TextEditingController confirmNewPasswordController =
+      TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
-    passwordController.dispose();
+    currentPasswordController.dispose();
+    newPasswordController.dispose();
+    confirmNewPasswordController.dispose();
     super.dispose();
   }
 
@@ -55,7 +61,7 @@ class _PasswordManagerScreenState extends State<PasswordManagerScreen> {
                 validator: (value) => value == null || value.length < 6
                     ? 'Password must be at least 6 characters'
                     : null,
-                controller: passwordController,
+                controller: currentPasswordController,
                 obscureText: true,
                 hintText: "Password",
               ),
@@ -87,7 +93,7 @@ class _PasswordManagerScreenState extends State<PasswordManagerScreen> {
                 validator: (value) => value == null || value.length < 6
                     ? 'Password must be at least 6 characters'
                     : null,
-                controller: passwordController,
+                controller: newPasswordController,
                 obscureText: true,
                 hintText: "Password",
               ),
@@ -104,7 +110,7 @@ class _PasswordManagerScreenState extends State<PasswordManagerScreen> {
                 validator: (value) => value == null || value.length < 6
                     ? 'Password must be at least 6 characters'
                     : null,
-                controller: passwordController,
+                controller: confirmNewPasswordController,
                 obscureText: true,
                 hintText: "Password",
               ),
