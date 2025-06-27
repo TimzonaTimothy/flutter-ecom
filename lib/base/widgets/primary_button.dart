@@ -11,6 +11,7 @@ class PrimaryButton extends StatelessWidget {
   final bool isLoading;
   final bool isBorder;
   final Color? textColor;
+  final Color? backgroundColor;
 
   const PrimaryButton({
     super.key,
@@ -22,6 +23,7 @@ class PrimaryButton extends StatelessWidget {
     this.isLoading = false,
     this.isBorder = false,
     this.textColor,
+    this.backgroundColor,
   });
 
   @override
@@ -29,18 +31,14 @@ class PrimaryButton extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    Color backgroundColor;
-    if (!hasBackground) {
-      backgroundColor = AppStyles.bgColor;
-    } else if (onTap == null) {
-      
-      backgroundColor = AppStyles.primaryColor.withOpacity(0.5);
-    } else {
-      backgroundColor = AppStyles.primaryColor;
-    }
+    final Color resolvedBackgroundColor = !hasBackground
+        ? Colors.transparent
+        : backgroundColor ??
+            (onTap == null
+                ? AppStyles.primaryColor.withOpacity(0.5)
+                : AppStyles.primaryColor);
 
-    
-    final Color finalTextColor = textColor ??
+    final Color resolvedTextColor = textColor ??
         (hasBackground ? AppStyles.whiteColor : AppStyles.primaryColor);
 
     return SizedBox(
@@ -52,7 +50,7 @@ class PrimaryButton extends StatelessWidget {
           disabledBackgroundColor: AppStyles.primaryColor.withOpacity(0.5),
           disabledForegroundColor: AppStyles.primaryColor.withOpacity(0.5),
 
-          backgroundColor: backgroundColor,
+          backgroundColor: resolvedBackgroundColor,
           side: isBorder
               ? BorderSide(color: AppStyles.primaryColor, width: 2)
               : null,
@@ -71,13 +69,14 @@ class PrimaryButton extends StatelessWidget {
                 height: 20,
                 width: 20,
                 child: CircularProgressIndicator(
-                  color: finalTextColor,
+                  color: resolvedTextColor,
                   strokeWidth: 2,
                 ),
               )
             : Text(
                 text,
-                style: AppStyles.headLineStyle2.copyWith(color: finalTextColor),
+                style:
+                    AppStyles.headLineStyle2.copyWith(color: resolvedTextColor),
               ),
       ),
     );

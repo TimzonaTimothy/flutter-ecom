@@ -10,29 +10,29 @@ class AppStyles {
   static Color greColor = const Color(0xFF555555);
   static Color whiteSmokeColor = const Color(0xFFB3B3B3);
   static Color whiteColor = const Color(0xFFFFFFFF);
+  static Color blackColor = const Color(0xFF000000);
 
   static TextStyle textStyle = GoogleFonts.poppins(
     fontSize: 12,
     color: textColor,
-    fontWeight: FontWeight.w500,
   );
 
   static TextStyle headLineStyle1 = GoogleFonts.poppins(
     fontSize: 26,
     fontWeight: FontWeight.bold,
-    color: textColor,
+    color: blackColor,
   );
 
   static TextStyle headLineStyle2 = GoogleFonts.poppins(
     fontSize: 20,
     fontWeight: FontWeight.w500,
-    color: textColor,
+    color: blackColor,
   );
 
   static TextStyle headLineStyle3 = GoogleFonts.poppins(
     fontSize: 17,
     fontWeight: FontWeight.w500,
-    color: textColor,
+    color: blackColor,
   );
 
   static TextStyle headLineStyle4 = GoogleFonts.poppins(

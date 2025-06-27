@@ -1,3 +1,4 @@
+import 'package:ecom_app/base/res/styles/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
       title: 'Ecommerce',
       theme: ThemeData(
        textTheme: GoogleFonts.poppinsTextTheme(),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppStyles.primaryColor),
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,

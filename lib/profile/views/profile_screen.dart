@@ -55,7 +55,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             _buildListTile(Icons.person_outline, "Your profile"),
-            _buildListTile(Icons.credit_card, "Payment Methods"),
+            // _buildListTile(Icons.credit_card, "Payment Methods"),
             _buildListTile(Icons.shopping_bag_outlined, "My Orders"),
             _buildListTile(Icons.settings_outlined, "Settings"),
             _buildListTile(Icons.help_outline, "Help Center"),

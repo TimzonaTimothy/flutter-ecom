@@ -189,6 +189,7 @@ class _ProductDetailState extends State<ProductDetail> {
             Text.rich(
               TextSpan(
                 text: widget.product.description ?? "No description available",
+                style: AppStyles.textStyle,
                 // style: AppStyles.textStyle.copyWith(fontSize: 14),
                 children: [
                   TextSpan(
@@ -312,7 +313,7 @@ class _ProductDetailState extends State<ProductDetail> {
               label: Text(
                 "Add to Cart",
                 style:
-                    AppStyles.textStyle.copyWith(color: AppStyles.whiteColor),
+                    AppStyles.headLineStyle3.copyWith(color: AppStyles.whiteColor),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppStyles.primaryColor,

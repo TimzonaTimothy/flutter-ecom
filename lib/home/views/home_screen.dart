@@ -218,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 40,
                     padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
-                        color: AppStyles.textColor,
+                        color: AppStyles.blackColor,
                         borderRadius: BorderRadius.circular(10)),
                     child: Icon(
                       FluentSystemIcons.ic_fluent_filter_filled,
