@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../home/views/home_screen.dart';
 import 'password_manager_screen.dart';
+import 'profile_update_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -55,7 +56,14 @@ class ProfileScreen extends StatelessWidget {
               style: AppStyles.headLineStyle2,
             ),
             const SizedBox(height: 30),
-            _buildListTile(Icons.person_outline, "Your profile", (){}),
+            _buildListTile(Icons.person_outline, "Your profile", (){
+              
+              Get.to(
+              const ProfileUpdateScreen(),
+              transition: Transition.rightToLeftWithFade,
+              duration: const Duration(milliseconds: 500),
+            );
+            }),
             // _buildListTile(Icons.credit_card, "Payment Methods", (){}),
             _buildListTile(Icons.shopping_bag_outlined, "My Orders", (){}),
             _buildListTile(Icons.settings_outlined, "Settings", (){}),
