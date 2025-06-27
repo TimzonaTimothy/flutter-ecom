@@ -45,7 +45,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       appBar: AppBar(
         backgroundColor: AppStyles.bgColor,
         elevation: 0,
-        title: Text("Shipping Type", style: AppStyles.headLineStyle2),
+        title: Text("Payment Methods", style: AppStyles.headLineStyle2),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -80,7 +80,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: PrimaryButton(
               verticalPadding: 10,
-              horizontalPadding: 100,
+              horizontalPadding: 80,
               text: 'Confirm Payment',
               onTap: () {
                   Get.to(

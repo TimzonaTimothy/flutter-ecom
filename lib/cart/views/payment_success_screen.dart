@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../base/res/styles/app_styles.dart';
+import '../../base/widgets/primary_button.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
   const PaymentSuccessScreen({super.key});
@@ -6,72 +10,76 @@ class PaymentSuccessScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppStyles.bgColor,
         elevation: 0,
+        title: Text("Payment", style: AppStyles.headLineStyle2),
         centerTitle: true,
-        title: const Text(
-          "Payment",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
-        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Get.back();
+          },
         ),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircleAvatar(
-            radius: 40,
-            backgroundColor: Color(0xFF7B4F27), // Match your theme color
-            child: Icon(
-              Icons.check,
-              size: 40,
-              color: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 40,
+              backgroundColor: AppStyles.primaryColor,
+              child: const Icon(
+                Icons.check,
+                size: 40,
+                color: Colors.white,
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            "Payment Successful!",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Thank you for your purchase.",
-            style: TextStyle(color: Colors.grey.shade600),
-          ),
-        ],
+            const SizedBox(height: 24),
+            const Text(
+              "Payment Successful!",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Thank you for your purchase.",
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                // Navigate to order details
+            PrimaryButton(
+              verticalPadding: 10,
+              horizontalPadding: 100,
+              text: 'View Order',
+              onTap: () {
+                  Get.to(
+                  const (),
+                  transition: Transition.rightToLeftWithFade,
+                  duration: const Duration(milliseconds: 500),
+                );
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF7B4F27),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                minimumSize: const Size.fromHeight(50),
-              ),
-              child: const Text("View Order", style: TextStyle(fontSize: 16)),
             ),
             const SizedBox(height: 12),
-            TextButton(
-              onPressed: () {
-                // View E-Receipt logic
+            PrimaryButton(
+              isBorder: true,
+              verticalPadding: 10,
+              horizontalPadding: 80,
+              hasBackground: false,
+              text: 'View E-Receipt',
+              onTap: () {
+                Get.to(
+                  const (),
+                  transition: Transition.rightToLeftWithFade,
+                  duration: const Duration(milliseconds: 500),
+                );
               },
-              child: const Text(
-                "View E-Receipt",
-                style: TextStyle(color: Color(0xFF7B4F27)),
-              ),
             ),
           ],
         ),

@@ -31,7 +31,7 @@ class PrimaryButton extends StatelessWidget {
 
     Color backgroundColor;
     if (!hasBackground) {
-      backgroundColor = Colors.transparent;
+      backgroundColor = AppStyles.bgColor;
     } else if (onTap == null) {
       
       backgroundColor = AppStyles.primaryColor.withOpacity(0.5);
