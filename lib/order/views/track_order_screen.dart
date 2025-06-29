@@ -1,23 +1,37 @@
+import 'package:ecom_app/base/res/media.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:timeline_tile/timeline_tile.dart';
+
+import '../../base/res/styles/app_styles.dart';
 
 class TrackOrderPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Track Order"),
-        leading: BackButton(),
+        backgroundColor: AppStyles.bgColor,
+        elevation: 0,
+        title: Text("Track Order", style: AppStyles.headLineStyle2),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Get.back();
+          },
+        ),
+        
       ),
+      backgroundColor: AppStyles.bgColor,
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(20),
         child: Column(
           children: [
             // Product Card
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.asset('assets/images/brown_suit.png', height: 100, width: 100),
+                Image.asset(AppMedia.welcomeImage, height: 100, width: 100),
                 SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -111,20 +125,20 @@ class TrackOrderPage extends StatelessWidget {
       isLast: isLast,
       indicatorStyle: IndicatorStyle(
         width: 30,
-        color: isActive ? Colors.brown : Colors.grey.shade300,
+        color: isActive ? AppStyles.primaryColor : Colors.grey.shade300,
         iconStyle: IconStyle(
           iconData: isActive ? Icons.check : Icons.circle_outlined,
           color: Colors.white,
         ),
       ),
       beforeLineStyle: LineStyle(
-        color: isActive ? Colors.brown : Colors.grey.shade300,
+        color: isActive ? AppStyles.primaryColor : Colors.grey.shade300,
         thickness: 2,
       ),
       endChild: ListTile(
         title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(date),
-        trailing: Icon(icon, color: isActive ? Colors.brown : Colors.grey),
+        trailing: Icon(icon, color: isActive ? AppStyles.primaryColor : Colors.grey),
       ),
     );
   }

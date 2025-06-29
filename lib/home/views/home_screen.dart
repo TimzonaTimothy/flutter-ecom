@@ -168,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: GestureDetector(
                     onTap: () {
                       Get.to(
-                        const SearchScreen(),
+                         SearchScreen(),
                         transition: Transition.rightToLeftWithFade,
                         duration: const Duration(milliseconds: 500),
                       );

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/primary_button.dart';
+import '../../order/views/track_order_screen.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
   const PaymentSuccessScreen({super.key});
@@ -60,7 +61,7 @@ class PaymentSuccessScreen extends StatelessWidget {
               text: 'View Order',
               onTap: () {
                 Get.to(
-                  const (),
+                   TrackOrderPage(),
                   transition: Transition.rightToLeftWithFade,
                   duration: const Duration(milliseconds: 500),
                 );
