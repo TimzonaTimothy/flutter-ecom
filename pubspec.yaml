@@ -46,6 +46,7 @@ dependencies:
   http_parser: ^4.0.2
   image_picker: ^1.1.2
   dotted_border: ^2.1.0
+  timeline_tile: ^2.0.0
 
 dev_dependencies:
   flutter_test:
