@@ -4,11 +4,14 @@ import 'package:get/get.dart';
 import '../../base/res/styles/app_styles.dart';
 
 class HelpCenterScreen extends StatefulWidget {
+  const HelpCenterScreen({super.key});
+
   @override
   _HelpCenterScreenState createState() => _HelpCenterScreenState();
 }
 
-class _HelpCenterScreenState extends State<HelpCenterScreen> with SingleTickerProviderStateMixin {
+class _HelpCenterScreenState extends State<HelpCenterScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String selectedFilter = 'All';
 
@@ -17,20 +20,46 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> with SingleTickerPr
   final List<Map<String, String>> faqs = [
     {
       "question": "Can I track my order's delivery status?",
-      "answer": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+      "answer":
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
     },
     {"question": "Is there a return policy?", "answer": "Yes, within 30 days."},
-    {"question": "Can I save my favorite items for later?", "answer": "Yes, use the wishlist feature."},
-    {"question": "Can I share products with my friends?", "answer": "You can share via social or copy link."},
-    {"question": "How do I contact customer support?", "answer": "Use the contact form or call us."},
-    {"question": "What payment methods are accepted?", "answer": "Credit card, PayPal, and more."},
-    {"question": "How to add review?", "answer": "Go to the product and click on 'Add Review'."},
+    {
+      "question": "Can I save my favorite items for later?",
+      "answer": "Yes, use the wishlist feature."
+    },
+    {
+      "question": "Can I share products with my friends?",
+      "answer": "You can share via social or copy link."
+    },
+    {
+      "question": "How do I contact customer support?",
+      "answer": "Use the contact form or call us."
+    },
+    {
+      "question": "What payment methods are accepted?",
+      "answer": "Credit card, PayPal, and more."
+    },
+    {
+      "question": "How to add review?",
+      "answer": "Go to the product and click on 'Add Review'."
+    },
+  ];
+
+  final List<Map<String, String>> contact = [
+    {"question": "Customer Service", "answer": "Yes, 10298747477"},
+    {"question": "Whatsapp", "answer": "+23646633773"},
+    {"question": "Website", "answer": "https://www.domain.com"},
+    {"question": "Facebook", "answer": "https://www.facebook.com/profile"},
+    {"question": "Twitter", "answer": "https://www.twitter.com/profile"},
+    {"question": "Instagram", "answer": "https://www.instagram.com/profile"},
   ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this); // FAQ and Contact Us
+    _tabController =
+        TabController(length: 2, vsync: this); // FAQ and Contact Us
   }
 
   @override
@@ -42,7 +71,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       backgroundColor: AppStyles.bgColor,
+      backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
         backgroundColor: AppStyles.bgColor,
         elevation: 0,
@@ -103,41 +132,43 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> with SingleTickerPr
             indicatorColor: AppStyles.primaryColor,
             labelColor: AppStyles.primaryColor,
             unselectedLabelColor: AppStyles.greColor,
-            tabs: [
+            labelStyle: AppStyles.headLineStyle3,
+            tabs: const [
               Tab(text: "FAQ"),
               Tab(text: "Contact Us"),
             ],
           ),
 
           // Filters
-          Container(
-            height: 50,
-            margin: EdgeInsets.only(top: 10),
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              itemCount: filters.length,
-              itemBuilder: (context, index) {
-                final filter = filters[index];
-                final isSelected = selectedFilter == filter;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(filter),
-                    selected: isSelected,
-                    onSelected: (_) {
-                      setState(() {
-                        selectedFilter = filter;
-                      });
-                    },
-                    selectedColor: AppStyles.primaryColor,
-                    backgroundColor: AppStyles.bgColor,
-                    labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black),
-                  ),
-                );
-              },
-            ),
-          ),
+          // Container(
+          //   height: 50,
+          //   margin: const EdgeInsets.only(top: 10),
+          //   child: ListView.builder(
+          //     scrollDirection: Axis.horizontal,
+          //     padding: const EdgeInsets.symmetric(horizontal: 10),
+          //     itemCount: filters.length,
+          //     itemBuilder: (context, index) {
+          //       final filter = filters[index];
+          //       final isSelected = selectedFilter == filter;
+          //       return Padding(
+          //         padding: const EdgeInsets.only(right: 8),
+          //         child: ChoiceChip(
+          //           label: Text(filter),
+          //           selected: isSelected,
+          //           onSelected: (_) {
+          //             setState(() {
+          //               selectedFilter = filter;
+          //             });
+          //           },
+          //           selectedColor: AppStyles.primaryColor,
+          //           backgroundColor: AppStyles.bgColor,
+          //           labelStyle: TextStyle(
+          //               color: isSelected ? Colors.white : Colors.black),
+          //         ),
+          //       );
+          //     },
+          //   ),
+          // ),
 
           // Tab Content
           Expanded(
@@ -146,19 +177,24 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> with SingleTickerPr
               children: [
                 // FAQ Tab
                 ListView.builder(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   itemCount: faqs.length,
                   itemBuilder: (context, index) {
                     final item = faqs[index];
                     return Card(
                       elevation: 0,
-                      margin: EdgeInsets.only(bottom: 12),
+                      margin: const EdgeInsets.only(bottom: 12),
                       child: ExpansionTile(
-                        title: Text(item["question"]!, style: AppStyles.headLineStyle3),
+                        title: Text(item["question"]!,
+                            style: AppStyles.headLineStyle3),
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                            child: Text(item["answer"]!,style: AppStyles.textStyle,),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8),
+                            child: Text(
+                              item["answer"]!,
+                              style: AppStyles.textStyle,
+                            ),
                           )
                         ],
                       ),
@@ -167,7 +203,35 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> with SingleTickerPr
                 ),
 
                 // Contact Us Tab (Placeholder)
-                Center(child: Text("Contact Form Coming Soon")),
+                ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: contact.length,
+                  itemBuilder: (context, index) {
+                    final item = contact[index];
+                    return Card(
+                      elevation: 0,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ExpansionTile(
+                        leading: Icon(
+                          Icons.public,
+                          color: AppStyles.primaryColor,
+                        ),
+                        title: Text(item["question"]!,
+                            style: AppStyles.headLineStyle3),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8),
+                            child: Text(
+                              item["answer"]!,
+                              style: AppStyles.textStyle,
+                            ),
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
