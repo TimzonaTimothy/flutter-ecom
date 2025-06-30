@@ -31,26 +31,34 @@ class TrackOrderPage extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.asset(AppMedia.welcomeImage, height: 100, width: 100),
+                Image.asset(AppMedia.welcomeImage, height: 100, width: 100, fit: BoxFit.cover,),
                 SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+
                     children: [
-                      Text("Brown Suite", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text("Brown Suite", style: AppStyles.headLineStyle3.copyWith(fontWeight: FontWeight.w600)),
                       SizedBox(height: 4),
-                      Text("Size: XL | Qty: 10pcs"),
+                      Text("Size: XL | Qty: 10pcs", style: AppStyles.textStyle
+                                .copyWith(color: AppStyles.greColor),),
                       SizedBox(height: 4),
-                      Text("\$120", style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text("\$120",style: AppStyles.headLineStyle4.copyWith(color: AppStyles.blackColor,fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),
               ],
             ),
 
+  Divider(
+              color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
             SizedBox(height: 20),
 
             // Order Details
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text("Order Details", style: AppStyles.headLineStyle3,)),
+              SizedBox(height: 15,),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -66,10 +74,17 @@ class TrackOrderPage extends StatelessWidget {
                 Text("TRK452126542", style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
+            SizedBox(height: 15,),
 
-            SizedBox(height: 30),
+ Divider(
+              color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
+      
 
             // Order Status
+             Align(
+              alignment: Alignment.centerLeft,
+              child: Text("Order Status", style: AppStyles.headLineStyle3,)),
+              SizedBox(height: 15,),
             Column(
               children: [
                 _buildTimelineTile(

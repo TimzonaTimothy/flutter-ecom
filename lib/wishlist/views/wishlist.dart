@@ -41,16 +41,16 @@ class _WishListScreenState extends State<WishListScreen> {
         elevation: 0,
         title: Text("My Wishlist", style: AppStyles.headLineStyle2),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Get.to(
-              const HomeScreen(),
-              transition: Transition.rightToLeftWithFade,
-              duration: const Duration(milliseconds: 500),
-            );
-          },
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: Colors.black),
+        //   onPressed: () {
+        //     Get.to(
+        //       const HomeScreen(),
+        //       transition: Transition.rightToLeftWithFade,
+        //       duration: const Duration(milliseconds: 500),
+        //     );
+        //   },
+        // ),
       ),
       body: ListView(
         shrinkWrap: true,

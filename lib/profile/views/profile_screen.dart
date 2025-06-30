@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../base/bottom_nav_bar.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../home/views/home_screen.dart';
+import '../../order/views/my_orders_screen.dart';
 import 'help_center_screen.dart';
 import 'password_manager_screen.dart';
 import 'profile_update_screen.dart';
@@ -19,16 +21,16 @@ class ProfileScreen extends StatelessWidget {
         elevation: 0,
         title: Text("Profile", style: AppStyles.headLineStyle2),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-           onPressed: () {
-            Get.to(
-              const HomeScreen(),
-              transition: Transition.rightToLeftWithFade,
-              duration: const Duration(milliseconds: 500),
-            );
-          },
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: Colors.black),
+        //    onPressed: () {
+        //     Get.to(
+        //       const BottomNavBar(),
+        //       transition: Transition.rightToLeftWithFade,
+        //       duration: const Duration(milliseconds: 500),
+        //     );
+        //   },
+        // ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -66,7 +68,14 @@ class ProfileScreen extends StatelessWidget {
             );
             }),
             // _buildListTile(Icons.credit_card, "Payment Methods", (){}),
-            _buildListTile(Icons.shopping_bag_outlined, "My Orders", (){}),
+            _buildListTile(Icons.shopping_bag_outlined, "My Orders", (){
+              
+              Get.to(
+               OrdersScreen(),
+              transition: Transition.rightToLeftWithFade,
+              duration: const Duration(milliseconds: 500),
+            );
+            }),
             _buildListTile(Icons.settings_outlined, "Settings", (){}),
              _buildListTile(Icons.notifications, "Notification", (){}),
               _buildListTile(Icons.password, "Password Manager", (){

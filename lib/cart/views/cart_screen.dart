@@ -2,6 +2,7 @@ import 'package:ecom_app/base/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../base/bottom_nav_bar.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../base/utils/snackbar.dart';
 import '../../home/views/home_screen.dart';
@@ -93,16 +94,16 @@ class _CartScreenState extends State<CartScreen> {
         elevation: 0,
         title: Text("My Cart", style: AppStyles.headLineStyle2),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Get.to(
-              const HomeScreen(),
-              transition: Transition.rightToLeftWithFade,
-              duration: const Duration(milliseconds: 500),
-            );
-          },
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: Colors.black),
+        //   onPressed: () {
+        //     Get.to(
+        //       const BottomNavBar(),
+        //       transition: Transition.rightToLeftWithFade,
+        //       duration: const Duration(milliseconds: 500),
+        //     );
+        //   },
+        // ),
       ),
       body: Column(
         children: [
@@ -213,8 +214,8 @@ class _CartScreenState extends State<CartScreen> {
                               borderRadius: BorderRadius.circular(10),
                               child: Image.network(
                                 item['image']?.toString() ?? '',
-                                width: 80,
-                                height: 80,
+                                width: 100,
+                                height: 100,
                                 fit: BoxFit.cover,
                               ),
                             ),
