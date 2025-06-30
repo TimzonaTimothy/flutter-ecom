@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
 import '../../home/views/home_screen.dart';
+import 'help_center_screen.dart';
 import 'password_manager_screen.dart';
 import 'profile_update_screen.dart';
 
@@ -75,7 +76,14 @@ class ProfileScreen extends StatelessWidget {
               duration: const Duration(milliseconds: 500),
             );
               }),
-            _buildListTile(Icons.help_outline, "Help Center", (){}),
+            _buildListTile(Icons.help_outline, "Help Center", (){
+              
+              Get.to(
+               HelpCenterScreen(),
+              transition: Transition.rightToLeftWithFade,
+              duration: const Duration(milliseconds: 500),
+            );
+            }),
             _buildListTile(Icons.privacy_tip_outlined, "Privacy Policy", (){}),
             _buildListTile(Icons.group_outlined, "Invites Friends", (){}),
             _buildListTile(Icons.logout, "Log out", (){}),

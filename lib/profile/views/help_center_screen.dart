@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../base/res/styles/app_styles.dart';
 
 class HelpCenterScreen extends StatefulWidget {
   @override
@@ -39,35 +42,57 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+       backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
-        title: Text("Help Center"),
-        leading: BackButton(),
+        backgroundColor: AppStyles.bgColor,
         elevation: 0,
+        title: Text("Help Center", style: AppStyles.headLineStyle2),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Get.back();
+          },
+        ),
       ),
       body: Column(
         children: [
           // Search Bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.all(20),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(25),
+                border: Border.all(
+                  color: AppStyles.primaryColor,
+                  width: 0.5,
+                ),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Row(
-                children: [
-                  Icon(Icons.search, color: Colors.brown),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Search',
-                        border: InputBorder.none,
-                      ),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: TextFormField(
+                textAlign: TextAlign.start,
+                textAlignVertical: TextAlignVertical.center,
+                validator: (value) =>
+                    value == null ? 'please enter your query' : null,
+                // controller: _searchController,
+                keyboardType: TextInputType.text,
+                style: AppStyles.textStyle.copyWith(color: AppStyles.textColor),
+                decoration: InputDecoration(
+                  hintText: "Search",
+                  alignLabelWithHint: true,
+                  hintTextDirection: TextDirection.ltr,
+                  hintStyle: AppStyles.textStyle.copyWith(
+                    color: AppStyles.textColor.withOpacity(0.6),
+                  ),
+                  border: InputBorder.none,
+                  prefixIcon: IconButton(
+                    icon: Icon(
+                      Icons.search,
+                      color: AppStyles.primaryColor,
                     ),
-                  )
-                ],
+                    onPressed: () {},
+                  ),
+                ),
               ),
             ),
           ),
@@ -75,9 +100,9 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> with SingleTickerPr
           // Tabs
           TabBar(
             controller: _tabController,
-            indicatorColor: Colors.brown,
-            labelColor: Colors.brown,
-            unselectedLabelColor: Colors.grey,
+            indicatorColor: AppStyles.primaryColor,
+            labelColor: AppStyles.primaryColor,
+            unselectedLabelColor: AppStyles.greColor,
             tabs: [
               Tab(text: "FAQ"),
               Tab(text: "Contact Us"),
@@ -105,8 +130,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> with SingleTickerPr
                         selectedFilter = filter;
                       });
                     },
-                    selectedColor: Colors.brown,
-                    backgroundColor: Colors.grey.shade200,
+                    selectedColor: AppStyles.primaryColor,
+                    backgroundColor: AppStyles.bgColor,
                     labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black),
                   ),
                 );
@@ -129,11 +154,11 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> with SingleTickerPr
                       elevation: 0,
                       margin: EdgeInsets.only(bottom: 12),
                       child: ExpansionTile(
-                        title: Text(item["question"]!, style: TextStyle(fontWeight: FontWeight.w600)),
+                        title: Text(item["question"]!, style: AppStyles.headLineStyle3),
                         children: [
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                            child: Text(item["answer"]!),
+                            child: Text(item["answer"]!,style: AppStyles.textStyle,),
                           )
                         ],
                       ),
