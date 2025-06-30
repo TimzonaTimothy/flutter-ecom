@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import '../../base/bottom_nav_bar.dart';
 import '../../base/res/media.dart';
 import '../../base/res/styles/app_styles.dart';
+import 'review_screen.dart';
 import 'track_order_screen.dart';
 
 class OrdersScreen extends StatefulWidget {
@@ -19,6 +20,48 @@ class _OrdersScreenState extends State<OrdersScreen>
 
   final List<Map<String, dynamic>> cancelledOrders = [
     {
+      "title": "Brown Jacket",
+      "image": AppMedia.onborading2,
+      "size": "XL",
+      "qty": 10,
+      "price": 83.97,
+    },
+    {
+      "title": "Brown Suite",
+      "image": AppMedia.onborading1,
+      "size": "XL",
+      "qty": 10,
+      "price": 120,
+    },
+    {
+      "title": "Brown Suite",
+      "image": AppMedia.welcomeImage,
+      "size": "XL",
+      "qty": 10,
+      "price": 120,
+    },
+    {
+      "title": "Brown Suite",
+      "image": AppMedia.onborading3,
+      "size": "XL",
+      "qty": 10,
+      "price": 120,
+    },
+    {
+      "title": "Brown Suite",
+      "image": AppMedia.welcomeImage,
+      "size": "XL",
+      "qty": 10,
+      "price": 120,
+    },
+    {
+      "title": "Brown Suite",
+      "image": AppMedia.welcomeImage,
+      "size": "XL",
+      "qty": 10,
+      "price": 120,
+    },
+     {
       "title": "Brown Jacket",
       "image": AppMedia.onborading2,
       "size": "XL",
@@ -99,16 +142,18 @@ class _OrdersScreenState extends State<OrdersScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          ActiveOrdersList(cancelledOrders: cancelledOrders,),
-          CompletedOrdersList(cancelledOrders: cancelledOrders,),
+          ActiveOrdersList(
+            cancelledOrders: cancelledOrders,
+          ),
+          CompletedOrdersList(
+            cancelledOrders: cancelledOrders,
+          ),
           CancelledOrdersList(cancelledOrders: cancelledOrders),
         ],
       ),
     );
   }
 }
-
-
 
 class ActiveOrdersList extends StatelessWidget {
   final List<Map<String, dynamic>> cancelledOrders;
@@ -148,7 +193,8 @@ class ActiveOrdersList extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(order['title'],
-                            style: AppStyles.headLineStyle3.copyWith(fontWeight: FontWeight.w600)),
+                            style: AppStyles.headLineStyle3
+                                .copyWith(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(
                             "Size: ${order['size']}  |  Qty : ${order['qty']}pcs",
@@ -156,7 +202,9 @@ class ActiveOrdersList extends StatelessWidget {
                                 .copyWith(color: AppStyles.greColor)),
                         const SizedBox(height: 4),
                         Text("\$${order['price']}",
-                            style: AppStyles.headLineStyle4.copyWith(color: AppStyles.blackColor,fontWeight: FontWeight.w600)),
+                            style: AppStyles.headLineStyle4.copyWith(
+                                color: AppStyles.blackColor,
+                                fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ),
@@ -169,12 +217,11 @@ class ActiveOrdersList extends StatelessWidget {
                           horizontal: 16, vertical: 8),
                     ),
                     onPressed: () {
-                      
                       Get.to(
-               TrackOrderPage(),
-              transition: Transition.rightToLeftWithFade,
-              duration: const Duration(milliseconds: 500),
-            );
+                        TrackOrderPage(),
+                        transition: Transition.rightToLeftWithFade,
+                        duration: const Duration(milliseconds: 500),
+                      );
                     },
                     child: Text('Track Order',
                         style: AppStyles.textStyle
@@ -191,8 +238,6 @@ class ActiveOrdersList extends StatelessWidget {
     );
   }
 }
-
-
 
 class CompletedOrdersList extends StatelessWidget {
   final List<Map<String, dynamic>> cancelledOrders;
@@ -232,7 +277,8 @@ class CompletedOrdersList extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(order['title'],
-                            style: AppStyles.headLineStyle3.copyWith(fontWeight: FontWeight.w600)),
+                            style: AppStyles.headLineStyle3
+                                .copyWith(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(
                             "Size: ${order['size']}  |  Qty : ${order['qty']}pcs",
@@ -240,7 +286,9 @@ class CompletedOrdersList extends StatelessWidget {
                                 .copyWith(color: AppStyles.greColor)),
                         const SizedBox(height: 4),
                         Text("\$${order['price']}",
-                            style: AppStyles.headLineStyle4.copyWith(color: AppStyles.blackColor,fontWeight: FontWeight.w600)),
+                            style: AppStyles.headLineStyle4.copyWith(
+                                color: AppStyles.blackColor,
+                                fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ),
@@ -252,7 +300,13 @@ class CompletedOrdersList extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Get.to(
+                        const LeaveReviewPage(),
+                        transition: Transition.rightToLeftWithFade,
+                        duration: const Duration(milliseconds: 500),
+                      );
+                    },
                     child: Text('Leave Review',
                         style: AppStyles.textStyle
                             .copyWith(color: AppStyles.whiteColor)),
@@ -268,9 +322,6 @@ class CompletedOrdersList extends StatelessWidget {
     );
   }
 }
-
-
-
 
 class CancelledOrdersList extends StatelessWidget {
   final List<Map<String, dynamic>> cancelledOrders;
@@ -309,8 +360,9 @@ class CancelledOrdersList extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                         Text(order['title'],
-                            style: AppStyles.headLineStyle3.copyWith(fontWeight: FontWeight.w600)),
+                        Text(order['title'],
+                            style: AppStyles.headLineStyle3
+                                .copyWith(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(
                             "Size: ${order['size']}  |  Qty : ${order['qty']}pcs",
@@ -318,7 +370,9 @@ class CancelledOrdersList extends StatelessWidget {
                                 .copyWith(color: AppStyles.greColor)),
                         const SizedBox(height: 4),
                         Text("\$${order['price']}",
-                            style: AppStyles.headLineStyle4.copyWith(color: AppStyles.blackColor,fontWeight: FontWeight.w600)),
+                            style: AppStyles.headLineStyle4.copyWith(
+                                color: AppStyles.blackColor,
+                                fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ),
@@ -330,7 +384,13 @@ class CancelledOrdersList extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Get.to(
+                        const BottomNavBar(),
+                        transition: Transition.rightToLeftWithFade,
+                        duration: const Duration(milliseconds: 500),
+                      );
+                    },
                     child: Text('Re-Order',
                         style: AppStyles.textStyle
                             .copyWith(color: AppStyles.whiteColor)),

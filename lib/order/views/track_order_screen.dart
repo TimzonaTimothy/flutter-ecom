@@ -6,6 +6,8 @@ import 'package:timeline_tile/timeline_tile.dart';
 import '../../base/res/styles/app_styles.dart';
 
 class TrackOrderPage extends StatelessWidget {
+  const TrackOrderPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,71 +22,95 @@ class TrackOrderPage extends StatelessWidget {
             Get.back();
           },
         ),
-        
       ),
       backgroundColor: AppStyles.bgColor,
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             // Product Card
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.asset(AppMedia.welcomeImage, height: 100, width: 100, fit: BoxFit.cover,),
-                SizedBox(width: 10),
+                Image.asset(
+                  AppMedia.welcomeImage,
+                  height: 100,
+                  width: 100,
+                  fit: BoxFit.cover,
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-
                     children: [
-                      Text("Brown Suite", style: AppStyles.headLineStyle3.copyWith(fontWeight: FontWeight.w600)),
-                      SizedBox(height: 4),
-                      Text("Size: XL | Qty: 10pcs", style: AppStyles.textStyle
-                                .copyWith(color: AppStyles.greColor),),
-                      SizedBox(height: 4),
-                      Text("\$120",style: AppStyles.headLineStyle4.copyWith(color: AppStyles.blackColor,fontWeight: FontWeight.w600)),
+                      Text("Brown Suite",
+                          style: AppStyles.headLineStyle3
+                              .copyWith(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Size: XL | Qty: 10pcs",
+                        style: AppStyles.textStyle
+                            .copyWith(color: AppStyles.greColor),
+                      ),
+                      const SizedBox(height: 4),
+                      Text("\$120",
+                          style: AppStyles.headLineStyle4.copyWith(
+                              color: AppStyles.blackColor,
+                              fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),
               ],
             ),
 
-  Divider(
-              color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
-            SizedBox(height: 20),
+            Divider(
+                color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
+            const SizedBox(height: 20),
 
             // Order Details
             Align(
-              alignment: Alignment.centerLeft,
-              child: Text("Order Details", style: AppStyles.headLineStyle3,)),
-              SizedBox(height: 15,),
-            Row(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Order Details",
+                  style: AppStyles.headLineStyle3,
+                )),
+            const SizedBox(
+              height: 15,
+            ),
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text("Expected Delivery Date"),
-                Text("03 Sep 2023", style: TextStyle(fontWeight: FontWeight.bold)),
+                Text("03 Sep 2023",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
-            SizedBox(height: 10),
-            Row(
+            const SizedBox(height: 10),
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text("Tracking ID"),
-                Text("TRK452126542", style: TextStyle(fontWeight: FontWeight.bold)),
+                Text("TRK452126542",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
-            SizedBox(height: 15,),
+            const SizedBox(
+              height: 15,
+            ),
 
- Divider(
-              color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
-      
+            Divider(
+                color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
 
             // Order Status
-             Align(
-              alignment: Alignment.centerLeft,
-              child: Text("Order Status", style: AppStyles.headLineStyle3,)),
-              SizedBox(height: 15,),
+            Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Order Status",
+                  style: AppStyles.headLineStyle3,
+                )),
+            const SizedBox(
+              height: 15,
+            ),
             Column(
               children: [
                 _buildTimelineTile(
@@ -151,9 +177,10 @@ class TrackOrderPage extends StatelessWidget {
         thickness: 2,
       ),
       endChild: ListTile(
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(date),
-        trailing: Icon(icon, color: isActive ? AppStyles.primaryColor : Colors.grey),
+        trailing:
+            Icon(icon, color: isActive ? AppStyles.primaryColor : Colors.grey),
       ),
     );
   }

@@ -186,8 +186,7 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
                             vertical: 15, horizontal: 10),
                       ),
                       style: AppStyles.textStyle,
-                      dropdownColor: Colors
-                          .white, // Changes the dropdown's background color
+                      dropdownColor: AppStyles.bgColor,
                       icon: Icon(
                         Icons.arrow_drop_down,
                         color: AppStyles
