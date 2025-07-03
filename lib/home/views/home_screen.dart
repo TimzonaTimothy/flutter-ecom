@@ -11,7 +11,9 @@ import '../../base/widgets/image_sliders.dart';
 import '../../base/widgets/product_card.dart';
 import '../../base/widgets/product_shimmer.dart';
 import '../../notification/views/notification_screen.dart';
+import '../../products/controllers/category_controller.dart';
 import '../../products/controllers/product_controller.dart';
+import '../../products/views/category_list.dart';
 import '../../products/views/product_detail.dart';
 import '../../products/views/product_filter.dart';
 import 'location_screen.dart';
@@ -26,20 +28,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
-  final categories = [
-    {'label': 'T-Shirts', 'image': AppMedia.welcomeImage},
-    {'label': 'Sneakers', 'image': AppMedia.onborading3},
-    {'label': 'Caps', 'image': AppMedia.welcomeImage},
-    {'label': 'Watches', 'image': AppMedia.onborading3},
-    {'label': 'Jackets', 'image': AppMedia.welcomeImage},
-    {'label': 'Pants', 'image': AppMedia.onborading3},
-    {'label': 'T-Shirts', 'image': AppMedia.welcomeImage},
-    {'label': 'Sneakers', 'image': AppMedia.onborading3},
-    {'label': 'Caps', 'image': AppMedia.welcomeImage},
-    {'label': 'Watches', 'image': AppMedia.onborading3},
-    {'label': 'Jackets', 'image': AppMedia.welcomeImage},
-    {'label': 'Pants', 'image': AppMedia.onborading3},
-  ];
+  late final CategoryController categoryController;
 
   int selectedFilterIndex = 0;
 
@@ -62,7 +51,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    if (!Get.isRegistered<CategoryController>()) {
+      Get.put(CategoryController());
+    }
+
+    categoryController = Get.find<CategoryController>();
+
     Get.put(ProductsController());
+
     // Simulate a delay like fetching from API
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
@@ -168,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: GestureDetector(
                     onTap: () {
                       Get.to(
-                         SearchScreen(),
+                        SearchScreen(),
                         transition: Transition.rightToLeftWithFade,
                         duration: const Duration(milliseconds: 500),
                       );
@@ -244,7 +240,13 @@ class _HomeScreenState extends State<HomeScreen> {
             child: AppDoubleText(
               bigText: 'Categories',
               smallText: 'View all',
-              func: () {},
+              func: () {
+                Get.to(
+                  () => const CategoryList(),
+                  transition: Transition.rightToLeftWithFade,
+                  duration: const Duration(milliseconds: 500),
+                );
+              },
             ),
           ),
           const SizedBox(
@@ -252,10 +254,33 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Padding(
             padding: const EdgeInsets.only(left: 20),
-            child: CategoryScroller(
-              items: categories,
-              onTap: () {},
-            ),
+            child: Obx(() {
+              if (categoryController.isLoading.value) {
+                return SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    color: AppStyles.primaryColor,
+                    strokeWidth: 2,
+                  ),
+                );
+              }
+
+              final items = categoryController.categories.map((category) {
+                return {
+                  'label': category.title,
+                  'image': category.image,
+                };
+              }).toList();
+
+              return CategoryScroller(
+                items: items,
+                onTap: (label) {
+                  print('Tapped category: $label');
+                  // TODO: Add your filter logic here
+                },
+              );
+            }),
           ),
           const SizedBox(
             height: 20,
@@ -275,7 +300,8 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: isLoading ? const ProductCardShimmer() : _buildProductGrid(),
+            // child: isLoading ? const ProductCardShimmer() : _buildProductGrid(),
+            child: _buildProductGrid(),
           ),
         ],
       ),
@@ -286,6 +312,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return GetBuilder<ProductsController>(initState: (state) {
       ProductsController.instance.getProduct();
     }, builder: (productsController) {
+      if (productsController.isLoad.value) {
+        return const ProductCardShimmer();
+      }
       return GridView.count(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
@@ -303,7 +332,7 @@ class _HomeScreenState extends State<HomeScreen> {
             imagePath: imageUrl,
             title: product.title,
             price: product.originalPrice!,
-            rating: product.rating!,
+            rating: product.rating,
             oldPrice: product.discountPrice!,
             onTap: () {
               Get.to(

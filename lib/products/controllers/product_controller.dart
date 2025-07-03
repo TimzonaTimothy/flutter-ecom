@@ -24,14 +24,14 @@ class ProductsController extends GetxController {
     }
 
     final decoded = jsonDecode(data);
-if (decoded is List) {
-  products.value = decoded
-      .whereType<Map<String, dynamic>>() // filters only maps
-      .map((item) => ProductModel.fromJson(item))
-      .toList();
-} else {
-  print("Expected a list but got: ${decoded.runtimeType}");
-}
+    if (decoded is List) {
+      products.value = decoded
+          .whereType<Map<String, dynamic>>() // filters only maps
+          .map((item) => ProductModel.fromJson(item))
+          .toList();
+    } else {
+      print("Expected a list but got: ${decoded.runtimeType}");
+    }
 
     isLoad.value = false;
     update();

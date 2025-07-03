@@ -326,16 +326,5 @@ class MyRequest {
     return response;
   }
 
-  // toLogin() {
-  //   log('toLogin');
-  //   Get.to(
-  //     () => const Login(),
-  //     duration: const Duration(milliseconds: 300),
-  //     fullscreenDialog: true,
-  //     curve: Curves.easeIn,
-  //     preventDuplicates: true,
-  //     popGesture: true,
-  //     transition: Transition.rightToLeft,
-  //   );
-  // }
+  
 }

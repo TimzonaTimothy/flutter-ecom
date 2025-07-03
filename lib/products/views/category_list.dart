@@ -2,9 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
+import '../controllers/category_controller.dart';
+import '../models/category_model.dart';
 
-class CategoryList extends StatelessWidget {
+class CategoryList extends StatefulWidget {
   const CategoryList({super.key});
+
+  @override
+  State<CategoryList> createState() => _CategoryListState();
+}
+
+class _CategoryListState extends State<CategoryList> {
+  late CategoryController categoryController;
+
+  @override
+  void initState() {
+    super.initState();
+    categoryController = Get.put(CategoryController());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,15 +36,34 @@ class CategoryList extends StatelessWidget {
             Get.back();
           },
         ),
-        
       ),
-      body: ListView(
-        shrinkWrap: true, 
-        padding: EdgeInsets.all(20),
-        children: [
-            
-        ],
-      ),
+      body: Obx(() {
+        if (categoryController.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (categoryController.categories.isEmpty) {
+          return const Center(child: Text("No categories found."));
+        }
+
+        return ListView.builder(
+          itemCount: categoryController.categories.length,
+          itemBuilder: (context, index) {
+            final CategoryModel category = categoryController.categories[index];
+            return ListTile(
+              contentPadding: EdgeInsets.symmetric(horizontal: 20,vertical: 10),
+              onTap: () {},
+              leading: CircleAvatar(
+                backgroundColor: AppStyles.primaryColor,
+                backgroundImage: NetworkImage(category.image),
+                radius: 26,
+              ),
+              title: Text(category.title),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            );
+          },
+        );
+      }),
     );
   }
 }

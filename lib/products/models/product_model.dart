@@ -1,25 +1,25 @@
-class BrandModel {
+class BrandProductModel {
   final int id;
   final String title;
 
-  BrandModel({required this.id, required this.title});
+  BrandProductModel({required this.id, required this.title});
 
-  factory BrandModel.fromJson(Map<String, dynamic> json) {
-    return BrandModel(
+  factory BrandProductModel.fromJson(Map<String, dynamic> json) {
+    return BrandProductModel(
       id: json['id'],
       title: json['title'],
     );
   }
 }
 
-class CategoryModel {
+class CategoryProductModel {
   final int id;
   final String title;
 
-  CategoryModel({required this.id, required this.title});
+  CategoryProductModel({required this.id, required this.title});
 
-  factory CategoryModel.fromJson(Map<String, dynamic> json) {
-    return CategoryModel(
+  factory CategoryProductModel.fromJson(Map<String, dynamic> json) {
+    return CategoryProductModel(
       id: json['id'],
       title: json['title'],
     );
@@ -30,8 +30,8 @@ class CategoryModel {
 
 class ProductModel {
   final int id;
-    final CategoryModel category;
-  final BrandModel brand;
+    final CategoryProductModel category;
+  final BrandProductModel brand;
   final String title;
   final String slug;
   final String? description;
@@ -72,8 +72,8 @@ class ProductModel {
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
       id: json['id'],
-      category: CategoryModel.fromJson(json['category']),
-      brand: BrandModel.fromJson(json['brand']),
+      category: CategoryProductModel.fromJson(json['category']),
+      brand: BrandProductModel.fromJson(json['brand']),
       title: json['title'],
       slug: json['slug'],
       description: json['description'],
