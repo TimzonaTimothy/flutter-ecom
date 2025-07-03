@@ -128,7 +128,7 @@ class _ProductCardState extends State<ProductCard> {
 
             const SizedBox(height: 5),
             Padding(
-              padding: const EdgeInsets.only( right: 8),
+              padding: const EdgeInsets.only(right: 8),
               child: Row(
                 children: [
                   Expanded(
@@ -139,7 +139,8 @@ class _ProductCardState extends State<ProductCard> {
                         child: Text(
                           widget.title ?? "Untitled Product",
                           style: AppStyles.headLineStyle4.copyWith(
-                              fontWeight: FontWeight.bold, color: AppStyles.greColor),
+                              fontWeight: FontWeight.bold,
+                              color: AppStyles.greColor),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),
@@ -150,8 +151,8 @@ class _ProductCardState extends State<ProductCard> {
                     children: [
                       Icon(Icons.star, color: AppStyles.primaryColor, size: 20),
                       const SizedBox(width: 4),
-                  Text(widget.rating.toStringAsFixed(1),
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(widget.rating.toStringAsFixed(1),
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   )
                 ],
@@ -160,7 +161,8 @@ class _ProductCardState extends State<ProductCard> {
             GestureDetector(
               onTap: widget.onTap,
               child: Padding(
-                padding: const EdgeInsets.only(left: 8.0, bottom: 8, right: 8),
+                padding: const EdgeInsets.only(
+                    left: 8.0, bottom: 8, right: 8, top: 3),
                 child: Row(
                   children: [
                     Text(

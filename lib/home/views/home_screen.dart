@@ -321,7 +321,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 15,
         mainAxisSpacing: 20,
-        childAspectRatio: 0.79,
+        childAspectRatio: 0.76,
         children: productsController.products.map((product) {
           final imageUrl =
               (product.imageUrls != null && product.imageUrls!.isNotEmpty)

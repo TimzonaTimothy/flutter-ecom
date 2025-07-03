@@ -1,6 +1,4 @@
-import 'package:ecom_app/home/views/home_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/filter_card.dart';
@@ -137,7 +135,7 @@ class _WishListScreenState extends State<WishListScreen> {
       crossAxisCount: 2,
       crossAxisSpacing: 15,
       mainAxisSpacing: 20,
-      childAspectRatio: 0.79,
+      childAspectRatio: 0.76,
       children: products.map((product) {
         return ProductCard(
           imagePath:
@@ -145,7 +143,6 @@ class _WishListScreenState extends State<WishListScreen> {
           title: product['title']!,
           price: product['price']!,
           rating: double.parse(product['rating'] ?? '4'),
-
           oldPrice: product['price']!,
           onTap: () {},
           onTapWishlist: () {},
