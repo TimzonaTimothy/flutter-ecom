@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../../base/res/base_url.dart';
 import '../../base/utils/snackbar.dart';
 import '../views/sign_in.dart';
+import '../views/sign_up_otp_code.dart';
 
 class RegisterController extends GetxController {
   var isLoad = false.obs;
@@ -37,7 +38,7 @@ class RegisterController extends GetxController {
         showSuccessSnackbar("Registration successful. Please login.");
         log('Registration success: ${response.body}');
         Get.offAll(
-          () => const SignInScreen(),
+          () => const SignUpOtpCode(),
           transition: Transition.rightToLeftWithFade,
           duration: const Duration(milliseconds: 500),
         );

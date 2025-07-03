@@ -303,6 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
             imagePath: imageUrl,
             title: product.title,
             price: product.originalPrice!,
+            rating: product.rating!,
             oldPrice: product.discountPrice!,
             onTap: () {
               Get.to(

@@ -7,6 +7,7 @@ import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/app_double_text.dart';
 import '../../base/widgets/primary_button.dart';
 import '../../base/widgets/primary_input.dart';
+import 'sign_up_otp_code.dart';
 
 class SignUpSreen extends StatefulWidget {
   const SignUpSreen({super.key});
@@ -200,7 +201,13 @@ class _SignUpSreenState extends State<SignUpSreen> {
                       ],
                     ),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        Get.to(
+                            const SignUpOtpCode(),
+                            transition: Transition.rightToLeftWithFade,
+                            duration: const Duration(milliseconds: 500),
+                          );
+                      },
                       child: Text(
                         "Terms & Condition",
                         style: AppStyles.textStyle.copyWith(

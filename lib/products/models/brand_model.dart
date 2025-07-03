@@ -1,0 +1,35 @@
+class Brand {
+  final String title;
+  final String slug;
+  final String description;
+  final DateTime createdDate;
+  final DateTime modifiedDate;
+
+  Brand({
+    required this.title,
+    required this.slug,
+    required this.description,
+    required this.createdDate,
+    required this.modifiedDate,
+  });
+
+  factory Brand.fromJson(Map<String, dynamic> json) {
+    return Brand(
+      title: json['title'],
+      slug: json['slug'],
+      description: json['description'] ?? '',
+      createdDate: DateTime.parse(json['created_date']),
+      modifiedDate: DateTime.parse(json['modified_date']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'slug': slug,
+      'description': description,
+      'created_date': createdDate.toIso8601String(),
+      'modified_date': modifiedDate.toIso8601String(),
+    };
+  }
+}

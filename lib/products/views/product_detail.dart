@@ -394,6 +394,7 @@ class _ProductDetailState extends State<ProductDetail> {
             imagePath: imageUrl,
             title: product.title ?? '',
             price: product.originalPrice ?? '0',
+            rating: product.rating ?? 0,
             oldPrice: product.discountPrice ?? '0',
             onTap: () {
               Get.to(() => ProductDetail(product: product),

@@ -144,6 +144,8 @@ class _WishListScreenState extends State<WishListScreen> {
               "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
           title: product['title']!,
           price: product['price']!,
+          rating: double.parse(product['rating'] ?? '4'),
+
           oldPrice: product['price']!,
           onTap: () {},
           onTapWishlist: () {},

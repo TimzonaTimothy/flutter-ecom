@@ -6,6 +6,7 @@ class ProductCard extends StatefulWidget {
   final String imagePath;
   final String title;
   final String price;
+  final double rating;
   final String oldPrice;
   final VoidCallback? onTap;
   final VoidCallback? onTapWishlist;
@@ -15,6 +16,7 @@ class ProductCard extends StatefulWidget {
       required this.imagePath,
       required this.title,
       required this.price,
+      required this.rating,
       required this.oldPrice,
       required this.onTap,
       required this.onTapWishlist});
@@ -125,17 +127,34 @@ class _ProductCardState extends State<ProductCard> {
             ),
 
             const SizedBox(height: 5),
-            GestureDetector(
-              onTap: widget.onTap,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  widget.title ?? "Untitled Product",
-                  style: AppStyles.headLineStyle4.copyWith(
-                      fontWeight: FontWeight.bold, color: AppStyles.greColor),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
+            Padding(
+              padding: const EdgeInsets.only( right: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: widget.onTap,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text(
+                          widget.title ?? "Untitled Product",
+                          style: AppStyles.headLineStyle4.copyWith(
+                              fontWeight: FontWeight.bold, color: AppStyles.greColor),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.star, color: AppStyles.primaryColor, size: 20),
+                      const SizedBox(width: 4),
+                  Text(widget.rating.toStringAsFixed(1),
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  )
+                ],
               ),
             ),
             GestureDetector(
