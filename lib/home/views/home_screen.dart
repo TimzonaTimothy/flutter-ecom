@@ -6,6 +6,7 @@ import '../../base/res/media.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/app_double_text.dart';
 import '../../base/widgets/category_scroller.dart';
+import '../../base/widgets/category_shimmer.dart';
 import '../../base/widgets/filter_card.dart';
 import '../../base/widgets/image_sliders.dart';
 import '../../base/widgets/product_card.dart';
@@ -256,14 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.only(left: 20),
             child: Obx(() {
               if (categoryController.isLoading.value) {
-                return SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    color: AppStyles.primaryColor,
-                    strokeWidth: 2,
-                  ),
-                );
+                return const CategoryShimmer();
               }
 
               final items = categoryController.categories.map((category) {

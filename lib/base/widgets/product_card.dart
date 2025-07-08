@@ -117,7 +117,7 @@ class _ProductCardState extends State<ProductCard> {
                               ? Icons.favorite
                               : Icons.favorite_border_outlined,
                           color:
-                              isFavorite ? AppStyles.textColor : Colors.black,
+                              isFavorite ? AppStyles.blackColor : AppStyles.blackColor,
                         ),
                       ),
                     ),
