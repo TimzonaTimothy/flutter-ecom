@@ -40,8 +40,34 @@ class ProductListByCategory extends StatelessWidget {
                   .toList();
 
               if (filteredProducts.isEmpty) {
-                return const Center(
-                    child: Text("No products in this category"));
+                return  Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.shopping_bag_outlined,
+                size: 64,
+                color: AppStyles.whiteSmokeColor,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No products in this category',
+                style: AppStyles.textStyle.copyWith(
+                  color: AppStyles.whiteSmokeColor,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                productsController.getFilterDescription(),
+                style: AppStyles.textStyle.copyWith(
+                  color: AppStyles.whiteSmokeColor,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        );
               }
 
               return GridView.count(

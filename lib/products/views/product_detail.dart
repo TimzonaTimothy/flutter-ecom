@@ -1,6 +1,5 @@
 import 'package:ecom_app/base/res/media.dart';
 import 'package:ecom_app/base/widgets/app_double_text.dart';
-import 'package:ecom_app/home/views/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -41,17 +40,16 @@ class _ProductDetailState extends State<ProductDetail> {
     // Simulate a delay like fetching from API
 
     imageList = widget.product.imageUrls ?? [];
- 
 
- // Register controller if not already
-  if (!Get.isRegistered<ProductsController>()) {
-    Get.put(ProductsController());
-  }
+    // Register controller if not already
+    if (!Get.isRegistered<ProductsController>()) {
+      Get.put(ProductsController());
+    }
 
-  // Fetch similar products here, safely outside GetBuilder
-  Future.delayed(Duration.zero, () {
-    ProductsController.instance.getProduct();
-  });
+    // Fetch similar products here, safely outside GetBuilder
+    Future.delayed(Duration.zero, () {
+      ProductsController.instance.getProduct();
+    });
 
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
@@ -87,31 +85,6 @@ class _ProductDetailState extends State<ProductDetail> {
       body: ListView(
           padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
           children: [
-            // ClipRRect(
-            //   borderRadius: BorderRadius.circular(20),
-            //   child: Image.asset(AppMedia.onborading2,
-            //       height: 300, fit: BoxFit.cover),
-            // ),
-            // const SizedBox(height: 12),
-            // SizedBox(
-            //   height: 70,
-            //   child: ListView.separated(
-            //     scrollDirection: Axis.horizontal,
-            //     itemCount: imageList.length,
-            //     itemBuilder: (context, index) => ClipRRect(
-            //       borderRadius: BorderRadius.circular(10),
-            //       child: Image.asset(
-            //         imageList[index],
-            //         width: 60,
-            //         height: 60,
-            //         fit: BoxFit.cover,
-            //       ),
-            //     ),
-            //     separatorBuilder: (context, index) =>
-            //         const SizedBox(width: 10),
-            //   ),
-            // ),
-
             Stack(
               children: [
                 ClipRRect(
@@ -312,8 +285,8 @@ class _ProductDetailState extends State<ProductDetail> {
               ),
               label: Text(
                 "Add to Cart",
-                style:
-                    AppStyles.headLineStyle3.copyWith(color: AppStyles.whiteColor),
+                style: AppStyles.headLineStyle3
+                    .copyWith(color: AppStyles.whiteColor),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppStyles.primaryColor,
@@ -330,83 +303,48 @@ class _ProductDetailState extends State<ProductDetail> {
     );
   }
 
-  // Widget _buildProductGrid() {
-   
-  //   return GetBuilder<ProductsController>(
-  //     initState: (_) {
-  //     ProductsController.instance.getProduct(); // fetch products
-  //   },
-  //      builder: (productsController) {
-  //     final products = productsController.products
-  //         .where((p) => p.id != widget.product.id) // optionally exclude current product
-  //         .toList();
-
-  //     return GridView.count(
-  //       physics: const NeverScrollableScrollPhysics(),
-  //       shrinkWrap: true,
-  //       crossAxisCount: 2,
-  //       crossAxisSpacing: 15,
-  //       mainAxisSpacing: 20,
-  //       childAspectRatio: 0.69,
-  //       children: products.map((product) {
-  //         final imageUrl = (product.imageUrls != null && product.imageUrls!.isNotEmpty)
-  //             ? product.imageUrls!.first
-  //             : AppMedia.welcomeImage;
-  //         return ProductCard(
-  //          imagePath: imageUrl,
-  //           title: product.title ?? '',
-  //           price: product.originalPrice ?? '0',
-  //           oldPrice: product.discountPrice ?? '0',
-  //           onTap: () {
-  //             Get.to( () =>
-  //               // const ProductDetail(product: products,),
-  //               const HomeScreen(),
-  //               transition: Transition.rightToLeftWithFade,
-  //               duration: const Duration(milliseconds: 500),
-  //             );
-  //           },
-  //           onTapWishlist: () {},
-  //         );
-  //       }).toList(),
-  //     );}
-  //   );
-  // } 
-
   Widget _buildProductGrid() {
-  return GetBuilder<ProductsController>(
-    builder: (productsController) {
-      final products = productsController.products
-          .where((p) => p.id != widget.product.id)
-          .toList();
+    return GetBuilder<ProductsController>(
+      builder: (productsController) {
+        final currentProduct = widget.product;
+        final similarProducts = productsController.products
+            .where((p) =>
+                p.id != currentProduct.id &&
+                p.productType == currentProduct.productType)
+            .toList();
 
-      return GridView.count(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        crossAxisCount: 2,
-        crossAxisSpacing: 15,
-        mainAxisSpacing: 20,
-        childAspectRatio: 0.76,
-        children: products.map((product) {
-          final imageUrl = (product.imageUrls != null && product.imageUrls!.isNotEmpty)
-              ? product.imageUrls!.first
-              : AppMedia.welcomeImage;
-          return ProductCard(
-            imagePath: imageUrl,
-            title: product.title ?? '',
-            price: product.originalPrice ?? '0',
-            rating: product.rating ?? 0,
-            oldPrice: product.discountPrice ?? '0',
-            onTap: () {
-              Get.to(() => ProductDetail(product: product),
-                  transition: Transition.rightToLeftWithFade,
-                  duration: const Duration(milliseconds: 500));
-            },
-            onTapWishlist: () {},
-          );
-        }).toList(),
-      );
-    },
-  );
-}
+        // final products = productsController.products
+        //     .where((p) => p.id != widget.product.id)
+        //     .toList();
 
+        return GridView.count(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          crossAxisCount: 2,
+          crossAxisSpacing: 15,
+          mainAxisSpacing: 20,
+          childAspectRatio: 0.76,
+          children: similarProducts.map((product) {
+            final imageUrl =
+                (product.imageUrls != null && product.imageUrls!.isNotEmpty)
+                    ? product.imageUrls!.first
+                    : AppMedia.welcomeImage;
+            return ProductCard(
+              imagePath: imageUrl,
+              title: product.title ?? '',
+              price: product.originalPrice ?? '0',
+              rating: product.rating ?? 0,
+              oldPrice: product.discountPrice ?? '0',
+              onTap: () {
+                Get.to(() => ProductDetail(product: product),
+                    transition: Transition.rightToLeftWithFade,
+                    duration: const Duration(milliseconds: 500));
+              },
+              onTapWishlist: () {},
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
 }

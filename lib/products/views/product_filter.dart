@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
+import 'product_list_by_filters.dart';
 
 class FilterScreen extends StatefulWidget {
   const FilterScreen({super.key});
@@ -153,7 +154,11 @@ class _FilterScreenState extends State<FilterScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  Get.to(() => const ProductListByFilters(),
+                      transition: Transition.rightToLeftWithFade,
+                      duration: const Duration(milliseconds: 500));
+                },
                 label: Text(
                   "Apply",
                   style: AppStyles.headLineStyle3
