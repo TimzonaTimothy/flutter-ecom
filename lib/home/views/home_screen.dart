@@ -30,35 +30,27 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
   late final CategoryController categoryController;
+  late final ProductsController productsController;
 
   int selectedFilterIndex = 0;
 
   final List<String> filters = ['All', 'Newest', 'Popular', 'Man', 'Woman'];
 
-  final List<Map<String, String>> allProducts = [
-    {'title': 'Summer Jacket', 'price': '100'},
-    {'title': 'Winter Hoodie', 'price': '120'},
-    {'title': 'Sneakers', 'price': '90'},
-    {'title': 'Raincoat', 'price': '80'},
-    // Add category key if you want to filter by category
-  ];
-
-  List<Map<String, String>> get filteredProducts {
-    // Replace with real filter logic
-    if (selectedFilterIndex == 0) return allProducts; // "All"
-    return allProducts.reversed.toList(); // For demo
-  }
-
+ 
   @override
   void initState() {
     super.initState();
     if (!Get.isRegistered<CategoryController>()) {
       Get.put(CategoryController());
     }
+    if (!Get.isRegistered<ProductsController>()) {
+      Get.put(ProductsController());
+    }
 
     categoryController = Get.find<CategoryController>();
+    productsController = Get.find<ProductsController>();
 
-    Get.put(ProductsController());
+    // Get.put(ProductsController());
 
     // Simulate a delay like fetching from API
     Future.delayed(const Duration(seconds: 3), () {
@@ -69,6 +61,8 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -281,15 +275,23 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Padding(
             padding: const EdgeInsets.only(left: 20),
-            child: FilterChipsRow(
+            child: Obx(() => FilterChipsRow(
               filters: filters,
-              selectedIndex: selectedFilterIndex,
+              selectedIndex: productsController.selectedFilterIndex.value,
               onSelected: (index) {
-                setState(() {
-                  selectedFilterIndex = index;
-                });
+                productsController.applyFilter(index);
               },
-            ),
+            )),
+            // child: FilterChipsRow(
+            //   filters: filters,
+            //   selectedIndex: selectedFilterIndex,
+            //   onSelected: (index) {
+            //     setState(() {
+            //       selectedFilterIndex = index;
+            //     });
+                
+            //   },
+            // ),
           ),
           const SizedBox(height: 20),
           Padding(
@@ -302,13 +304,46 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+
   Widget _buildProductGrid() {
-    return GetBuilder<ProductsController>(initState: (state) {
-      ProductsController.instance.getProduct();
-    }, builder: (productsController) {
+    return Obx(() {
       if (productsController.isLoad.value) {
         return const ProductCardShimmer();
       }
+
+      final filteredProducts = productsController.filteredProducts;
+
+      if (filteredProducts.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.shopping_bag_outlined,
+                size: 64,
+                color: AppStyles.whiteSmokeColor,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No products found',
+                style: AppStyles.textStyle.copyWith(
+                  color: AppStyles.whiteSmokeColor,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                productsController.getFilterDescription(),
+                style: AppStyles.textStyle.copyWith(
+                  color: AppStyles.whiteSmokeColor,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
       return GridView.count(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
@@ -316,13 +351,12 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisSpacing: 15,
         mainAxisSpacing: 20,
         childAspectRatio: 0.76,
-        children: productsController.products.map((product) {
+        children: filteredProducts.map((product) {
           final imageUrl =
               (product.imageUrls != null && product.imageUrls!.isNotEmpty)
                   ? product.imageUrls!.first
                   : AppMedia.welcomeImage;
           return ProductCard(
-            // imagePath: AppMedia.welcomeImage,
             imagePath: imageUrl,
             title: product.title,
             price: product.originalPrice!,
@@ -330,9 +364,7 @@ class _HomeScreenState extends State<HomeScreen> {
             oldPrice: product.discountPrice!,
             onTap: () {
               Get.to(
-                () =>
-                    // const ProductDetail(),
-                    ProductDetail(product: product),
+                () => ProductDetail(product: product),
                 transition: Transition.rightToLeftWithFade,
                 duration: const Duration(milliseconds: 500),
               );
@@ -343,4 +375,47 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     });
   }
+
+
+  // Widget _buildProductGrid() {
+  //   return GetBuilder<ProductsController>(initState: (state) {
+  //     ProductsController.instance.getProduct();
+  //   }, builder: (productsController) {
+  //     if (productsController.isLoad.value) {
+  //       return const ProductCardShimmer();
+  //     }
+  //     return GridView.count(
+  //       physics: const NeverScrollableScrollPhysics(),
+  //       shrinkWrap: true,
+  //       crossAxisCount: 2,
+  //       crossAxisSpacing: 15,
+  //       mainAxisSpacing: 20,
+  //       childAspectRatio: 0.76,
+  //       children: productsController.products.map((product) {
+  //         final imageUrl =
+  //             (product.imageUrls != null && product.imageUrls!.isNotEmpty)
+  //                 ? product.imageUrls!.first
+  //                 : AppMedia.welcomeImage;
+  //         return ProductCard(
+  //           // imagePath: AppMedia.welcomeImage,
+  //           imagePath: imageUrl,
+  //           title: product.title,
+  //           price: product.originalPrice!,
+  //           rating: product.rating,
+  //           oldPrice: product.discountPrice!,
+  //           onTap: () {
+  //             Get.to(
+  //               () =>
+  //                   // const ProductDetail(),
+  //                   ProductDetail(product: product),
+  //               transition: Transition.rightToLeftWithFade,
+  //               duration: const Duration(milliseconds: 500),
+  //             );
+  //           },
+  //           onTapWishlist: () {},
+  //         );
+  //       }).toList(),
+  //     );
+  //   });
+  // } 
 }

@@ -41,3 +41,44 @@ class CategoryController extends GetxController {
     isLoading.value = false;
   }
 }
+
+// Get products by category (if you have category filtering)
+  // Future<void> getProductsByCategory(String categoryId) async {
+  //   isLoad.value = true;
+  //   update();
+    
+  //   try {
+  //     final data = await MyRequest('products/category/$categoryId', {}, false).getApi();
+  //     if (data == null) {
+  //       isLoad.value = false;
+  //       update();
+  //       return;
+  //     }
+
+  //     final decoded = jsonDecode(data);
+  //     if (decoded is List) {
+  //       final productList = decoded
+  //           .whereType<Map<String, dynamic>>()
+  //           .map((item) => ProductModel.fromJson(item))
+  //           .toList();
+        
+  //       allProducts.value = productList;
+  //       applyFilter(selectedFilterIndex.value);
+        
+  //     } else {
+  //       print("Expected a list but got: ${decoded.runtimeType}");
+  //     }
+  //   } catch (e) {
+  //     print("Error fetching products by category: $e");
+  //   } finally {
+  //     isLoad.value = false;
+  //     update();
+  //   }
+  // }
+
+  // // Clear filters
+  // void clearFilters() {
+  //   selectedFilterIndex.value = 0;
+  //   products.value = allProducts.value;
+  //   update();
+  // }
