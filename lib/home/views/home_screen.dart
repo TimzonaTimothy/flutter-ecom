@@ -34,9 +34,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int selectedFilterIndex = 0;
 
-  final List<String> filters = ['All', 'Newest', 'Popular', 'Man', 'Woman'];
+  final List<String> filters = [
+    'All',
+    'Newest',
+    'Popular',
+    'Man',
+    'Woman',
+    'unisex'
+  ];
 
- 
   @override
   void initState() {
     super.initState();
@@ -50,8 +56,6 @@ class _HomeScreenState extends State<HomeScreen> {
     categoryController = Get.find<CategoryController>();
     productsController = Get.find<ProductsController>();
 
-    // Get.put(ProductsController());
-
     // Simulate a delay like fetching from API
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
@@ -61,8 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -276,12 +278,12 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.only(left: 20),
             child: Obx(() => FilterChipsRow(
-              filters: filters,
-              selectedIndex: productsController.selectedFilterIndex.value,
-              onSelected: (index) {
-                productsController.applyFilter(index);
-              },
-            )),
+                  filters: filters,
+                  selectedIndex: productsController.selectedFilterIndex.value,
+                  onSelected: (index) {
+                    productsController.applyFilter(index);
+                  },
+                )),
             // child: FilterChipsRow(
             //   filters: filters,
             //   selectedIndex: selectedFilterIndex,
@@ -289,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
             //     setState(() {
             //       selectedFilterIndex = index;
             //     });
-                
+
             //   },
             // ),
           ),
@@ -303,7 +305,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
 
   Widget _buildProductGrid() {
     return Obx(() {
@@ -376,7 +377,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-
   // Widget _buildProductGrid() {
   //   return GetBuilder<ProductsController>(initState: (state) {
   //     ProductsController.instance.getProduct();
@@ -417,5 +417,5 @@ class _HomeScreenState extends State<HomeScreen> {
   //       }).toList(),
   //     );
   //   });
-  // } 
+  // }
 }

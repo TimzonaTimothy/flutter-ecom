@@ -6,15 +6,18 @@ enum FilterType {
   popular,
   man,
   woman,
+  unisex,
 }
 
 class ProductFilterService {
-  static final ProductFilterService _instance = ProductFilterService._internal();
+  static final ProductFilterService _instance =
+      ProductFilterService._internal();
   factory ProductFilterService() => _instance;
   ProductFilterService._internal();
 
   // Filter products based on filter type
-  List<ProductModel> filterProducts(List<ProductModel> products, FilterType filterType) {
+  List<ProductModel> filterProducts(
+      List<ProductModel> products, FilterType filterType) {
     switch (filterType) {
       case FilterType.all:
         return _filterAll(products);
@@ -26,11 +29,14 @@ class ProductFilterService {
         return _filterMen(products);
       case FilterType.woman:
         return _filterWomen(products);
+      case FilterType.unisex:
+        return _filterUnisex(products);
     }
   }
 
   // Filter products by index (for backward compatibility)
-  List<ProductModel> filterProductsByIndex(List<ProductModel> products, int index) {
+  List<ProductModel> filterProductsByIndex(
+      List<ProductModel> products, int index) {
     final filterType = _getFilterTypeFromIndex(index);
     return filterProducts(products, filterType);
   }
@@ -48,6 +54,8 @@ class ProductFilterService {
         return FilterType.man;
       case 4:
         return FilterType.woman;
+        case 5:
+        return FilterType.unisex;
       default:
         return FilterType.all;
     }
@@ -60,22 +68,19 @@ class ProductFilterService {
 
   List<ProductModel> _filterNewest(List<ProductModel> products) {
     final filteredProducts = products.where((product) {
-      // If you have a createdAt field in your ProductModel
-      // return product.createdAt != null;
-      return true; // For now, return all products
+      return product.createdDate != null;
     }).toList();
 
-    // Sort by creation date (newest first)
-    // If you have a createdAt field:
-    // filteredProducts.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-    
+    // sort by newest first (latest date first)
+    filteredProducts.sort((a, b) => b.createdDate.compareTo(a.createdDate));
+
     return filteredProducts;
   }
 
   List<ProductModel> _filterPopular(List<ProductModel> products) {
     final filteredProducts = products.where((product) {
       // Filter by rating (popular products have rating >= 4.0)
-      return product.rating != null && product.rating! >= 4.0;
+      return product.rating >= 4.0;
     }).toList();
 
     // Sort by rating (highest first)
@@ -88,38 +93,22 @@ class ProductFilterService {
 
   List<ProductModel> _filterMen(List<ProductModel> products) {
     return products.where((product) {
-      // If you have a category field in your ProductModel
-      // return product.category?.toLowerCase().contains('man') == true ||
-      //        product.category?.toLowerCase().contains('men') == true;
-      
-      // If you have a gender field:
-      // return product.gender?.toLowerCase() == 'man' || 
-      //        product.gender?.toLowerCase() == 'men';
-      List<ProductModel> _filterMen(List<ProductModel> products) {
-  return products.where((product) {
-    return 
-           product.productType?.toLowerCase() == 'men';
-  }).toList();
-}
-
-      
-      // For now, return all products (modify based on your ProductModel structure)
-      return true;
+      return product.productType.toLowerCase() == 'man' ||
+          product.productType.toLowerCase() == 'men';
     }).toList();
   }
 
   List<ProductModel> _filterWomen(List<ProductModel> products) {
     return products.where((product) {
-      // If you have a category field in your ProductModel
-      // return product.category?.toLowerCase().contains('woman') == true ||
-      //        product.category?.toLowerCase().contains('women') == true;
-      
-      // If you have a gender field:
-      // return product.gender?.toLowerCase() == 'woman' || 
-      //        product.gender?.toLowerCase() == 'women';
-      
-      // For now, return all products (modify based on your ProductModel structure)
-      return true;
+      return product.productType.toLowerCase() == 'woman' ||
+          product.productType.toLowerCase() == 'women';
+    }).toList();
+  }
+
+  List<ProductModel> _filterUnisex(List<ProductModel> products) {
+    return products.where((product) {
+      return product.productType.toLowerCase() == 'unisex';
+      //  || product.productType?.toLowerCase() == 'women';
     }).toList();
   }
 
@@ -136,6 +125,8 @@ class ProductFilterService {
         return 'Showing products for men';
       case 4:
         return 'Showing products for women';
+      case 5:
+        return 'Showing products for unisex';
       default:
         return 'Showing all products';
     }
@@ -154,6 +145,8 @@ class ProductFilterService {
         return 'Man';
       case 4:
         return 'Woman';
+      case 5:
+        return 'Unisex';
       default:
         return 'All';
     }

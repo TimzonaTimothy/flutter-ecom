@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../controllers/category_controller.dart';
 import '../models/category_model.dart';
+import 'product_list_by_category.dart';
 
 class CategoryList extends StatefulWidget {
   const CategoryList({super.key});
@@ -51,8 +52,15 @@ class _CategoryListState extends State<CategoryList> {
           itemBuilder: (context, index) {
             final CategoryModel category = categoryController.categories[index];
             return ListTile(
-              contentPadding: EdgeInsets.symmetric(horizontal: 20,vertical: 10),
-              onTap: () {},
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              onTap: () {
+                Get.to(
+                  () => const ProductListByCategory(),
+                  transition: Transition.rightToLeftWithFade,
+                  duration: const Duration(milliseconds: 500),
+                );
+              },
               leading: CircleAvatar(
                 backgroundColor: AppStyles.primaryColor,
                 backgroundImage: NetworkImage(category.image),
