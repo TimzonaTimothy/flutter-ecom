@@ -1,18 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../base/res/media.dart';
 import '../../base/res/styles/app_styles.dart';
+import '../../base/widgets/product_card.dart';
+import '../controllers/product_controller.dart';
+import '../models/product_model.dart';
+import 'product_detail.dart';
 
 class ProductListByCategory extends StatelessWidget {
-  const ProductListByCategory({super.key});
+  final CategoryProductModel category;
+
+  const ProductListByCategory({super.key, required this.category});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: AppStyles.bgColor,
+    return Scaffold(
+      backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
         backgroundColor: AppStyles.bgColor,
         elevation: 0,
-        title: Text("Jackets", style: AppStyles.headLineStyle2),
+        title: Text(category.title, style: AppStyles.headLineStyle2),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -20,12 +28,54 @@ class ProductListByCategory extends StatelessWidget {
             Get.back();
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite_border, color: Colors.black),
-            onPressed: () {},
-          )
+      ),
+      body: ListView(
+        shrinkWrap: true,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        children: [
+          GetBuilder<ProductsController>(
+            builder: (productsController) {
+              final filteredProducts = productsController.products
+                  .where((product) => product.category.id == category.id)
+                  .toList();
+
+              if (filteredProducts.isEmpty) {
+                return const Center(
+                    child: Text("No products in this category"));
+              }
+
+              return GridView.count(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                crossAxisCount: 2,
+                crossAxisSpacing: 15,
+                mainAxisSpacing: 20,
+                childAspectRatio: 0.76,
+                children: filteredProducts.map((product) {
+                  final imageUrl = (product.imageUrls != null &&
+                          product.imageUrls!.isNotEmpty)
+                      ? product.imageUrls!.first
+                      : AppMedia.welcomeImage;
+
+                  return ProductCard(
+                    imagePath: imageUrl,
+                    title: product.title,
+                    price: product.originalPrice ?? '0',
+                    rating: product.rating,
+                    oldPrice: product.discountPrice ?? '0',
+                    onTap: () {
+                      Get.to(() => ProductDetail(product: product),
+                          transition: Transition.rightToLeftWithFade,
+                          duration: const Duration(milliseconds: 500));
+                    },
+                    onTapWishlist: () {},
+                  );
+                }).toList(),
+              );
+            },
+          ),
         ],
-      ),);
+      ),
+    );
   }
 }

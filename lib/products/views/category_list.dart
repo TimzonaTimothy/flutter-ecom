@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../controllers/category_controller.dart';
 import '../models/category_model.dart';
+import '../models/product_model.dart';
 import 'product_list_by_category.dart';
 
 class CategoryList extends StatefulWidget {
@@ -55,8 +56,12 @@ class _CategoryListState extends State<CategoryList> {
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               onTap: () {
+                final categoryProduct = CategoryProductModel(
+                  id: category.id,
+                  title: category.title,
+                );
                 Get.to(
-                  () => const ProductListByCategory(),
+                  () => ProductListByCategory(category: categoryProduct),
                   transition: Transition.rightToLeftWithFade,
                   duration: const Duration(milliseconds: 500),
                 );

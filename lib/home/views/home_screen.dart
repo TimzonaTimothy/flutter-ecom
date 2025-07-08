@@ -14,9 +14,11 @@ import '../../base/widgets/product_shimmer.dart';
 import '../../notification/views/notification_screen.dart';
 import '../../products/controllers/category_controller.dart';
 import '../../products/controllers/product_controller.dart';
+import '../../products/models/product_model.dart';
 import '../../products/views/category_list.dart';
 import '../../products/views/product_detail.dart';
 import '../../products/views/product_filter.dart';
+import '../../products/views/product_list_by_category.dart';
 import 'location_screen.dart';
 import 'search_screen.dart';
 
@@ -266,8 +268,20 @@ class _HomeScreenState extends State<HomeScreen> {
               return CategoryScroller(
                 items: items,
                 onTap: (label) {
-                  print('Tapped category: $label');
-                  // TODO: Add your filter logic here
+                  final tappedCategory =
+                      categoryController.categories.firstWhere(
+                    (category) => category.title == label,
+                    orElse: () => throw Exception('Category not found'),
+                  );
+                  final categoryProduct = CategoryProductModel(
+                    id: tappedCategory.id,
+                    title: tappedCategory.title,
+                  );
+                  Get.to(
+                    () => ProductListByCategory(category: categoryProduct),
+                    transition: Transition.rightToLeftWithFade,
+                    duration: const Duration(milliseconds: 500),
+                  );
                 },
               );
             }),
