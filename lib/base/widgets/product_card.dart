@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
+import '../../wishlist/controllers/wishlist_controller.dart';
 
 class ProductCard extends StatefulWidget {
+  final int productId;
   final String imagePath;
   final String title;
   final String price;
@@ -10,23 +13,35 @@ class ProductCard extends StatefulWidget {
   final String oldPrice;
   final VoidCallback? onTap;
   final VoidCallback? onTapWishlist;
+  final bool isFavorite;
 
   const ProductCard(
       {super.key,
+      required this.productId,
       required this.imagePath,
       required this.title,
       required this.price,
       required this.rating,
       required this.oldPrice,
       required this.onTap,
-      required this.onTapWishlist});
+      required this.onTapWishlist, 
+      required this.isFavorite,
+      });
 
   @override
   State<ProductCard> createState() => _ProductCardState();
 }
 
 class _ProductCardState extends State<ProductCard> {
+  // bool isFavorite = widget.isFavorite;
   bool isFavorite = false;
+//   late bool isFavorite;
+
+// @override
+// void initState() {
+//   super.initState();
+//   isFavorite = widget.isFavorite;
+// }
 
   void _toggleFavorite() {
     setState(() {
@@ -36,7 +51,8 @@ class _ProductCardState extends State<ProductCard> {
     if (widget.onTapWishlist != null) {
       widget.onTapWishlist!();
     }
-  }
+  } 
+  
 
   @override
   Widget build(BuildContext context) {
@@ -58,35 +74,7 @@ class _ProductCardState extends State<ProductCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // GestureDetector(
-            //   onTap: _toggleFavorite,
-            //   child: Align(
-            //       alignment: Alignment.topRight,
-            //       child: Padding(
-            //         padding: const EdgeInsets.only(top: 8.0, right: 8),
-            //         child: Icon(
-            //           isFavorite
-            //               ? Icons.favorite
-            //               : Icons.favorite_border_outlined,
-            //           color: isFavorite ? AppStyles.textColor : Colors.black,
-            //         ),
-            //       )),
-            // ),
-            // GestureDetector(
-            //   onTap: widget.onTap,
-            //   child: Container(
-            //     height: 150,
-            //     decoration: BoxDecoration(
-            //       color: AppStyles.whiteColor,
-            //       borderRadius: BorderRadius.circular(10),
-            //       image: DecorationImage(
-            //         // image: AssetImage(widget.imagePath),
-            //         image: NetworkImage(widget.imagePath),
-            //         fit: BoxFit.cover,
-            //       ),
-            //     ),
-            //   ),
-            // ),
+            
             GestureDetector(
               onTap: widget.onTap,
               child: Stack(
@@ -106,6 +94,10 @@ class _ProductCardState extends State<ProductCard> {
                     top: 8,
                     right: 8,
                     child: GestureDetector(
+                      // onTap: _toggleFavorite, 
+                      // onTap: () {
+                      //       Get.find<WishlistController>().toggleWishlist(widget.productId);
+                      //     }, 
                       onTap: _toggleFavorite,
                       child: Container(
                         padding: const EdgeInsets.all(10),
@@ -116,8 +108,9 @@ class _ProductCardState extends State<ProductCard> {
                           isFavorite
                               ? Icons.favorite
                               : Icons.favorite_border_outlined,
-                          color:
-                              isFavorite ? AppStyles.blackColor : AppStyles.blackColor,
+                          color: isFavorite
+                              ? AppStyles.primaryColor 
+                              : AppStyles.blackColor,
                         ),
                       ),
                     ),

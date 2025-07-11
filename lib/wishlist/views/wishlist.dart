@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/filter_card.dart';
 import '../../base/widgets/product_card.dart';
+import '../controllers/wishlist_controller.dart';
 
 class WishListScreen extends StatefulWidget {
   const WishListScreen({super.key});
@@ -14,7 +16,7 @@ class WishListScreen extends StatefulWidget {
 class _WishListScreenState extends State<WishListScreen> {
   int selectedFilterIndex = 0;
 
-  final List<String> filters = ['All', 'Newest', 'Popular', 'Man', 'Woman'];
+  final List<String> filters = ['All', 'Newest', 'Popular', 'Man', 'Woman','unisex'];
 
   final List<Map<String, String>> allProducts = [
     {'title': 'Summer Jacket', 'price': '100'},
@@ -39,33 +41,13 @@ class _WishListScreenState extends State<WishListScreen> {
         elevation: 0,
         title: Text("My Wishlist", style: AppStyles.headLineStyle2),
         centerTitle: true,
-        // leading: IconButton(
-        //   icon: const Icon(Icons.arrow_back, color: Colors.black),
-        //   onPressed: () {
-        //     Get.to(
-        //       const HomeScreen(),
-        //       transition: Transition.rightToLeftWithFade,
-        //       duration: const Duration(milliseconds: 500),
-        //     );
-        //   },
-        // ),
+       
       ),
       body: ListView(
         shrinkWrap: true,
         padding: const EdgeInsets.only(bottom: 20, top: 20),
         children: [
-          // Padding(
-          //   padding: const EdgeInsets.only(left: 20),
-          //   child: CategoryScroller(
-          //     items: categories,
-          //     onTap: () {},
-          //   ),
-          // ),
-
-          // const Padding(
-          //   padding: EdgeInsets.only(left: 20),
-          //   child: FilterChipsRow(),
-          // ),
+          
 
           Padding(
             padding: const EdgeInsets.only(left: 20),
@@ -82,50 +64,25 @@ class _WishListScreenState extends State<WishListScreen> {
           const SizedBox(
             height: 20,
           ),
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(horizontal: 20),
-          //   child: _buildProductGrid(),
-          // ),
+         
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 1000),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                final offsetAnimation = Tween<Offset>(
-                        begin: const Offset(1.0, 0.0), end: Offset.zero)
-                    .animate(animation);
-                return SlideTransition(
-                  position: offsetAnimation,
-                  child: FadeTransition(opacity: animation, child: child),
-                );
-              },
-              child: _buildProductGrid(filteredProducts),
-            ),
-          ),
-        ],
-      ),
-    );
+            child: _buildProductGrid(filteredProducts), ),
+            ]),
+          );
+     
   }
 
   Widget _buildProductGrid(List<Map<String, String>> products) {
     final products = [
-      {'title': 'Summer Jacket', 'price': '100'},
-      {'title': 'Winter Hoodie', 'price': '120'},
-      {'title': 'Sneakers', 'price': '90'},
-      {'title': 'Raincoat', 'price': '80'},
-      {'title': 'Summer Jacket', 'price': '100'},
-      {'title': 'Winter Hoodie', 'price': '120'},
-      {'title': 'Sneakers', 'price': '90'},
-      {'title': 'Raincoat', 'price': '80'},
-      {'title': 'Summer Jacket', 'price': '100'},
-      {'title': 'Winter Hoodie', 'price': '120'},
-      {'title': 'Sneakers', 'price': '90'},
-      {'title': 'Raincoat', 'price': '80'},
-      {'title': 'Summer Jacket', 'price': '100'},
-      {'title': 'Winter Hoodie', 'price': '120'},
-      {'title': 'Sneakers', 'price': '90'},
-      {'title': 'Raincoat', 'price': '80'},
+      {'id':'1','title': 'Summer Jacket', 'price': '100'},
+      {'id':'2','title': 'Winter Hoodie', 'price': '120'},
+      {'id':'3','title': 'Sneakers', 'price': '90'},
+      {'id':'4','title': 'Raincoat', 'price': '80'},
+      {'id':'5','title': 'Summer Jacket', 'price': '100'},
+      {'id':'6','title': 'Winter Hoodie', 'price': '120'},
+      {'id':'7','title': 'Sneakers', 'price': '90'},
     ];
 
     return GridView.count(
@@ -137,16 +94,22 @@ class _WishListScreenState extends State<WishListScreen> {
       mainAxisSpacing: 20,
       childAspectRatio: 0.76,
       children: products.map((product) {
-        return ProductCard(
-          imagePath:
-              "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
-          title: product['title']!,
-          price: product['price']!,
-          rating: double.parse(product['rating'] ?? '4'),
-          oldPrice: product['price']!,
-          onTap: () {},
-          onTapWishlist: () {},
-        );
+        return Container();
+//         ProductCard(
+//           productId: int.parse(product['id'].toString()),
+//           imagePath:
+//               "https://assets.ajio.com/medias/sys_master/root/20230720/dYSU/64b95b15a9b42d15c965a70b/-473Wx593H-469514310-blue-MODEL2.jpg",
+//           title: product['title']!,
+//           price: product['price']!,
+//           rating: double.parse(product['rating'] ?? '4'),
+//           oldPrice: product['price']!,
+//           onTap: () {},
+//          onTapWishlist: () {
+//   Get.find<WishlistController>().toggleWishlist(product.id);
+// },
+// isFavorite: Get.find<WishlistController>().isFavorite(int.parse(product.id)),
+
+//         );
       }).toList(),
     );
   }

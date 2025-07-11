@@ -19,6 +19,7 @@ import '../../products/views/category_list.dart';
 import '../../products/views/product_detail.dart';
 import '../../products/views/product_filter.dart';
 import '../../products/views/product_list_by_category.dart';
+import '../../wishlist/controllers/wishlist_controller.dart';
 import 'location_screen.dart';
 import 'search_screen.dart';
 
@@ -53,6 +54,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (!Get.isRegistered<ProductsController>()) {
       Get.put(ProductsController());
+    }
+    // Get.lazyPut(() => WishlistController());
+    if (!Get.isRegistered<WishlistController>()) {
+      Get.put(WishlistController());
     }
 
     categoryController = Get.find<CategoryController>();
@@ -372,11 +377,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ? product.imageUrls!.first
                   : AppMedia.welcomeImage;
           return ProductCard(
+            productId: product.id,
             imagePath: imageUrl,
             title: product.title,
             price: product.originalPrice!,
             rating: product.rating,
             oldPrice: product.discountPrice!,
+            // isFavorite: Get.find<WishlistController>().isFavorite(product.id),
             onTap: () {
               Get.to(
                 () => ProductDetail(product: product),
@@ -384,7 +391,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 duration: const Duration(milliseconds: 500),
               );
             },
-            onTapWishlist: () {},
+//             onTapWishlist: () {
+//   Get.find<WishlistController>().toggleWishlist(product.id);
+// },
+isFavorite: Get.find<WishlistController>().isFavorite(product.id),
+
+onTapWishlist: () async {
+  final wishlistController = Get.find<WishlistController>();
+  final isCurrentlyFavorite = Get.find<WishlistController>().isFavorite(product.id);
+
+  if (isCurrentlyFavorite) {
+    await wishlistController.removeFromWishlist(product.id);
+  } else {
+    await wishlistController.toggleWishlist(product.id); 
+  }
+
+  setState(() {}); // Refresh UI to reflect change
+},
           );
         }).toList(),
       );

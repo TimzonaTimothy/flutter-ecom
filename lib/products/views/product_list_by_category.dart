@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../base/res/media.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/product_card.dart';
+import '../../wishlist/controllers/wishlist_controller.dart';
 import '../controllers/product_controller.dart';
 import '../models/product_model.dart';
 import 'product_detail.dart';
@@ -40,34 +41,34 @@ class ProductListByCategory extends StatelessWidget {
                   .toList();
 
               if (filteredProducts.isEmpty) {
-                return  Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.shopping_bag_outlined,
-                size: 64,
-                color: AppStyles.whiteSmokeColor,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No products in this category',
-                style: AppStyles.textStyle.copyWith(
-                  color: AppStyles.whiteSmokeColor,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                productsController.getFilterDescription(),
-                style: AppStyles.textStyle.copyWith(
-                  color: AppStyles.whiteSmokeColor,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        );
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.shopping_bag_outlined,
+                        size: 64,
+                        color: AppStyles.whiteSmokeColor,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No products in this category',
+                        style: AppStyles.textStyle.copyWith(
+                          color: AppStyles.whiteSmokeColor,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        productsController.getFilterDescription(),
+                        style: AppStyles.textStyle.copyWith(
+                          color: AppStyles.whiteSmokeColor,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               }
 
               return GridView.count(
@@ -84,17 +85,23 @@ class ProductListByCategory extends StatelessWidget {
                       : AppMedia.welcomeImage;
 
                   return ProductCard(
+                    productId: product.id,
                     imagePath: imageUrl,
                     title: product.title,
                     price: product.originalPrice ?? '0',
                     rating: product.rating,
                     oldPrice: product.discountPrice ?? '0',
+                    
                     onTap: () {
                       Get.to(() => ProductDetail(product: product),
                           transition: Transition.rightToLeftWithFade,
                           duration: const Duration(milliseconds: 500));
                     },
-                    onTapWishlist: () {},
+                    onTapWishlist: () {
+  Get.find<WishlistController>().toggleWishlist(product.id);
+},
+isFavorite: Get.find<WishlistController>().isFavorite(product.id),
+
                   );
                 }).toList(),
               );

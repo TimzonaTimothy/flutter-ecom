@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/product_card.dart';
 import '../../base/widgets/product_shimmer.dart';
+import '../../wishlist/controllers/wishlist_controller.dart';
 import '../controllers/product_controller.dart';
 import '../models/product_model.dart';
 
@@ -330,17 +331,24 @@ class _ProductDetailState extends State<ProductDetail> {
                     ? product.imageUrls!.first
                     : AppMedia.welcomeImage;
             return ProductCard(
+              productId: product.id,
               imagePath: imageUrl,
               title: product.title ?? '',
               price: product.originalPrice ?? '0',
               rating: product.rating ?? 0,
               oldPrice: product.discountPrice ?? '0',
+              // isFavorite: Get.find<WishlistController>().isFavorite(product.id),
               onTap: () {
                 Get.to(() => ProductDetail(product: product),
                     transition: Transition.rightToLeftWithFade,
                     duration: const Duration(milliseconds: 500));
               },
-              onTapWishlist: () {},
+              onTapWishlist: () {
+  Get.find<WishlistController>().toggleWishlist(product.id);
+},
+isFavorite: Get.find<WishlistController>().isFavorite(product.id),
+
+              
             );
           }).toList(),
         );

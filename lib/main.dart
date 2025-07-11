@@ -1,9 +1,10 @@
 import 'package:ecom_app/base/res/styles/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:get/get.dart';
+
 import 'base/utils/app_routes.dart';
 import 'splashscreen/splash_screen.dart';
 
@@ -17,20 +18,19 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   prefs = await SharedPreferences.getInstance();
-  
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Ecommerce',
       theme: ThemeData(
-       textTheme: GoogleFonts.poppinsTextTheme(),
+        textTheme: GoogleFonts.poppinsTextTheme(),
         colorScheme: ColorScheme.fromSeed(seedColor: AppStyles.bgColor),
         useMaterial3: true,
       ),
