@@ -30,7 +30,7 @@ class RegisterController extends GetxController {
           "last_name": lastname,
           "email": email,
           "password": password,
-          "re_password": confirmPassword,
+          "password_confirm": confirmPassword,
         },
       );
 

@@ -50,7 +50,7 @@ class CartController {
       log('Fetching cart items...');
       
       final response = await MyRequest(
-        'api/v1/cart/me/',
+        'cart/me/',
         {},
         true, // auth required
         200, // success code
@@ -88,7 +88,7 @@ class CartController {
       log('Adding item to cart: ${cartItem.toJson()}');
       
       final response = await MyRequest(
-        'api/v1/cart/',
+        'cart/',
         cartItem.toJson(),
         true, // auth required
         201, // created status code
@@ -122,7 +122,7 @@ class CartController {
       log('Updating cart item $cartId with quantity $quantity');
       
       final response = await MyRequest(
-        'api/v1/cart/$cartId/',
+        'cart/$cartId/',
         {'quantity': quantity},
         true, // auth required
         200, // success code
@@ -156,7 +156,7 @@ class CartController {
       log('Removing cart item $cartId');
       
       final response = await MyRequest(
-        'api/v1/cart/$cartId/',
+        'cart/$cartId/',
         {},
         true, // auth required
         204, // no content status code for delete
@@ -190,7 +190,7 @@ class CartController {
       log('Clearing cart...');
       
       final response = await MyRequest(
-        'api/v1/cart/clear/',
+        'cart/clear/',
         {},
         true, // auth required
         200, // success code

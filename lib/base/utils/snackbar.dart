@@ -14,7 +14,7 @@ void showSuccessSnackbar(String text) {
 
 void showFailureSnackbar(String text) {
   Get.snackbar(
-    "Success", // Title
+    "Error",
     text, // Message
     snackPosition: SnackPosition.BOTTOM,
     backgroundColor: Colors.red,
