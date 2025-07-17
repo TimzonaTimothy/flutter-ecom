@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../base/res/base_url.dart';
 import '../../base/utils/snackbar.dart';
@@ -35,6 +36,9 @@ class RegisterController extends GetxController {
       );
 
       if (response.statusCode == 201) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("otp_email", email);
+        
         showSuccessSnackbar("Registration successful. Please login.");
         log('Registration success: ${response.body}');
         Get.offAll(

@@ -1,13 +1,41 @@
-import 'package:ecom_app/auth/views/sign_in.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../base/res/styles/app_styles.dart';
+import '../../base/utils/snackbar.dart';
 import '../../base/widgets/primary_button.dart';
+import '../controllers/verify_otp.dart';
 
-class SignUpOtpCode extends StatelessWidget {
+class SignUpOtpCode extends StatefulWidget {
   const SignUpOtpCode({super.key});
+
+  @override
+  State<SignUpOtpCode> createState() => _SignUpOtpCodeState();
+}
+
+class _SignUpOtpCodeState extends State<SignUpOtpCode> {
+  final otpController = Get.put(OtpController());
+
+  // replace dynamically
+  List<TextEditingController> otpControllers =
+      List.generate(4, (_) => TextEditingController());
+
+  String email = '';
+
+  @override
+  void initState() {
+    super.initState();
+    loadEmail();
+  }
+
+  Future<void> loadEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      email = prefs.getString("otp_email") ?? "";
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +72,7 @@ class SignUpOtpCode extends StatelessWidget {
             ),
             Center(
               child: Text(
-                'example@gmail.com',
+                email,
                 style: AppStyles.headLineStyle4
                     .copyWith(color: AppStyles.blackColor),
               ),
@@ -65,6 +93,7 @@ class SignUpOtpCode extends StatelessWidget {
                               FocusScope.of(context).nextFocus();
                             }
                           },
+                          controller: otpControllers[i],
                           decoration: InputDecoration(
                             hintText: '0',
                             border: OutlineInputBorder(
@@ -99,11 +128,14 @@ class SignUpOtpCode extends StatelessWidget {
                     style: AppStyles.headLineStyle4)),
             const SizedBox(width: 4),
             Center(
-                child: Text("Resend code",
-                    style: AppStyles.headLineStyle4.copyWith(
-                        color: AppStyles.primaryColor,
-                        decoration: TextDecoration.underline,
-                        decorationColor: AppStyles.primaryColor))),
+                child: GestureDetector(
+              onTap: () => otpController.resendOtp(email),
+              child: Text("Resend code",
+                  style: AppStyles.headLineStyle4.copyWith(
+                      color: AppStyles.primaryColor,
+                      decoration: TextDecoration.underline,
+                      decorationColor: AppStyles.primaryColor)),
+            )),
             SizedBox(height: size.height * 0.06),
             PrimaryButton(
               verticalPadding: 10,
@@ -111,11 +143,12 @@ class SignUpOtpCode extends StatelessWidget {
               hasBackground: true,
               text: 'Verify',
               onTap: () {
-                Get.to(
-                  const SignInScreen(),
-                  transition: Transition.rightToLeftWithFade,
-                  duration: const Duration(milliseconds: 500),
-                );
+                String otp = otpControllers.map((c) => c.text).join();
+                if (otp.length == 4) {
+                  otpController.verifyOtp(email, otp);
+                } else {
+                  showFailureSnackbar("Enter complete 4-digit OTP.");
+                }
               },
             ),
           ],
