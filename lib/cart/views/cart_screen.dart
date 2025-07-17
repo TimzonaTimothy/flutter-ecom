@@ -565,7 +565,13 @@ class _CartScreenState extends State<CartScreen> {
             PrimaryButton(
               horizontalPadding: 10,
               text: "Continue Shopping",
-              onTap: () => Navigator.pop(context),
+              onTap: (){
+                Get.to(
+                  const HomeScreen(),
+                  transition: Transition.rightToLeftWithFade,
+                  duration: const Duration(milliseconds: 500),
+                );
+              }
             ),
           ],
         ),

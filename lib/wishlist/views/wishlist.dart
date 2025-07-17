@@ -198,10 +198,10 @@ class _WishListScreenState extends State<WishListScreen> {
                 padding: const EdgeInsets.only(right: 16),
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppStyles.primaryColor,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(50),
                     ),
                     child: Text(
                       '${controller.wishlistCount}',
