@@ -2,19 +2,17 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+
 import 'package:ecom_app/base/utils/snackbar.dart';
 import 'package:ecom_app/base/utils/token.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../res/base_url.dart';
 
-const baseUrl = "http://192.168.32.193:8000/api/v1"; 
-// const baseUrl = "https://ecom-api-flutter.onrender.com/api/v1";
-
-const baseURLGeneral = baseUrl;
+const fullUrl = baseUrl;
+const baseURLGeneral = fullUrl;
 
 class MyRequest {
   String path;
@@ -62,7 +60,7 @@ class MyRequest {
       }
 
       // todo, check the response
-      saveTokens(resp['access_token'],authToken!);
+      saveTokens(resp['access_token'], authToken!);
 
       return true;
     } catch (e) {
@@ -83,7 +81,7 @@ class MyRequest {
       // not success
       String message = jsonDecode(response.body)['detail'] ?? "";
       if (showToast && (response.statusCode != 401)) {
-        // showFailureSnackbar(message); 
+        // showFailureSnackbar(message);
         showFailureSnackbar(
           message,
         );
@@ -110,8 +108,8 @@ class MyRequest {
             // showFailureSnackbar(
             //     'Session expired please login again');
             showFailureSnackbar(
-          'Session expired please login again',
-        );
+              'Session expired please login again',
+            );
           }
           removeToken();
           // await UserController.instance.removeUser();
@@ -128,15 +126,18 @@ class MyRequest {
     try {
       String? authToken = getToken();
       Map<String, String> headers = {
-      'Content-Type': 'application/json',
-      if (auth) 'Authorization': 'Bearer $authToken',
-    };
+        'Content-Type': 'application/json',
+        if (auth) 'Authorization': 'Bearer $authToken',
+      };
       log('body: $body');
       log(Uri.parse('$baseURL/$path').toString());
 
       final response = await http
-          .post(Uri.parse('$baseURL/$path'),
-              body: jsonEncode(body), headers: headers,)
+          .post(
+            Uri.parse('$baseURL/$path'),
+            body: jsonEncode(body),
+            headers: headers,
+          )
           .timeout(const Duration(seconds: timeoutTime));
 
       log('response body: ${response.body}');
@@ -329,6 +330,4 @@ class MyRequest {
 
     return response;
   }
-
-  
 }

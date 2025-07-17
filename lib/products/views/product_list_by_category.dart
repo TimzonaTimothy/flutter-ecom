@@ -97,11 +97,7 @@ class ProductListByCategory extends StatelessWidget {
                           transition: Transition.rightToLeftWithFade,
                           duration: const Duration(milliseconds: 500));
                     },
-                    onTapWishlist: () {
-  Get.find<WishlistController>().toggleWishlist(product.id);
-},
-isFavorite: Get.find<WishlistController>().isFavorite(product.id),
-
+                   
                   );
                 }).toList(),
               );

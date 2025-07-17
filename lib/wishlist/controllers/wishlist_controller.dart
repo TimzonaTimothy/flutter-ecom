@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 
 import '../../base/utils/my_request.dart';
+import '../../base/utils/snackbar.dart';
 
 class WishlistController extends GetxController {
   final RxSet<int> favoriteProductIds = <int>{}.obs;
@@ -12,7 +13,7 @@ class WishlistController extends GetxController {
 
   @override
   void onInit() {
-    // loadWishlist();
+    loadWishlist();
     super.onInit();
   }
 
@@ -29,10 +30,12 @@ class WishlistController extends GetxController {
 
       if (response.statusCode == 201) {
         favoriteProductIds.add(productId);
-        // await loadWishlist(); // Reload
+        showSuccessSnackbar('Added to wishlist');
+        await loadWishlist();
       } else if (response.statusCode == 204) {
         favoriteProductIds.remove(productId);
         wishlistItems.removeWhere((item) => item['id'] == productId);
+        showSuccessSnackbar('Removed from wishlist');
       }
 
       update(); // Update UI
@@ -41,78 +44,77 @@ class WishlistController extends GetxController {
     }
   }
 
-  // Future<void> loadWishlist() async {
-  //   try {
-  //     isLoading.value = true;
-  //     final data = await MyRequest('wishlist/me/', {}, true).getApi();
+  Future<void> loadWishlist() async {
+    try {
+      isLoading.value = true;
+      final data = await MyRequest('wishlist/me/', {}, true).getApi();
 
-  //     if (data != null) {
-  //       final List<dynamic> wishlistData = jsonDecode(data);
+      if (data != null) {
+        final List<dynamic> wishlistData = jsonDecode(data);
 
-  //       // Clear existing data
-  //       favoriteProductIds.clear();
-  //       wishlistItems.clear();
+        // Clear existing data
+        favoriteProductIds.clear();
+        wishlistItems.clear();
 
-  //       // Process wishlist items
-  //       for (var item in wishlistData) {
-  //         Map<String, dynamic> processedItem = {};
+        // Process wishlist items
+        for (var item in wishlistData) {
+          Map<String, dynamic> processedItem = {};
 
-  //         // Extract product data based on your API response structure
-  //         if (item['product'] != null) {
-  //           // If the API returns wishlist items with product nested inside
-  //           processedItem = {
-  //             'id': item['product']['id'],
-  //             'wishlistId': item['id'], // The wishlist item ID
-  //             'title': item['product']['title'] ?? 'Unknown Product',
-  //             'price': item['product']['price'] ??
-  //                 item['product']['originalPrice'] ??
-  //                 '0',
-  //             'oldPrice': item['product']['oldPrice'] ??
-  //                 item['product']['discountPrice'] ??
-  //                 '0',
-  //             'rating': item['product']['rating'] ?? 4.0,
-  //             'imageUrl': item['product']['imageUrl'] ??
-  //                 (item['product']['imageUrls'] != null &&
-  //                         item['product']['imageUrls'].isNotEmpty
-  //                     ? item['product']['imageUrls'][0]
-  //                     : 'https://via.placeholder.com/200'),
-  //             'category': item['product']['category'] ?? 'unisex',
-  //             'description': item['product']['description'] ?? '',
-  //             'createdAt':
-  //                 item['created_at'] ?? DateTime.now().toIso8601String(),
-  //           };
+          if (item['product'] != null) {
+            processedItem = {
+              'id': item['product']['id'],
+              'wishlistId': item['id'],
+              'title': item['product']['title'] ?? 'Unknown Product',
+              'price': item['product']['price'] ??
+                  item['product']['originalPrice'] ??
+                  '0',
+              'oldPrice': item['product']['oldPrice'] ??
+                  item['product']['discountPrice'] ??
+                  '0',
+              'rating': item['product']['rating'] ?? 4.0,
+              'imageUrls': (item['product']['imageUrls'] != null &&
+                      item['product']['imageUrls'].isNotEmpty)
+                  ? List<String>.from(item['product']['imageUrls'])
+                  : ['https://via.placeholder.com/200'],
+              'category': item['product']['category'] ?? 'unisex',
+              'description': item['product']['description'] ?? '',
+              'createdAt':
+                  item['created_at'] ?? DateTime.now().toIso8601String(),
+            };
 
-  //           favoriteProductIds.add(item['product']['id']);
-  //         } else {
-  //           // If the API returns different structure
-  //           processedItem = {
-  //             'id': item['productId'] ?? item['product_id'] ?? item['id'],
-  //             'wishlistId': item['id'],
-  //             'title': item['title'] ?? 'Unknown Product',
-  //             'price': item['price'] ?? '0',
-  //             'oldPrice': item['oldPrice'] ?? '0',
-  //             'rating': item['rating'] ?? 4.0,
-  //             'imageUrl': item['imageUrl'] ?? 'https://via.placeholder.com/200',
-  //             'category': item['category'] ?? 'unisex',
-  //             'description': item['description'] ?? '',
-  //             'createdAt':
-  //                 item['created_at'] ?? DateTime.now().toIso8601String(),
-  //           };
+            favoriteProductIds.add(item['product']['id']);
+          } else {
+            processedItem = {
+              'id': item['product'] ?? item['product'] ?? item['id'],
+              'wishlistId': item['id'],
+              'title': item['title'] ?? 'Unknown Product',
+              'price': item['price'] ?? '0',
+              'oldPrice': item['oldPrice'] ?? '0',
+              'rating': item['rating'] ?? 4.0,
+              'imageUrls':
+                  (item['imageUrls'] != null && item['imageUrls'].isNotEmpty)
+                      ? List<String>.from(item['imageUrls'])
+                      : ['https://via.placeholder.com/200'],
+              'category': item['category'] ?? 'unisex',
+              'description': item['description'] ?? '',
+              'createdAt':
+                  item['created_at'] ?? DateTime.now().toIso8601String(),
+            };
 
-  //           favoriteProductIds.add(processedItem['id']);
-  //         }
+            favoriteProductIds.add(processedItem['id']);
+          }
 
-  //         wishlistItems.add(processedItem);
-  //       }
+          wishlistItems.add(processedItem);
+        }
 
-  //       update();
-  //     }
-  //   } catch (e) {
-  //     print("Error loading wishlist: $e");
-  //   } finally {
-  //     isLoading.value = false;
-  //   }
-  // }
+        update();
+      }
+    } catch (e) {
+      print("Error loading wishlist: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
   bool isFavorite(int productId) => favoriteProductIds.contains(productId);
 
@@ -129,21 +131,20 @@ class WishlistController extends GetxController {
     }
 
     return wishlistItems.where((item) {
+      final categoryTitle = (item['category']?['title'] ?? '').toLowerCase();
       switch (filter.toLowerCase()) {
         case 'newest':
-          return true; // You can sort by createdAt if needed
+          return true;
         case 'popular':
           return (item['rating'] ?? 0) >= 4.0;
         case 'man':
         case 'men':
-          return (item['category'] ?? '').toLowerCase().contains('man') ||
-              (item['category'] ?? '').toLowerCase().contains('men');
+          return categoryTitle == 'man' || categoryTitle == 'men';
         case 'woman':
         case 'women':
-          return (item['category'] ?? '').toLowerCase().contains('woman') ||
-              (item['category'] ?? '').toLowerCase().contains('women');
+          return categoryTitle == 'woman' || categoryTitle == 'women';
         case 'unisex':
-          return (item['category'] ?? '').toLowerCase().contains('unisex');
+          return categoryTitle == 'unisex';
         default:
           return true;
       }
@@ -163,7 +164,7 @@ class WishlistController extends GetxController {
   }
 
   // Helper method to refresh wishlist
-  // Future<void> refreshWishlist() async {
-  //   await loadWishlist();
-  // }
+  Future<void> refreshWishlist() async {
+    await loadWishlist();
+  }
 }

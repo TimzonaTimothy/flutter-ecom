@@ -1,6 +1,5 @@
-
-
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../base/utils/my_request.dart';
 import '../../base/utils/snackbar.dart';
@@ -12,27 +11,41 @@ class OtpController extends GetxController {
   Future<void> verifyOtp(String email, String otp) async {
     isLoading.value = true;
 
-    final res = await MyRequest('auth/activate-otp/', {
-      "email": email,
-      "otp": otp,
-    }, false, 200)
+    final res = await MyRequest(
+            'auth/activate-otp/',
+            {
+              "email": email,
+              "otp": otp,
+            },
+            false,
+            200)
         .init()
         .postApi();
 
     isLoading.value = false;
 
     if (res != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('email');
       showSuccessSnackbar("OTP Verified. Account activated.");
-      Get.offAll(() => const SignInScreen());
+      Get.offAll(
+        () => const SignInScreen(),
+        transition: Transition.rightToLeftWithFade,
+        duration: const Duration(milliseconds: 500),
+      );
     }
   }
 
   Future<void> resendOtp(String email) async {
     isLoading.value = true;
 
-    final res = await MyRequest('auth/resend-otp/', {
-      "email": email,
-    }, false, 200)
+    final res = await MyRequest(
+            'auth/resend-otp/',
+            {
+              "email": email,
+            },
+            false,
+            200)
         .init()
         .postApi();
 

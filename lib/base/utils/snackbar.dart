@@ -9,6 +9,7 @@ void showSuccessSnackbar(String text) {
     backgroundColor: Colors.greenAccent,
     colorText: Colors.black,
     duration: Duration(seconds: 2),
+    overlayBlur: 5, 
   );
 }
 
@@ -20,5 +21,7 @@ void showFailureSnackbar(String text) {
     backgroundColor: Colors.red,
     colorText: Colors.white,
     duration: Duration(seconds: 2),
+    overlayBlur: 5, 
   );
 }
+

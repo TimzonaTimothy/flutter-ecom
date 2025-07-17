@@ -34,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
   late final CategoryController categoryController;
   late final ProductsController productsController;
+  late WishlistController wishlistController;
 
   int selectedFilterIndex = 0;
 
@@ -55,10 +56,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!Get.isRegistered<ProductsController>()) {
       Get.put(ProductsController());
     }
-    // Get.lazyPut(() => WishlistController());
     if (!Get.isRegistered<WishlistController>()) {
-      Get.put(WishlistController());
-    }
+  Get.put(WishlistController());
+}
+    wishlistController = Get.find<WishlistController>();
 
     categoryController = Get.find<CategoryController>();
     productsController = Get.find<ProductsController>();
@@ -383,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen> {
             price: product.originalPrice!,
             rating: product.rating,
             oldPrice: product.discountPrice!,
-            // isFavorite: Get.find<WishlistController>().isFavorite(product.id),
+            
             onTap: () {
               Get.to(
                 () => ProductDetail(product: product),
@@ -391,23 +392,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 duration: const Duration(milliseconds: 500),
               );
             },
-//             onTapWishlist: () {
-//   Get.find<WishlistController>().toggleWishlist(product.id);
-// },
-isFavorite: Get.find<WishlistController>().isFavorite(product.id),
-
-onTapWishlist: () async {
-  final wishlistController = Get.find<WishlistController>();
-  final isCurrentlyFavorite = Get.find<WishlistController>().isFavorite(product.id);
-
-  if (isCurrentlyFavorite) {
-    await wishlistController.removeFromWishlist(product.id);
-  } else {
-    await wishlistController.toggleWishlist(product.id); 
-  }
-
-  setState(() {}); // Refresh UI to reflect change
-},
           );
         }).toList(),
       );
