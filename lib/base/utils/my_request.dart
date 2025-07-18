@@ -331,3 +331,42 @@ class MyRequest {
     return response;
   }
 }
+
+
+String extractErrorMessage(String responseBody) {
+  try {
+    final json = jsonDecode(responseBody);
+
+    if (json is Map<String, dynamic>) {
+      // ✅ First, try nested structure: error.details.detail
+      if (json.containsKey('error')) {
+        final error = json['error'];
+        if (error is Map<String, dynamic> && error.containsKey('details')) {
+          final details = error['details'];
+          if (details is Map<String, dynamic> && details.containsKey('detail')) {
+            return details['detail'].toString();
+          }
+        }
+        // fallback to error.message if available
+        if (error.containsKey('message')) {
+          return error['message'].toString();
+        }
+      }
+
+      // ✅ Then try flat structure: detail or field errors
+      if (json.containsKey('detail')) {
+        return json['detail'].toString();
+      }
+
+      // ✅ Then try any other field-level error
+      final firstKey = json.keys.first;
+      final value = json[firstKey];
+      if (value is List) return value.first.toString();
+      return value.toString();
+    }
+
+    return "Unexpected error format.";
+  } catch (_) {
+    return "Failed to parse error.";
+  }
+}
