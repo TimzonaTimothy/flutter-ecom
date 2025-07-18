@@ -361,14 +361,14 @@ import '../models/product_model.dart';
 
 
 class ProductDetail extends StatefulWidget {
-  final ProductModel? product;
-  final int? productId;
+  // final ProductModel? product;
+  final int productId;
   
   const ProductDetail({
     super.key, 
-    this.product,
-    this.productId,
-  }) : assert(product != null || productId != null, 'Either product or productId must be provided');
+    // this.product,
+    required this.productId,
+  }) : assert(productId != null, 'productId must be provided');
 
   @override
   State<ProductDetail> createState() => _ProductDetailState();
@@ -383,25 +383,41 @@ class _ProductDetailState extends State<ProductDetail> {
   bool isLoading = true;
   bool isLoadingProduct = false;
 
-  @override
-  void initState() {
-    super.initState();
-    
-    // Register controller if not already
-    if (!Get.isRegistered<ProductsController>()) {
-      Get.put(ProductsController());
-    }
+  // @override
+  // void initState() {
+  //   super.initState();
+   
 
-    if (widget.product != null) {
-      // Product object provided directly
-      currentProduct = widget.product;
-      imageList = currentProduct?.imageUrls ?? [];
-      _initializeWithProduct();
-    } else if (widget.productId != null) {
-      // Only ID provided, need to fetch product
-      _fetchProductById(widget.productId!);
-    }
+  //   Register controller if not already
+  //   if (!Get.isRegistered<ProductsController>()) {
+  //     Get.put(ProductsController());
+  //   }
+
+  //   if (widget.product != null) {
+  //     // Product object provided directly
+  //     currentProduct = widget.product;
+  //     imageList = currentProduct?.imageUrls ?? [];
+  //     _initializeWithProduct();
+  //   } else if (widget.productId != null) {
+  //     // Only ID provided, need to fetch product
+  //     _fetchProductById(widget.productId!);
+  //   }
+  // }
+
+@override
+void initState() {
+  super.initState();
+  if (widget.productId != null) {
+    _fetchProductById(widget.productId!);
+  } else {
+    // Navigate back if productId is null
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Get.back(); // using GetX navigation
+      }
+    });
   }
+}
 
   void _initializeWithProduct() {
     // Fetch similar products
@@ -775,7 +791,7 @@ class _ProductDetailState extends State<ProductDetail> {
               rating: product.rating ?? 0,
               oldPrice: product.discountPrice ?? '0',
               onTap: () {
-                Get.to(() => ProductDetail(product: product),
+                Get.to(() => ProductDetail(productId: product.id),
                     transition: Transition.rightToLeftWithFade,
                     duration: const Duration(milliseconds: 500));
               },

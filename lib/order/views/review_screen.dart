@@ -1,4 +1,5 @@
 import 'package:ecom_app/base/res/media.dart';
+import 'package:ecom_app/home/views/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
@@ -127,7 +128,7 @@ class LeaveReviewPage extends StatelessWidget {
                   ),
                   onPressed: () {
                     Get.to(
-                      const BottomNavBar(),
+                      const HomeScreen(),
                       transition: Transition.rightToLeftWithFade,
                       duration: const Duration(milliseconds: 500),
                     );

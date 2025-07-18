@@ -93,7 +93,7 @@ class ProductListByCategory extends StatelessWidget {
                     oldPrice: product.discountPrice ?? '0',
                     
                     onTap: () {
-                      Get.to(() => ProductDetail(product: product),
+                      Get.to(() => ProductDetail(productId: product.id),
                           transition: Transition.rightToLeftWithFade,
                           duration: const Duration(milliseconds: 500));
                     },

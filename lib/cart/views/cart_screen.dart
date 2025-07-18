@@ -567,7 +567,7 @@ class _CartScreenState extends State<CartScreen> {
               text: "Continue Shopping",
               onTap: (){
                 Get.to(
-                  const HomeScreen(),
+                  const BottomNavBar(),
                   transition: Transition.rightToLeftWithFade,
                   duration: const Duration(milliseconds: 500),
                 );

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -8,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../base/bottom_nav_bar.dart';
 import '../../base/res/base_url.dart';
-import '../../base/utils/my_request.dart';
 import '../../base/utils/snackbar.dart';
 import '../../base/utils/token.dart';
 import '../views/sign_up_otp_code.dart';
@@ -50,19 +48,19 @@ class LoginController extends GetxController {
 
         showFailureSnackbar(errorMessage);
         if (errorMessage.toLowerCase().contains('account not activated') ||
-    errorMessage.toLowerCase().contains('not activated')) {
-  
-  // Save email for OTP verification
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString("otp_email", email);
-  
-  // Redirect to OTP screen
-  Get.to(
-    () => SignUpOtpCode(),
-    transition: Transition.rightToLeftWithFade,
-    duration: const Duration(milliseconds: 500),
-  );
-}
+            errorMessage.toLowerCase().contains('not activated')) {
+          // Save email for OTP verification
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString("otp_email", email);
+
+          await Future.delayed(const Duration(milliseconds: 800));
+          // Redirect to OTP screen
+          Get.to(
+            () => const SignUpOtpCode(),
+            transition: Transition.rightToLeftWithFade,
+            duration: const Duration(milliseconds: 500),
+          );
+        }
       }
 
       log('Data ${response.body}');
@@ -74,5 +72,3 @@ class LoginController extends GetxController {
     }
   }
 }
-
-

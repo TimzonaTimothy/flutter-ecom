@@ -6,6 +6,7 @@ import '../../base/widgets/filter_card.dart';
 import '../../base/widgets/product_card.dart';
 import '../../products/views/product_detail.dart';
 import '../controllers/wishlist_controller.dart';
+import '../models/wishlist_model.dart';
 
 // class WishListScreen extends StatefulWidget {
 //   const WishListScreen({super.key});
@@ -178,7 +179,7 @@ class _WishListScreenState extends State<WishListScreen> {
     super.initState();
     wishlistController = Get.find<WishlistController>();
     // Load wishlist when screen opens
-    wishlistController.loadWishlist();
+   
   }
 
   @override
@@ -280,9 +281,9 @@ class _WishListScreenState extends State<WishListScreen> {
   }
 
   Widget _buildProductGrid(WishlistController controller) {
-    final String selectedFilter = filters[selectedFilterIndex];
-    final List<Map<String, dynamic>> filteredProducts = 
-        controller.getFilteredWishlistItems(selectedFilter);
+   final String selectedFilter = filters[selectedFilterIndex];
+  final List<WishlistModel> filteredProducts =
+      controller.getFilteredWishlistItems(selectedFilter);
 
     if (filteredProducts.isEmpty) {
       return Center(
@@ -304,37 +305,73 @@ class _WishListScreenState extends State<WishListScreen> {
       );
     }
 
-    return GridView.builder(
-      key: selectedFilterIndex == null ? null : ValueKey<int>(selectedFilterIndex),
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 15,
-        mainAxisSpacing: 20,
-        childAspectRatio: 0.76,
-      ),
-      itemCount: filteredProducts.length,
-      itemBuilder: (context, index) {
-        final product = filteredProducts[index];
-        final imageUrl = (product['imageUrls'] != null && product['imageUrls'].isNotEmpty)
-    ? product['imageUrls'][0]
-    : 'https://via.placeholder.com/200';
+    // return GridView.builder(
+    //   key: selectedFilterIndex == null ? null : ValueKey<int>(selectedFilterIndex),
+    //   physics: const NeverScrollableScrollPhysics(),
+    //   shrinkWrap: true,
+    //   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+    //     crossAxisCount: 2,
+    //     crossAxisSpacing: 15,
+    //     mainAxisSpacing: 20,
+    //     childAspectRatio: 0.76,
+    //   ),
+    //   itemCount: filteredProducts.length,
+    //   itemBuilder: (context, index) {
+    //     final product = filteredProducts[index];
+    //     final imageUrl = (product['imageUrls'] != null && product['imageUrls'].isNotEmpty)
+    // ? product['imageUrls'][0]
+    // : 'https://via.placeholder.com/200';
         
-        return ProductCard(
-          productId: product['id'],
-          imagePath: imageUrl,
-          title: product['title'] ?? 'Unknown Product',
-          price: product['price']?.toString() ?? '0',
-          rating: (product['rating'] ?? 4.0).toDouble(),
-          oldPrice: product['oldPrice']?.toString() ?? '0',
-          onTap: () {
-            Get.to(() => ProductDetail(product: product['id']),
-                          transition: Transition.rightToLeftWithFade,
-                          duration: const Duration(milliseconds: 500));
-          },
-        );
-      },
-    );
+    //     return ProductCard(
+    //       productId: product['id'],
+    //       imagePath: imageUrl,
+    //       title: product['title'] ?? 'Unknown Product',
+    //       price: product['price']?.toString() ?? '0',
+    //       rating: (product['rating'] ?? 4.0).toDouble(),
+    //       oldPrice: product['oldPrice']?.toString() ?? '0',
+    //       onTap: () {
+    //         Get.to(() => ProductDetail(product: product['id']),
+    //                       transition: Transition.rightToLeftWithFade,
+    //                       duration: const Duration(milliseconds: 500));
+    //       },
+    //     );
+    //   },
+    // );
+
+    return GridView.builder(
+    key: ValueKey<int>(selectedFilterIndex),
+    physics: const NeverScrollableScrollPhysics(),
+    shrinkWrap: true,
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2,
+      crossAxisSpacing: 15,
+      mainAxisSpacing: 20,
+      childAspectRatio: 0.76,
+    ),
+    itemCount: filteredProducts.length,
+    itemBuilder: (context, index) {
+      final product = filteredProducts[index];
+
+      final imageUrl = (product.imageUrls != null &&
+              product.imageUrls!.isNotEmpty)
+          ? product.imageUrls!.first
+          : 'https://via.placeholder.com/200';
+
+      return ProductCard(
+        productId: product.id ?? 0,
+        imagePath: imageUrl,
+        title: product.title ?? 'Unknown',
+        price: product.discountPrice?.toString() ?? '0',
+        rating: product.rating ?? 4.0,
+        oldPrice: product.originalPrice?.toString() ?? '0',
+        onTap: () {
+          
+          Get.to(() => ProductDetail(productId: product.id!),
+              transition: Transition.rightToLeftWithFade,
+              duration: const Duration(milliseconds: 500));
+        },
+      );
+    },
+  );
   }
 }

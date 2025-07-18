@@ -74,6 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -387,7 +388,7 @@ class _HomeScreenState extends State<HomeScreen> {
             
             onTap: () {
               Get.to(
-                () => ProductDetail(product: product),
+                () => ProductDetail(productId: product.id),
                 transition: Transition.rightToLeftWithFade,
                 duration: const Duration(milliseconds: 500),
               );

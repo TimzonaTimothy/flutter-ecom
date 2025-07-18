@@ -1,3 +1,4 @@
+import 'package:ecom_app/home/views/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -386,7 +387,7 @@ class CancelledOrdersList extends StatelessWidget {
                     ),
                     onPressed: () {
                       Get.to(
-                        const BottomNavBar(),
+                        const HomeScreen(),
                         transition: Transition.rightToLeftWithFade,
                         duration: const Duration(milliseconds: 500),
                       );
