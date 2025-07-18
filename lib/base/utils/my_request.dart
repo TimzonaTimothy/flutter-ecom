@@ -338,27 +338,13 @@ String extractErrorMessage(String responseBody) {
     final json = jsonDecode(responseBody);
 
     if (json is Map<String, dynamic>) {
-      // ✅ First, try nested structure: error.details.detail
-      if (json.containsKey('error')) {
-        final error = json['error'];
-        if (error is Map<String, dynamic> && error.containsKey('details')) {
-          final details = error['details'];
-          if (details is Map<String, dynamic> && details.containsKey('detail')) {
-            return details['detail'].toString();
-          }
-        }
-        // fallback to error.message if available
-        if (error.containsKey('message')) {
-          return error['message'].toString();
-        }
+      if (json.containsKey('message')) {
+        final message = json['message'];
+        if (message is List) return message.first.toString(); // <-- ✅ FIX
+        return message.toString();
       }
+      if (json.containsKey('detail')) return json['detail'].toString();
 
-      // ✅ Then try flat structure: detail or field errors
-      if (json.containsKey('detail')) {
-        return json['detail'].toString();
-      }
-
-      // ✅ Then try any other field-level error
       final firstKey = json.keys.first;
       final value = json[firstKey];
       if (value is List) return value.first.toString();

@@ -378,8 +378,8 @@ class _ProductDetailState extends State<ProductDetail> {
   late List<String> imageList;
   ProductModel? currentProduct;
   int selectedImageIndex = 0;
-  String isSelectedSize = "S";
-  String isSelectedColor = "Black";
+  String isSelectedSize = "";
+  String isSelectedColor = "";
   bool isLoading = true;
   bool isLoadingProduct = false;
 

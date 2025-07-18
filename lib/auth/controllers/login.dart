@@ -4,66 +4,14 @@ import 'dart:io';
 
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../base/bottom_nav_bar.dart';
 import '../../base/res/base_url.dart';
 import '../../base/utils/my_request.dart';
 import '../../base/utils/snackbar.dart';
 import '../../base/utils/token.dart';
-
-// class LoginController extends GetxController {
-//   var isLoad = false.obs;
-
-//   Future<void> loginUser(String email, String password) async {
-//     isLoad.value = true;
-//     update();
-
-//     try {
-//       final response = await http.post(
-//         Uri.parse("$baseUrl/auth/login/"),
-//         headers: {"Content-Type": "application/json"},
-//         body: {"email": email, "password": password},
-//       );
-
-//       if (response.statusCode == 200) {
-//         showSuccessSnackbar("Login successful");
-//         log(response.body);
-//         // User user = User.fromJson(jsonDecode(response.body));
-//         // await saveToken(jsonDecode(response.body)['access']);
-//         final data = jsonDecode(response.body);
-//         await saveTokens(data['access'], data['refresh']);
-
-//         // log('User: ${user.username}, ${user.isActive}');
-
-//         Get.offAll(
-//           () => const BottomNavBar(),
-//           transition: Transition.rightToLeftWithFade,
-//           duration: const Duration(milliseconds: 500),
-//         );
-//         isLoad.value = false;
-//         update();
-//         return;
-//       } else {
-//         // showFailureSnackbar(
-//         //   jsonDecode(response.body)['detail'] ?? 'Login failed',
-//         // );
-//         final data = jsonDecode(response.body);
-//         final errorMessage = data['error']?['details']?['detail'] ??
-//             data['detail'] ??
-//             'Login failed';
-
-//         showFailureSnackbar(errorMessage);
-//       }
-
-//       log('Data ${response.body}');
-//     } catch (e) {
-//       log('Login failed: $e');
-//     } finally {
-//       isLoad.value = false;
-//       update();
-//     }
-//   }
-// }
+import '../views/sign_up_otp_code.dart';
 
 class LoginController extends GetxController {
   var isLoad = false.obs;
@@ -73,39 +21,58 @@ class LoginController extends GetxController {
     update();
 
     try {
-      final res = await MyRequest(
-        'auth/login/',
-        {
-          "email": email,
-          "password": password,
-        },
-        false, 
-        200,
-      ).init().postApi();
+      final response = await http.post(
+        Uri.parse("$baseUrl/auth/login/"),
+        body: {"email": email, "password": password},
+      );
 
-      if (res != null) {
-        final data = jsonDecode(res);
+      if (response.statusCode == 200) {
         showSuccessSnackbar("Login successful");
+        log(response.body);
+        final data = jsonDecode(response.body);
         await saveTokens(data['access'], data['refresh']);
-
         Get.offAll(
           () => const BottomNavBar(),
           transition: Transition.rightToLeftWithFade,
           duration: const Duration(milliseconds: 500),
         );
+        isLoad.value = false;
+        update();
+        return;
       } else {
-        showFailureSnackbar("Login failed");
+        // showFailureSnackbar(
+        //   jsonDecode(response.body)['detail'] ?? 'Login failed',
+        // );
+        final data = jsonDecode(response.body);
+        final errorMessage = data['error']?['details']?['detail'] ??
+            data['detail'] ??
+            'Login failed';
+
+        showFailureSnackbar(errorMessage);
+        if (errorMessage.toLowerCase().contains('account not activated') ||
+    errorMessage.toLowerCase().contains('not activated')) {
+  
+  // Save email for OTP verification
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString("otp_email", email);
+  
+  // Redirect to OTP screen
+  Get.to(
+    () => SignUpOtpCode(),
+    transition: Transition.rightToLeftWithFade,
+    duration: const Duration(milliseconds: 500),
+  );
+}
       }
+
+      log('Data ${response.body}');
     } catch (e) {
-      if (e is HttpException) {
-        showFailureSnackbar(extractErrorMessage(e.message));
-      } else {
-        showFailureSnackbar("An unexpected error occurred: $e");
-      }
-      // showFailureSnackbar("An error occurred: $e");
+      log('Login failed: $e');
     } finally {
       isLoad.value = false;
       update();
     }
   }
 }
+
+
