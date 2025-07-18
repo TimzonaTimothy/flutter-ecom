@@ -203,8 +203,8 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<WishlistController>(
-      builder: (wishlistController) {
+    final wishlistController = Get.find<WishlistController>();
+    return Obx(() {
         final bool isFavorite = wishlistController.isFavorite(productId);
         
         return Container(

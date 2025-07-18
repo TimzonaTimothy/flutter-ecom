@@ -186,14 +186,16 @@ class WishlistController extends GetxController {
     super.onInit();
     fetchWishlist();
   }
+      
 
   Future<void> fetchWishlist() async {
     isLoading.value = true;
+     String? authToken = getToken();
     try {
       final response = await http.get(
         Uri.parse('$fullUrl/api/wishlist/me/'),
         headers: {
-          "Authorization": "Bearer $getToken()",
+          "Authorization": 'Bearer $authToken',
         },
       );
 
@@ -228,12 +230,12 @@ class WishlistController extends GetxController {
 
   void toggleWishlist(int productId) async {
     final url = Uri.parse('$fullUrl/wishlist/toggle/?id=$productId');
-
+ String? authToken = getToken();
     try {
       final response = await http.post(
         url,
         headers: {
-          "Authorization": "Bearer $getToken()",
+          "Authorization": 'Bearer $authToken',
         },
       );
 
