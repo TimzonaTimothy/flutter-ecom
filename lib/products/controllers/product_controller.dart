@@ -31,10 +31,44 @@ class ProductsController extends GetxController {
   }
 
   // Fetch products from API
-  Future<void> getProduct() async {
+  // Future<void> getProduct() async {
+  //   isLoad.value = true;
+  //   update();
+    
+  //   try {
+  //     final data = await MyRequest('products/', {}, false).getApi();
+  //     if (data == null) {
+  //       isLoad.value = false;
+  //       update();
+  //       return;
+  //     }
+
+  //     final decoded = jsonDecode(data);
+  //     if (decoded is List) {
+  //       final productList = decoded
+  //           .whereType<Map<String, dynamic>>() // filters only maps
+  //           .map((item) => ProductModel.fromJson(item))
+  //           .toList();
+        
+  //       // Store all products and apply current filter
+  //       allProducts.value = productList;
+  //       applyFilter(selectedFilterIndex.value);
+        
+  //     } else {
+  //       print("Expected a list but got: ${decoded.runtimeType}");
+  //     }
+  //   } catch (e) {
+  //     print("Error fetching products: $e");
+  //   } finally {
+  //     isLoad.value = false;
+  //     update();
+  //   }
+  // }
+
+Future<void> getProduct() async {
     isLoad.value = true;
     update();
-    
+        
     try {
       final data = await MyRequest('products/', {}, false).getApi();
       if (data == null) {
@@ -44,18 +78,35 @@ class ProductsController extends GetxController {
       }
 
       final decoded = jsonDecode(data);
-      if (decoded is List) {
+      
+      // Handle paginated response
+      if (decoded is Map<String, dynamic> && decoded.containsKey('results')) {
+        final results = decoded['results'];
+        
+        if (results is List) {
+          final productList = results
+              .whereType<Map<String, dynamic>>() // filters only maps
+              .map((item) => ProductModel.fromJson(item))
+              .toList();
+                
+          // Store all products and apply current filter
+          allProducts.value = productList;
+          applyFilter(selectedFilterIndex.value);
+        } else {
+          print("Expected results to be a list but got: ${results.runtimeType}");
+        }
+      } else if (decoded is List) {
+        // Handle direct array response (fallback)
         final productList = decoded
             .whereType<Map<String, dynamic>>() // filters only maps
             .map((item) => ProductModel.fromJson(item))
             .toList();
-        
+                
         // Store all products and apply current filter
         allProducts.value = productList;
         applyFilter(selectedFilterIndex.value);
-        
       } else {
-        print("Expected a list but got: ${decoded.runtimeType}");
+        print("Expected a paginated response or list but got: ${decoded.runtimeType}");
       }
     } catch (e) {
       print("Error fetching products: $e");
@@ -64,7 +115,7 @@ class ProductsController extends GetxController {
       update();
     }
   }
-
+  
   // Apply filter based on selected index
   void applyFilter(int filterIndex) {
     selectedFilterIndex.value = filterIndex;

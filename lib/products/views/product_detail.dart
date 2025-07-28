@@ -548,13 +548,16 @@ void initState() {
           children: [
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.network(
-                    imageList.isNotEmpty ? imageList[selectedImageIndex] : 'https://via.placeholder.com/300',
-                    height: 300,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                Hero( 
+                  tag: widget.productId,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.network(
+                      imageList.isNotEmpty ? imageList[selectedImageIndex] : 'https://via.placeholder.com/300',
+                      height: 300,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 Positioned(

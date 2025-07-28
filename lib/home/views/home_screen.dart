@@ -382,9 +382,9 @@ class _HomeScreenState extends State<HomeScreen> {
             productId: product.id,
             imagePath: imageUrl,
             title: product.title,
-            price: product.originalPrice!,
+            price: product.discountPrice ?? '0',
             rating: product.rating,
-            oldPrice: product.discountPrice!,
+            oldPrice: product.originalPrice ?? '0',
             
             onTap: () {
               Get.to(

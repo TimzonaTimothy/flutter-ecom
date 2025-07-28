@@ -229,14 +229,17 @@ class ProductCard extends StatelessWidget {
                   onTap: onTap,
                   child: Stack(
                     children: [
-                      Container(
-                        height: 150,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          image: DecorationImage(
-                            image: NetworkImage(imagePath),
-                            fit: BoxFit.cover,
+                      Hero(
+                        tag: productId,
+                        child: Container(
+                          height: 150,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            image: DecorationImage(
+                              image: NetworkImage(imagePath),
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                       ),
@@ -315,7 +318,7 @@ class ProductCard extends StatelessWidget {
                     child: Row(
                       children: [
                         Text(
-                          "\$price",
+                          "\$$price",
                           style: AppStyles.headLineStyle2.copyWith(
                             fontWeight: FontWeight.w900,
                           ),
@@ -324,7 +327,7 @@ class ProductCard extends StatelessWidget {
                         const SizedBox(width: 3),
                         Flexible(
                           child: Text(
-                            "\$oldPrice",
+                            "\$$oldPrice",
                             style: AppStyles.headLineStyle3.copyWith(
                               fontWeight: FontWeight.w500,
                               decoration: TextDecoration.lineThrough,

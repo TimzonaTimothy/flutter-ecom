@@ -7,8 +7,8 @@ class WishlistModel {
   String? description;
   int? stock;
   bool? isFeatured;
-  int? discountPrice;
-  int? originalPrice;
+  String? discountPrice; 
+  String? originalPrice;
   bool? isAvailable;
   double? rating;
   String? productType;
@@ -49,42 +49,48 @@ class WishlistModel {
     description = json['description'];
     stock = json['stock'];
     isFeatured = json['is_featured'];
-    discountPrice = json['discount_price'];
-    originalPrice = json['original_price'];
+    discountPrice = json['discount_price']?.toString(); 
+    originalPrice = json['original_price']?.toString();
     isAvailable = json['is_available'];
-    rating = json['rating'];
-    productType = json['product_type'];
-    colors = json['colors'].cast<String>();
-    sizes = json['sizes'].cast<String>();
-    imageUrls = json['imageUrls'].cast<String>();
+    rating = json['rating']?.toDouble();
+    productType = json['product_type']?.toString().trim().toLowerCase();
+    colors = json['colors'] != null 
+        ? List<String>.from(json['colors'].map((x) => x.toString()))
+        : null;
+    sizes = json['sizes'] != null 
+        ? List<String>.from(json['sizes'].map((x) => x.toString()))
+        : null;
+    imageUrls = json['imageUrls'] != null 
+        ? List<String>.from(json['imageUrls'].map((x) => x.toString()))
+        : null;
     createdDate = json['created_date'];
     modifiedDate = json['modified_date'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    if (this.category != null) {
-      data['category'] = this.category!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    if (category != null) {
+      data['category'] = category!.toJson();
     }
-    if (this.brand != null) {
-      data['brand'] = this.brand!.toJson();
+    if (brand != null) {
+      data['brand'] = brand!.toJson();
     }
-    data['title'] = this.title;
-    data['slug'] = this.slug;
-    data['description'] = this.description;
-    data['stock'] = this.stock;
-    data['is_featured'] = this.isFeatured;
-    data['discount_price'] = this.discountPrice;
-    data['original_price'] = this.originalPrice;
-    data['is_available'] = this.isAvailable;
-    data['rating'] = this.rating;
-    data['product_type'] = this.productType;
-    data['colors'] = this.colors;
-    data['sizes'] = this.sizes;
-    data['imageUrls'] = this.imageUrls;
-    data['created_date'] = this.createdDate;
-    data['modified_date'] = this.modifiedDate;
+    data['title'] = title;
+    data['slug'] = slug;
+    data['description'] = description;
+    data['stock'] = stock;
+    data['is_featured'] = isFeatured;
+    data['discount_price'] = discountPrice;
+    data['original_price'] = originalPrice;
+    data['is_available'] = isAvailable;
+    data['rating'] = rating;
+    data['product_type'] = productType;
+    data['colors'] = colors;
+    data['sizes'] = sizes;
+    data['imageUrls'] = imageUrls;
+    data['created_date'] = createdDate;
+    data['modified_date'] = modifiedDate;
     return data;
   }
 }
@@ -105,11 +111,11 @@ class Category {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['title'] = this.title;
-    data['slug'] = this.slug;
-    data['image'] = this.image;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['title'] = title;
+    data['slug'] = slug;
+    data['image'] = image;
     return data;
   }
 }
@@ -128,11 +134,10 @@ class Brand {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['title'] = this.title;
-    data['slug'] = this.slug;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['title'] = title;
+    data['slug'] = slug;
     return data;
   }
 }
-
