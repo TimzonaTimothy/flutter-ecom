@@ -8,6 +8,22 @@ class CartModel {
 
   CartModel({this.id, this.product, this.quantity, this.size, this.color});
 
+   CartModel copyWith({
+    int? id,
+    ProductModel? product,
+    int? quantity,
+    String? size,
+    String? color,
+  }) {
+    return CartModel(
+      id: id ?? this.id,
+      product: product ?? this.product,
+      quantity: quantity ?? this.quantity,
+      size: size ?? this.size,
+      color: color ?? this.color,
+    );
+  }
+
   CartModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     product =
@@ -28,6 +44,8 @@ class CartModel {
     data['color'] = this.color;
     return data;
   }
+
+  
 }
 
 

@@ -99,7 +99,7 @@ class _ProductDetailState extends State<ProductDetail> {
 
 
   bool _isInCart() {
-  final cartItems = CartController.instance.cartItems;
+  final cartItems = CartController.to.cartItems;
 
   return cartItems.any((item) =>
       item.product?.id == currentProduct?.id &&
@@ -463,21 +463,21 @@ ElevatedButton.icon(
     bool success = false;
 
     if (_isInCart()) {
-      final existing = CartController.instance.cartItems.firstWhere((item) =>
+      final existing = CartController.to.cartItems.firstWhere((item) =>
           item.product?.id == currentProduct?.id &&
           (item.size ?? '') == isSelectedSize &&
           (item.color ?? '') == isSelectedColor);
 
-      success = await CartController.instance.removeFromCart(existing.id!);
+      success = await CartController.to.removeFromCart(existing.id!);
       if (success) {
         showSuccessSnackbar("Removed from cart!");
-        await CartController.instance.fetchCartItems(); // 👈 reload updated cart
+        await CartController.to.fetchCartItems(); // 👈 reload updated cart
       }
     } else {
-      success = await CartController.instance.addToCart(cartItem);
+      success = await CartController.to.addToCart(cartItem);
       if (success) {
         showSuccessSnackbar("Added to cart!");
-        await CartController.instance.fetchCartItems(); // 👈 reload updated cart
+        await CartController.to.fetchCartItems(); // 👈 reload updated cart
       }
     }
 

@@ -1,33 +1,29 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:get/get.dart';
+
 import '../../base/utils/my_request.dart';
 import '../models/cart_model.dart';
 import '../models/create_cart_model.dart';
 
-class CartController {
-  static final CartController _instance = CartController._internal();
-  factory CartController() => _instance;
-  CartController._internal();
+class CartController extends GetxController {
+ static CartController get to => Get.find();
 
-  static CartController get instance => _instance;
 
-  List<CartModel> _cartItems = [];
-  bool _isLoading = false;
+  var cartItems = <CartModel>[].obs;
+
+ bool _isLoading = false;
   String? _errorMessage;
 
-  // Getters
-  List<CartModel> get cartItems => _cartItems;
-  bool get isLoading => _isLoading;
+  var isLoading = false.obs;
   String? get errorMessage => _errorMessage;
-  int get cartItemCount => _cartItems.length;
-  
-  // Calculate total quantity of all items
-  int get totalQuantity => _cartItems.fold(0, (sum, item) => sum + (item.quantity ?? 0));
-  
-  // Calculate total price (using discount price if available, otherwise original price)
+  int get cartItemCount => cartItems.length;
+
+  int get totalQuantity => cartItems.fold(0, (sum, item) => sum + (item.quantity ?? 0));
+
   double get totalPrice {
-    return _cartItems.fold(0.0, (sum, item) {
+    return cartItems.fold(0.0, (sum, item) {
       if (item.product != null) {
         double price = 0.0;
         if (item.product!.discountPrice != null) {
@@ -41,10 +37,11 @@ class CartController {
     });
   }
 
+
   /// Fetch cart items from the API
   Future<bool> fetchCartItems() async {
     try {
-      _isLoading = true;
+      isLoading.value = true;
       _errorMessage = null;
       
       log('Fetching cart items...');
@@ -60,21 +57,21 @@ class CartController {
         log('Cart response: $response');
         
         final List<dynamic> jsonList = jsonDecode(response);
-        _cartItems = jsonList.map((json) => CartModel.fromJson(json)).toList();
+        cartItems.value = jsonList.map((json) => CartModel.fromJson(json)).toList();
         
-        log('Successfully fetched ${_cartItems.length} cart items');
-        _isLoading = false;
+        log('Successfully fetched ${cartItems.length} cart items');
+        isLoading.value = false;
         return true;
       } else {
         _errorMessage = 'Failed to fetch cart items';
         log('Failed to fetch cart items: response is null');
-        _isLoading = false;
+        isLoading.value = false;
         return false;
       }
     } catch (e) {
       _errorMessage = 'Error fetching cart items: $e';
       log('Error fetching cart items: $e');
-      _isLoading = false;
+      isLoading.value = false;
       return false;
     }
   }
@@ -82,7 +79,7 @@ class CartController {
   /// Add item to cart
   Future<bool> addToCart(CreateCartModel cartItem) async {
     try {
-      _isLoading = true;
+      isLoading.value = true;
       _errorMessage = null;
       
       log('Adding item to cart: ${cartItem.toJson()}');
@@ -102,13 +99,13 @@ class CartController {
       } else {
         _errorMessage = 'Failed to add item to cart';
         log('Failed to add item to cart: response is null');
-        _isLoading = false;
+        isLoading.value = false;
         return false;
       }
     } catch (e) {
       _errorMessage = 'Error adding item to cart: $e';
       log('Error adding item to cart: $e');
-      _isLoading = false;
+      isLoading.value = false;
       return false;
     }
   }
@@ -116,13 +113,13 @@ class CartController {
   /// Update cart item quantity
   Future<bool> updateCartItem(int cartId, int quantity) async {
     try {
-      _isLoading = true;
+      isLoading.value = true;
       _errorMessage = null;
       
       log('Updating cart item $cartId with quantity $quantity');
       
       final response = await MyRequest(
-        'cart/$cartId/',
+        'cart/update/$cartId/',
         {'quantity': quantity},
         true, // auth required
         200, // success code
@@ -136,13 +133,13 @@ class CartController {
       } else {
         _errorMessage = 'Failed to update cart item';
         log('Failed to update cart item: response is null');
-        _isLoading = false;
+        isLoading.value = false;
         return false;
       }
     } catch (e) {
       _errorMessage = 'Error updating cart item: $e';
       log('Error updating cart item: $e');
-      _isLoading = false;
+      isLoading.value = false;
       return false;
     }
   }
@@ -150,7 +147,7 @@ class CartController {
   /// Remove item from cart
   Future<bool> removeFromCart(int cartId) async {
     try {
-      _isLoading = true;
+      isLoading.value = true;
       _errorMessage = null;
       
       log('Removing cart item $cartId');
@@ -170,13 +167,13 @@ class CartController {
       } else {
         _errorMessage = 'Failed to remove cart item';
         log('Failed to remove cart item: response is null');
-        _isLoading = false;
+        isLoading.value = false;
         return false;
       }
     } catch (e) {
       _errorMessage = 'Error removing cart item: $e';
       log('Error removing cart item: $e');
-      _isLoading = false;
+      isLoading.value = false;
       return false;
     }
   }
@@ -184,7 +181,7 @@ class CartController {
   /// Clear all cart items
   Future<bool> clearCart() async {
     try {
-      _isLoading = true;
+      isLoading.value = true;
       _errorMessage = null;
       
       log('Clearing cart...');
@@ -198,19 +195,19 @@ class CartController {
 
       if (response != null) {
         log('Cart cleared successfully');
-        _cartItems.clear();
-        _isLoading = false;
+        cartItems.clear();
+        isLoading.value = false;
         return true;
       } else {
         _errorMessage = 'Failed to clear cart';
         log('Failed to clear cart: response is null');
-        _isLoading = false;
+        isLoading.value = false;
         return false;
       }
     } catch (e) {
       _errorMessage = 'Error clearing cart: $e';
       log('Error clearing cart: $e');
-      _isLoading = false;
+      isLoading.value = false;
       return false;
     }
   }
@@ -218,7 +215,7 @@ class CartController {
   /// Get cart item by product ID
   CartModel? getCartItemByProductId(int productId) {
     try {
-      return _cartItems.firstWhere(
+      return cartItems.firstWhere(
         (item) => item.product?.id == productId,
       );
     } catch (e) {
@@ -228,7 +225,7 @@ class CartController {
 
   /// Check if product is in cart
   bool isProductInCart(int productId) {
-    return _cartItems.any((item) => item.product?.id == productId);
+    return cartItems.any((item) => item.product?.id == productId);
   }
 
   /// Get quantity of specific product in cart
@@ -239,8 +236,8 @@ class CartController {
 
   /// Clear local cart data (useful for logout)
   void clearLocalCart() {
-    _cartItems.clear();
+    cartItems.clear();
     _errorMessage = null;
-    _isLoading = false;
+    isLoading.value = false;
   }
 }
