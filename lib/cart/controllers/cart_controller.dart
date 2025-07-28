@@ -88,7 +88,7 @@ class CartController {
       log('Adding item to cart: ${cartItem.toJson()}');
       
       final response = await MyRequest(
-        'cart/',
+        'cart/add/',
         cartItem.toJson(),
         true, // auth required
         201, // created status code
@@ -156,8 +156,8 @@ class CartController {
       log('Removing cart item $cartId');
       
       final response = await MyRequest(
-        'cart/$cartId/',
-        {},
+        'cart/delete/$cartId/',
+        {'id': cartId},
         true, // auth required
         204, // no content status code for delete
       ).deleteApi();

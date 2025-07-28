@@ -30,40 +30,6 @@ class ProductsController extends GetxController {
     getProduct();
   }
 
-  // Fetch products from API
-  // Future<void> getProduct() async {
-  //   isLoad.value = true;
-  //   update();
-    
-  //   try {
-  //     final data = await MyRequest('products/', {}, false).getApi();
-  //     if (data == null) {
-  //       isLoad.value = false;
-  //       update();
-  //       return;
-  //     }
-
-  //     final decoded = jsonDecode(data);
-  //     if (decoded is List) {
-  //       final productList = decoded
-  //           .whereType<Map<String, dynamic>>() // filters only maps
-  //           .map((item) => ProductModel.fromJson(item))
-  //           .toList();
-        
-  //       // Store all products and apply current filter
-  //       allProducts.value = productList;
-  //       applyFilter(selectedFilterIndex.value);
-        
-  //     } else {
-  //       print("Expected a list but got: ${decoded.runtimeType}");
-  //     }
-  //   } catch (e) {
-  //     print("Error fetching products: $e");
-  //   } finally {
-  //     isLoad.value = false;
-  //     update();
-  //   }
-  // }
 
 Future<void> getProduct() async {
     isLoad.value = true;
@@ -115,7 +81,7 @@ Future<void> getProduct() async {
       update();
     }
   }
-  
+
   // Apply filter based on selected index
   void applyFilter(int filterIndex) {
     selectedFilterIndex.value = filterIndex;

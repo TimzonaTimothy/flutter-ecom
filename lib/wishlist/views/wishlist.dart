@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../base/bottom_nav_bar.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../base/utils/snackbar.dart';
 import '../../base/widgets/filter_card.dart';
+import '../../base/widgets/primary_button.dart';
 import '../../base/widgets/product_card.dart';
 import '../../products/views/product_detail.dart';
 import '../controllers/wishlist_controller.dart';
@@ -88,19 +90,18 @@ class _WishListScreenState extends State<WishListScreen> {
                     'Add some products to your wishlist',
                     style: AppStyles.headLineStyle4,
                   ),
-                //   const SizedBox(height: 24),
-                // ElevatedButton(
-                //   onPressed: () {
-                //     // Navigate back to home/products screen
-                //     Get.back();
-                //   },
-                //   style: ElevatedButton.styleFrom(
-                //     backgroundColor: AppStyles.primaryColor,
-                //     foregroundColor: Colors.white,
-                //     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                //   ),
-                //   child: const Text('Continue Shopping'),
-                // ),
+                  const SizedBox(height: 24),
+                PrimaryButton(
+              horizontalPadding: 10,
+              text: "Continue Shopping",
+              onTap: (){
+                Get.to(
+                  const BottomNavBar(),
+                  transition: Transition.rightToLeftWithFade,
+                  duration: const Duration(milliseconds: 500),
+                );
+              }
+            ),
                 ],
               ),
             );

@@ -474,14 +474,20 @@ class _CartScreenState extends State<CartScreen> {
     return '';
   }
 
-  double getItemPrice(CartModel item) {
-    if (item.product?.discountPrice != null) {
-      return double.tryParse(item.product!.discountPrice!) ?? 0.0;
-    } else if (item.product?.originalPrice != null) {
-      return double.tryParse(item.product!.originalPrice!) ?? 0.0;
-    }
-    return 0.0;
+  double parsePrice(String priceString) {
+  // Remove currency symbols and commas
+  final cleaned = priceString.replaceAll(RegExp(r'[^\d.]'), '');
+  return double.tryParse(cleaned) ?? 0.0;
+}
+
+double getItemPrice(CartModel item) {
+  if (item.product?.discountPrice != null) {
+    return parsePrice(item.product!.discountPrice!);
+  } else if (item.product?.originalPrice != null) {
+    return parsePrice(item.product!.originalPrice!);
   }
+  return 0.0;
+}
 
   @override
   Widget build(BuildContext context) {
