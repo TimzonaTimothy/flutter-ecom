@@ -91,17 +91,20 @@ class _WishListScreenState extends State<WishListScreen> {
                     style: AppStyles.headLineStyle4,
                   ),
                   const SizedBox(height: 24),
-                PrimaryButton(
-              horizontalPadding: 10,
-              text: "Continue Shopping",
-              onTap: (){
-                Get.to(
-                  const BottomNavBar(),
-                  transition: Transition.rightToLeftWithFade,
-                  duration: const Duration(milliseconds: 500),
-                );
-              }
-            ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: PrimaryButton(
+                                horizontalPadding: 10,
+                                text: "Continue Shopping",
+                                onTap: (){
+                  Get.to(
+                    const BottomNavBar(),
+                    transition: Transition.rightToLeftWithFade,
+                    duration: const Duration(milliseconds: 500),
+                  );
+                                }
+                              ),
+                ),
                 ],
               ),
             );

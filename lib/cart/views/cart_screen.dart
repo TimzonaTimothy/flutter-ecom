@@ -19,7 +19,7 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  final CartController cartController = Get.find<CartController>();
+   late CartController cartController;
 
   final TextEditingController promoCodeController = TextEditingController();
   
@@ -29,6 +29,7 @@ class _CartScreenState extends State<CartScreen> {
   @override
   void initState() {
     super.initState();
+    cartController = Get.put(CartController());
     // Fetch cart items when screen loads
     _loadCartItems();
   }
