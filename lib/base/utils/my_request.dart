@@ -235,14 +235,17 @@ class MyRequest {
   Future<String?> patchApi() async {
     try {
       String? authToken = getToken();
-      Map<String, String> headers = {'Authorization': 'Bearer $authToken'};
+      Map<String, String> headers = {
+      'Content-Type': 'application/json', 
+      if (auth) 'Authorization': 'Bearer $authToken',
+    };
 
       log('body: $body');
 
       log(Uri.parse('$baseURL/$path').toString());
       final response = await http
           .patch(Uri.parse('$baseURL/$path'),
-              body: body, headers: auth ? headers : null)
+              body: jsonEncode(body), headers: headers,)
           .timeout(const Duration(seconds: timeoutTime));
 
       log('response body: ${response.body}');
@@ -260,6 +263,7 @@ class MyRequest {
       if (showToast) {
         showFailureSnackbar("Something went wrong");
       }
+      log('PATCH API Error: $e');
     }
     return null;
   }

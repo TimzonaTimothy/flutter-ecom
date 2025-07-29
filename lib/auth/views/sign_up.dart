@@ -187,6 +187,7 @@ class _SignUpSreenState extends State<SignUpSreen> {
                         Checkbox(
                           activeColor: AppStyles.primaryColor,
                           checkColor: AppStyles.whiteColor,
+                          
                           value: isChecked,
                           onChanged: (bool? value) {
                             setState(() {

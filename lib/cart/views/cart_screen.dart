@@ -34,37 +34,39 @@ class _CartScreenState extends State<CartScreen> {
     _loadCartItems();
   }
 
-  Future<void> _loadCartItems() async {
-    await cartController.fetchCartItems();
-    setState(() {});
-  }
+  // Future<void> _loadCartItems() async {
+  //   await cartController.fetchCartItems();
+  //   setState(() {});
+  // }
 
 
 
  Future<void> _updateQuantity(int cartId, int newQuantity) async {
-    if (newQuantity < 1) return;
+  if (newQuantity < 1) return;
 
-    final success = await cartController.updateCartItem(cartId, newQuantity);
-    if (success) {
-      setState(() {});
-    } else {
-      showFailureSnackbar(cartController.errorMessage ?? "Failed to update quantity");
-    }
+  final success = await cartController.updateCartItem(cartId, newQuantity);
+  if (!success) {
+    showFailureSnackbar(cartController.errorMessage ?? "Failed to update quantity");
   }
+  // No need for setState() - GetX will handle UI updates automatically
+}
 
-
-
-  Future<void> _removeItem(CartModel item) async {
-    if (item.id == null) return;
-    
-    final success = await cartController.removeFromCart(item.id!);
-    if (success) {
-      setState(() {});
-      showSuccessSnackbar("${item.product?.title ?? 'Item'} removed from cart");
-    } else {
-      showFailureSnackbar(cartController.errorMessage ?? "Failed to remove item");
-    }
+Future<void> _removeItem(CartModel item) async {
+  if (item.id == null) return;
+  
+  final success = await cartController.removeFromCart(item.id!);
+  if (success) {
+    showSuccessSnackbar("${item.product?.title ?? 'Item'} removed from cart");
+  } else {
+    showFailureSnackbar(cartController.errorMessage ?? "Failed to remove item");
   }
+  // No need for setState() - GetX will handle UI updates automatically
+}
+
+Future<void> _loadCartItems() async {
+  await cartController.fetchCartItems();
+  // No need for setState() - GetX will handle UI updates automatically
+}
 
   double getCartSubTotal() => cartController.totalPrice;
 
@@ -112,7 +114,7 @@ double getItemPrice(CartModel item) {
       ),
       body: Obx(() {
         if (cartController.isLoading.value) {
-    return const Center(child: CircularProgressIndicator());
+    return  Center(child: CircularProgressIndicator(color: AppStyles.primaryColor,));
   }
 
   if (cartController.cartItems.isEmpty) {
@@ -122,6 +124,7 @@ double getItemPrice(CartModel item) {
                   children: [
                     Expanded(
                       child: RefreshIndicator(
+                        color: AppStyles.primaryColor,
                         onRefresh: _loadCartItems,
                         child: ListView.builder(
                           itemCount: cartController.cartItems.length,
@@ -130,7 +133,7 @@ double getItemPrice(CartModel item) {
                             return Dismissible(
                               key: ValueKey(item.id),
                               background: Container(
-                                color: Colors.redAccent.shade100,
+                                color: Colors.red,
                                 alignment: Alignment.centerRight,
                                 padding: const EdgeInsets.only(right: 20),
                                 child: const Icon(Icons.delete, color: Colors.white),

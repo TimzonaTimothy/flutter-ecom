@@ -29,11 +29,12 @@ class WishlistController extends GetxController {
     String? authToken = getToken();
     try {
       final response = await http.get(
-        Uri.parse('$fullUrl/wishlist/me/'), // Fixed: use the correct endpoint path
+        Uri.parse('$fullUrl/wishlist/me/'), 
         headers: {
           "Authorization": 'Bearer $authToken',
         },
       );
+      await Future.delayed(const Duration(seconds: 2));
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
