@@ -40,6 +40,7 @@ class _ProductDetailState extends State<ProductDetail> {
   @override
   void initState() {
     super.initState();
+    Get.put(CartController());
     _fetchProductById(widget.productId);
   }
 
