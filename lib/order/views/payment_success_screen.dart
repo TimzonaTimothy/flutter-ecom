@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../base/bottom_nav_bar.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/primary_button.dart';
-import '../../order/views/track_order_screen.dart';
+import 'track_order_screen.dart';
 import 'reciept_screen.dart';
 
 class PaymentSuccessScreen extends StatelessWidget {
-  const PaymentSuccessScreen({super.key});
+  // final int orderId;
+  // final double amount;
+  final String paymentMethod;
+
+  const PaymentSuccessScreen({
+    super.key,
+    // required this.orderId,
+    // required this.amount,
+    required this.paymentMethod,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +31,8 @@ class PaymentSuccessScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Get.back();
+            Get.to(() => const BottomNavBar(), transition: Transition.rightToLeftWithFade,
+                    duration: const Duration(milliseconds: 500),);
           },
         ),
       ),
@@ -43,7 +54,16 @@ class PaymentSuccessScreen extends StatelessWidget {
               "Payment Successful!",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
+            // Text(
+            //   "Order #$orderId paid via $paymentMethod",
+            //   style: TextStyle(color: Colors.grey.shade600),
+            // ),
+            // Text(
+            //   "Amount: \$${amount.toStringAsFixed(2)}",
+            //   style: TextStyle(color: Colors.grey.shade600),
+            // ),
+            const SizedBox(height: 16),
+            
             Text(
               "Thank you for your purchase.",
               style: TextStyle(color: Colors.grey.shade600),

@@ -29,6 +29,10 @@ class LoginController extends GetxController {
         log(response.body);
         final data = jsonDecode(response.body);
         await saveTokens(data['access'], data['refresh']);
+
+        // ✅ Save user ID
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt("user_id", data['user']['id']);
         Get.offAll(
           () => const BottomNavBar(),
           transition: Transition.rightToLeftWithFade,

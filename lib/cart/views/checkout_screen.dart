@@ -8,7 +8,7 @@ import '../controllers/address_controller.dart';
 import '../controllers/cart_controller.dart';
 import '../models/address_model.dart';
 import '../models/cart_model.dart';
-import 'payment_methods_screen.dart';
+import '../../order/views/payment_methods_screen.dart';
 import 'shipping_address_screen.dart';
 import 'shipping_type_screen.dart';
 
