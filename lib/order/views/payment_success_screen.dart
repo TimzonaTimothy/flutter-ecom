@@ -7,18 +7,25 @@ import '../../base/widgets/primary_button.dart';
 import 'track_order_screen.dart';
 import 'reciept_screen.dart';
 
-class PaymentSuccessScreen extends StatelessWidget {
-  // final int orderId;
-  // final double amount;
+class PaymentSuccessScreen extends StatefulWidget {
+  final int orderId;
+  final double amount;
   final String paymentMethod;
+  final String reference;
 
   const PaymentSuccessScreen({
     super.key,
-    // required this.orderId,
-    // required this.amount,
+    required this.orderId,
+    required this.amount,
     required this.paymentMethod,
+    required this.reference,
   });
 
+  @override
+  State<PaymentSuccessScreen> createState() => _PaymentSuccessScreenState();
+}
+
+class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

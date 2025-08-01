@@ -153,14 +153,14 @@ class OrderCreationRequest {
 
 
 class OrderItem {
-  final int productId;
+  final int id;
   final int quantity;
   final String? size;
   final String? color;
   final double price;
 
   OrderItem({
-    required this.productId,
+    required this.id,
     required this.quantity,
     required this.price,
     this.size,
@@ -176,7 +176,7 @@ class OrderItem {
     }
 
     return OrderItem(
-      productId: cartItem.product?.id ?? 0,
+      id: cartItem.product?.id ?? 0,
       quantity: cartItem.quantity ?? 1,
       price: price,
       size: cartItem.size,
@@ -186,11 +186,11 @@ class OrderItem {
 
   Map<String, dynamic> toJson() {
     return {
-      'product_id': productId,
+      'id': id,
       'quantity': quantity,
       'price': price,
-      'size': size,
-      'color': color,
+      'sizes': size,
+      'colors': color,
     };
   }
 }
