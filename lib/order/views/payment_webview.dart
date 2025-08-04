@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../base/res/styles/app_styles.dart';
 import '../../base/utils/snackbar.dart';
 import '../controllers/payment_controller.dart';
 import 'payment_methods_screen.dart';
@@ -129,33 +130,61 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
     _startTimeoutTimer();
   }
 
+  // void _validateUrl() {
+  //   if (widget.url.isEmpty) {
+  //     setState(() {
+  //       _errorMessage = 'Payment URL is empty';
+  //       _isLoading = false;
+  //     });
+  //     return;
+  //   }
+
+  //   try {
+  //     final uri = Uri.parse(widget.url);
+  //     if (!uri.hasScheme || (!uri.scheme.startsWith('http'))) {
+  //       setState(() {
+  //         _errorMessage = 'Invalid payment URL format';
+  //         _isLoading = false;
+  //       });
+  //       return;
+  //     }
+  //     log('URL validation passed: ${widget.url}');
+  //   } catch (e) {
+  //     log('URL validation failed: $e');
+  //     setState(() {
+  //       _errorMessage = 'Invalid payment URL: $e';
+  //       _isLoading = false;
+  //     });
+  //   }
+  // }
   void _validateUrl() {
-    if (widget.url.isEmpty) {
+  if (widget.url.isEmpty) {
+    setState(() {
+      _errorMessage = 'Payment URL is empty';
+      _isLoading = false;
+    });
+    return;
+  }
+
+  try {
+    final uri = Uri.parse(widget.url);
+    if (!uri.hasScheme || !uri.scheme.startsWith('https')) {
+      log('Invalid URL scheme: ${uri.scheme}');
       setState(() {
-        _errorMessage = 'Payment URL is empty';
+        _errorMessage = 'Payment URL must use HTTPS';
         _isLoading = false;
       });
       return;
     }
-
-    try {
-      final uri = Uri.parse(widget.url);
-      if (!uri.hasScheme || (!uri.scheme.startsWith('http'))) {
-        setState(() {
-          _errorMessage = 'Invalid payment URL format';
-          _isLoading = false;
-        });
-        return;
-      }
-      log('URL validation passed: ${widget.url}');
-    } catch (e) {
-      log('URL validation failed: $e');
-      setState(() {
-        _errorMessage = 'Invalid payment URL: $e';
-        _isLoading = false;
-      });
-    }
+    log('URL validation passed: ${widget.url}');
+  } catch (e) {
+    log('URL validation failed: $e');
+    setState(() {
+      _errorMessage = 'Invalid payment URL: $e';
+      _isLoading = false;
+    });
   }
+}
 
   @override
   void dispose() {
@@ -730,11 +759,13 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
                   )
                 : _webViewInitialized || !_isLoading
                   ? WebViewWidget(controller: _controller)
-                  : const Center(
+                  :  
+                  
+                  Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          CircularProgressIndicator(),
+                          CircularProgressIndicator(color: AppStyles.primaryColor,),
                           SizedBox(height: 16),
                           Text('Loading payment page...'),
                           SizedBox(height: 8),

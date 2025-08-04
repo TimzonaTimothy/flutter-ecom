@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
 
-    final isValid = await verifyTokenOnly(); // separated validation logic
+    final isValid = await verifyTokenOnly(); 
     if (isValid) {
       Get.offAll(
         () => const BottomNavBar(),
