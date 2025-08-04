@@ -9,7 +9,9 @@ import '../../base/bottom_nav_bar.dart';
 import '../../base/res/styles/app_styles.dart';
 
 class LeaveReviewPage extends StatelessWidget {
-  const LeaveReviewPage({super.key});
+  final int? orderId;
+
+  const LeaveReviewPage({super.key, required this.orderId});
 
   @override
   Widget build(BuildContext context) {

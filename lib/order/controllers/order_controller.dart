@@ -58,6 +58,25 @@ class OrderController extends GetxController {
     await loadOrdersByStatus(status);
   }
 
+  OrderModel? getOrderById(int orderId) {
+    try {
+      // Check cached orders first
+      OrderModel? order = pendingOrders.firstWhereOrNull((order) => order.id == orderId) ??
+          deliveredOrders.firstWhereOrNull((order) => order.id == orderId) ??
+          cancelledOrders.firstWhereOrNull((order) => order.id == orderId);
+
+      if (order != null) {
+        
+        return order;
+      }
+
+      return null; // Return null if not found, let FutureBuilder handle API call
+    } catch (e) {
+      
+      return null;
+    }
+  }
+
   void _setLoading(String status, bool loading) {
     switch (status) {
       case 'Pending':
