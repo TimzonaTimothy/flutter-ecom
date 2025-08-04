@@ -40,6 +40,7 @@ class OrderController extends GetxController {
       _setError(status, '');
 
       List<OrderModel>? orders = await OrderService.getOrdersByStatus(status);
+      print('Fetched ${orders?.length ?? 0} orders for status: $status');
 
       if (orders != null) {
         _setOrders(status, orders);
@@ -90,8 +91,18 @@ class OrderController extends GetxController {
   void _setOrders(String status, List<OrderModel> orders) {
     switch (status) {
       case 'Pending':
+        // Combine Pending orders with existing Shipped orders
+        pendingOrders.value = [
+          ...orders,
+          ...pendingOrders.where((order) => order.deliveryStatus == 'Shipped')
+        ];
+        break;
       case 'Shipped':
-        pendingOrders.value = orders;
+        // Combine Shipped orders with existing Pending orders
+        pendingOrders.value = [
+          ...orders,
+          ...pendingOrders.where((order) => order.deliveryStatus == 'Pending')
+        ];
         break;
       case 'Delivered':
         deliveredOrders.value = orders;

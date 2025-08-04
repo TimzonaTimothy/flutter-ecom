@@ -84,7 +84,7 @@ class OrdersList extends StatelessWidget {
     return Obx(() {
       final isLoading = controller.isLoadingByStatus(status);
       final error = controller.getErrorByStatus(status);
-      final orders = controller.getOrdersByStatus(status);
+      final orders = status == 'Pending' ? controller.pendingOrders : controller.getOrdersByStatus(status);
 
       if (isLoading) {
         return const Center(
@@ -203,6 +203,10 @@ class OrderItemWidget extends StatelessWidget {
   }
 
   void onButtonPressed() {
+    if (order.id == null) {
+      Get.snackbar('Error', 'Invalid order ID', backgroundColor: Colors.red, colorText: Colors.white);
+      return;
+    }
     switch (status) {
       case 'Pending':
       case 'Shipped':
@@ -213,17 +217,15 @@ class OrderItemWidget extends StatelessWidget {
         );
         break;
       case 'Delivered':
-       
-         Get.to(
+        Get.to(
           () => TrackOrderPage(orderId: order.id),
           transition: Transition.rightToLeftWithFade,
           duration: const Duration(milliseconds: 500),
         );
         break;
       case 'Cancelled':
-        
-           Get.to(
-          () => BottomNavBar(),
+        Get.to(
+          () => const BottomNavBar(),
           transition: Transition.rightToLeftWithFade,
           duration: const Duration(milliseconds: 500),
         );
@@ -271,7 +273,7 @@ class OrderItemWidget extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Order #${order.id}',
+                      'Order #${order.id ?? 'N/A'}',
                       style: AppStyles.headLineStyle4.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -279,13 +281,13 @@ class OrderItemWidget extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(order.deliveryStatus!).withOpacity(0.1),
+                        color: _getStatusColor(order.deliveryStatus ?? 'Unknown').withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        order.deliveryStatus!,
+                        order.deliveryStatus ?? 'Unknown',
                         style: AppStyles.textStyle.copyWith(
-                          color: _getStatusColor(order.deliveryStatus!),
+                          color: _getStatusColor(order.deliveryStatus ?? 'Unknown'),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -293,9 +295,7 @@ class OrderItemWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-                
                 const SizedBox(height: 12),
-                
                 // Product info
                 if (firstProduct != null)
                   Row(
@@ -303,9 +303,9 @@ class OrderItemWidget extends StatelessWidget {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: firstProduct.imageUrls?.isNotEmpty ?? false
+                        child: firstProduct.imageUrls.isNotEmpty
                             ? Image.network(
-                                firstProduct.imageUrls!.first,
+                                firstProduct.imageUrls.first,
                                 width: 80,
                                 height: 80,
                                 fit: BoxFit.cover,
@@ -363,7 +363,7 @@ class OrderItemWidget extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              firstProduct.title!,
+                              firstProduct.title ?? 'Unknown Product',
                               style: AppStyles.headLineStyle3.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),
@@ -372,7 +372,7 @@ class OrderItemWidget extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              "Total Items: ${order.totalQuantity}",
+                              "Total Items: ${order.totalQuantity ?? 0}",
                               style: AppStyles.textStyle.copyWith(
                                 color: AppStyles.greColor,
                               ),
@@ -387,7 +387,7 @@ class OrderItemWidget extends StatelessWidget {
                               ),
                             const SizedBox(height: 4),
                             Text(
-                              "\$${order.total!.toStringAsFixed(2)}",
+                              "\$${order.total?.toStringAsFixed(2) ?? '0.00'}",
                               style: AppStyles.headLineStyle4.copyWith(
                                 color: AppStyles.blackColor,
                                 fontWeight: FontWeight.w600,
@@ -418,15 +418,13 @@ class OrderItemWidget extends StatelessWidget {
                       ),
                     ],
                   ),
-                
                 const SizedBox(height: 12),
-                
                 // Order date and payment status
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Ordered: ${_formatDate(order.createdDate!)}',
+                      'Ordered: ${order.createdDate != null ? _formatDate(order.createdDate!) : 'N/A'}',
                       style: AppStyles.textStyle.copyWith(
                         color: AppStyles.greColor,
                         fontSize: 12,
@@ -435,15 +433,15 @@ class OrderItemWidget extends StatelessWidget {
                     Row(
                       children: [
                         Icon(
-                          _getPaymentStatusIcon(order.paymentStatus!),
+                          _getPaymentStatusIcon(order.paymentStatus ?? 'Unknown'),
                           size: 14,
-                          color: _getPaymentStatusColor(order.paymentStatus!),
+                          color: _getPaymentStatusColor(order.paymentStatus ?? 'Unknown'),
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          order.paymentStatus!,
+                          order.paymentStatus ?? 'Unknown',
                           style: AppStyles.textStyle.copyWith(
-                            color: _getPaymentStatusColor(order.paymentStatus!),
+                            color: _getPaymentStatusColor(order.paymentStatus ?? 'Unknown'),
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
@@ -464,8 +462,9 @@ class OrderItemWidget extends StatelessWidget {
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
-      case 'Shipped':
         return Colors.orange;
+      case 'shipped':
+        return Colors.blue; // Distinct color for Shipped
       case 'delivered':
         return Colors.green;
       case 'cancelled':
@@ -506,7 +505,6 @@ class OrderItemWidget extends StatelessWidget {
   }
 }
 
-// Optional: Order Details Bottom Sheet
 class OrderDetailsBottomSheet extends StatelessWidget {
   final OrderModel order;
 
@@ -535,7 +533,6 @@ class OrderDetailsBottomSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
           // Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -553,9 +550,7 @@ class OrderDetailsBottomSheet extends StatelessWidget {
               ],
             ),
           ),
-          
           const Divider(),
-          
           // Order details content
           Expanded(
             child: SingleChildScrollView(
@@ -564,26 +559,20 @@ class OrderDetailsBottomSheet extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Order info
-                  _buildInfoRow('Order ID', '#${order.id}'),
-                  _buildInfoRow('Status', order.deliveryStatus!),
-                  _buildInfoRow('Payment', order.paymentStatus!),
-                  _buildInfoRow('Total', '\$${order.total!.toStringAsFixed(2)}'),
-                  _buildInfoRow('Date', _formatDate(order.createdDate!)),
-                  
+                  _buildInfoRow('Order ID', '#${order.id ?? 'N/A'}'),
+                  _buildInfoRow('Status', order.deliveryStatus ?? 'Unknown'),
+                  _buildInfoRow('Payment', order.paymentStatus ?? 'Unknown'),
+                  _buildInfoRow('Total', '\$${order.total?.toStringAsFixed(2) ?? '0.00'}'),
+                  _buildInfoRow('Date', order.createdDate != null ? _formatDate(order.createdDate!) : 'N/A'),
                   const SizedBox(height: 20),
-                  
                   // Products
                   Text(
                     'Products (${order.orderProducts.length})',
                     style: AppStyles.headLineStyle3,
                   ),
                   const SizedBox(height: 12),
-                  
-                  ...order.orderProducts.map((product) => 
-                    _buildProductItem(product)).toList(),
-                  
+                  ...order.orderProducts.map((product) => _buildProductItem(product)).toList(),
                   const SizedBox(height: 20),
-                  
                   // Address
                   Text(
                     'Delivery Address',
@@ -635,9 +624,9 @@ class OrderDetailsBottomSheet extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: product.imageUrls?.isNotEmpty ?? false
+            child: product.imageUrls.isNotEmpty
                 ? Image.network(
-                    product.imageUrls!.first,
+                    product.imageUrls.first,
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,
@@ -655,13 +644,13 @@ class OrderDetailsBottomSheet extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  product.title!,
+                  product.title ?? 'Unknown Product',
                   style: AppStyles.textStyle.copyWith(fontWeight: FontWeight.w600),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  '\$${product.discountPrice}',
+                  product.discountPrice != null ? '\$${product.discountPrice}' : 'N/A',
                   style: AppStyles.textStyle.copyWith(color: AppStyles.primaryColor),
                 ),
               ],
