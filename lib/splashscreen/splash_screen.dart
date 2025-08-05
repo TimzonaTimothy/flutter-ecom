@@ -1,12 +1,14 @@
 import 'package:ecom_app/onboarding/views/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../base/bottom_nav_bar.dart';
 import '../base/res/media.dart';
 import '../base/res/styles/app_styles.dart';
 import '../base/utils/app_routes.dart';
 import '../base/utils/token.dart';
+import '../base/utils/wrapper.dart';
 
 // import '../onboarding/onboarding.dart';
 
@@ -21,42 +23,36 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () async {
-      await verifyTokenAndNavigate();
-    });
-    // redirect();
+    _initializeApp();
   }
 
-  Future<void> verifyTokenAndNavigate() async {
-    final token = getToken();
-
-    if (token == null) {
+  Future<void> _initializeApp() async {
+    // Show splash for minimum 2 seconds
+    await Future.delayed(const Duration(seconds: 2));
+    
+    // Check if user has completed onboarding
+    final hasSeenOnboarding = await _hasSeenOnboarding();
+    
+    if (!hasSeenOnboarding) {
+      // First time user - show onboarding
       Get.offAll(
         () => const OnboardingScreen(),
         transition: Transition.rightToLeftWithFade,
         duration: const Duration(milliseconds: 500),
       );
-      // Get.toNamed(RouteNames.onboardingPage);
-      return;
-    }
-
-    final isValid = await verifyTokenOnly(); 
-    if (isValid) {
-      Get.offAll(
-        () => const BottomNavBar(),
-        transition: Transition.rightToLeftWithFade,
-        duration: const Duration(milliseconds: 500),
-      );
     } else {
-      await removeToken();
-      // Get.offAll(() => const SignInScreen());
+      // User has seen onboarding - check authentication
       Get.offAll(
-        const OnboardingScreen(),
+        () =>  AppWrapper(),
         transition: Transition.rightToLeftWithFade,
         duration: const Duration(milliseconds: 500),
       );
-      //  Get.toNamed(RouteNames.onboardingPage);
     }
+  }
+
+  Future<bool> _hasSeenOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('has_seen_onboarding') ?? false;
   }
 
   @override

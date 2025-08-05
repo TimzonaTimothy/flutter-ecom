@@ -16,14 +16,14 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  bool isChecked = false;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  late LoginController loginController;
 
   @override
   void initState() {
-    Get.put(LoginController());
+    loginController = Get.put(LoginController());
     super.initState();
   }
 
@@ -115,14 +115,16 @@ class _SignInScreenState extends State<SignInScreen> {
                   children: [
                     Row(
                       children: [
-                        Checkbox(
-                          activeColor: AppStyles.primaryColor,
-                          checkColor: AppStyles.whiteColor,
-                          value: isChecked,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              isChecked = value ?? false;
-                            });
+                        GetBuilder<LoginController>(
+                          builder: (controller) {
+                            return Checkbox(
+                              activeColor: AppStyles.primaryColor,
+                              checkColor: AppStyles.whiteColor,
+                              value: controller.rememberMe.value,
+                              onChanged: (bool? value) {
+                                controller.toggleRememberMe(value ?? false);
+                              },
+                            );
                           },
                         ),
                         Text(
@@ -145,17 +147,18 @@ class _SignInScreenState extends State<SignInScreen> {
                   height: 15,
                 ),
                 GetBuilder<LoginController>(
-                  builder: (loginController) {
+                  builder: (controller) {
                     return PrimaryButton(
                       verticalPadding: 10,
                       horizontalPadding: 130,
                       text: 'Sign In',
-                      isLoading: loginController.isLoad.value,
+                      isLoading: controller.isLoad.value,
                       onTap: () {
                         if (_formKey.currentState!.validate()) {
                           loginController.loginUser(
                             emailController.text.trim(),
                             passwordController.text.trim(),
+                            controller.rememberMe.value,
                           );
                         }
                       },

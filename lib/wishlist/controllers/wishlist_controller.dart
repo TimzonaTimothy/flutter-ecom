@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:get/get.dart';
 
+import '../../auth/service/auth_service.dart';
 import '../../base/res/base_url.dart';
 import '../../base/utils/my_request.dart';
 import '../../base/utils/snackbar.dart';
@@ -26,7 +27,7 @@ class WishlistController extends GetxController {
   Future<void> fetchWishlist() async {
     isLoading.value = true;
 
-    String? authToken = getToken();
+    String? authToken = await AuthService.instance.getToken();
     try {
       final response = await http.get(
         Uri.parse('$fullUrl/wishlist/me/'), 
@@ -87,7 +88,7 @@ class WishlistController extends GetxController {
   void toggleWishlist(int productId) async {
     // Use the same endpoint structure that works
     final url = Uri.parse('$fullUrl/wishlist/toggle/?id=$productId');
-    String? authToken = getToken();
+    String? authToken = await AuthService.instance.getToken();
 
     try {
       final response = await http.post(

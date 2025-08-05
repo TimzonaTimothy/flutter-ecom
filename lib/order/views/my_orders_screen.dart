@@ -87,8 +87,8 @@ class OrdersList extends StatelessWidget {
       final orders = status == 'Pending' ? controller.pendingOrders : controller.getOrdersByStatus(status);
 
       if (isLoading) {
-        return const Center(
-          child: CircularProgressIndicator(),
+        return  Center(
+          child: CircularProgressIndicator(color: AppStyles.primaryColor),
         );
       }
 

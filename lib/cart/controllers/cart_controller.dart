@@ -55,7 +55,6 @@ class CartController extends GetxController {
       await Future.delayed(const Duration(seconds: 2));
 
       if (response != null) {
-        log('Cart response: $response');
         
         final List<dynamic> jsonList = jsonDecode(response);
         cartItems.value = jsonList.map((json) => CartModel.fromJson(json)).toList();

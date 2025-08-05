@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'auth/service/auth_service.dart';
 import 'base/utils/app_routes.dart';
 import 'splashscreen/splash_screen.dart';
 
@@ -17,8 +18,13 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
   prefs = await SharedPreferences.getInstance();
 
+
+// Initialize AuthService
+  Get.put(AuthService());
+  
   runApp(const MyApp());
 }
 

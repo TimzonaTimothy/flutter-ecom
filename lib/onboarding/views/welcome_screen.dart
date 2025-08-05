@@ -27,19 +27,19 @@ class WelcomeScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: GestureDetector(
-                  onTap: () {
-                    Get.to(() => const BottomNavBar(), transition: Transition.rightToLeftWithFade,
-                    duration: const Duration(milliseconds: 500),);
-                  },
-                  child: const Text(
-                    'Skip',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
+              // Align(
+              //   alignment: Alignment.topRight,
+              //   child: GestureDetector(
+              //     onTap: () {
+              //       Get.to(() => const BottomNavBar(), transition: Transition.rightToLeftWithFade,
+              //       duration: const Duration(milliseconds: 500),);
+              //     },
+              //     child: const Text(
+              //       'Skip',
+              //       style: TextStyle(color: Colors.white),
+              //     ),
+              //   ),
+              // ),
               ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
                   colors: [Colors.black38, Colors.black87],

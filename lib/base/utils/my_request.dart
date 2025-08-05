@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
+import '../../auth/service/auth_service.dart';
 import 'package:ecom_app/base/utils/snackbar.dart';
 import 'package:ecom_app/base/utils/token.dart';
 import 'package:http/http.dart' as http;
@@ -41,29 +41,84 @@ class MyRequest {
 
   static const int timeoutTime = 60;
 
-  Future<bool> refreshAccessToken() async {
+  // Future<bool> refreshAccessToken() async {
+  //   try {
+  //     String? authToken = getRefreshToken();
+  //     // change this to the endpoint to get refresh token
+  //     final response = await http
+  //         .post(
+  //           Uri.parse('$baseURL/auth/jwt/refresh/'),
+  //           body: jsonEncode({"refresh": authToken ?? ""}),
+  //         )
+  //         .timeout(const Duration(seconds: timeoutTime));
+
+  //     log('refresh_token response ${response.body}');
+
+  //     Map resp = jsonDecode(response.body);
+  //     if (response.statusCode != 200) {
+  //       return false;
+  //     }
+
+  //     // todo, check the response
+  //     AuthService.saveTokens(resp['access_token'], authToken!);
+
+  //     return true;
+  //   } catch (e) {
+  //     return false;
+  //   }
+  // }
+
+
+Future<bool> refreshAccessToken() async {
     try {
-      String? authToken = getRefreshToken();
-      // change this to the endpoint to get refresh token
-      final response = await http
-          .post(
-            Uri.parse('$baseURL/auth/jwt/refresh/'),
-            body: jsonEncode({"refresh": authToken ?? ""}),
-          )
-          .timeout(const Duration(seconds: timeoutTime));
-
-      log('refresh_token response ${response.body}');
-
-      Map resp = jsonDecode(response.body);
-      if (response.statusCode != 200) {
+      String? authToken = await AuthService.instance.getRefreshToken();
+      if (authToken == null) {
+        log('No refresh token found', name: 'MyRequest');
         return false;
       }
 
-      // todo, check the response
-      saveTokens(resp['access_token'], authToken!);
+      // Use /auth/refresh/ as per your comment
+      final url = Uri.parse('$baseURL/auth/refresh/');
+      log('Sending refresh request to: $url', name: 'MyRequest');
+      log('Request body: refresh=$authToken', name: 'MyRequest');
 
-      return true;
+      final response = await http
+          .post(
+            url,
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Accept': 'application/json',
+            },
+            body: 'refresh=$authToken', // Form-encoded body
+          )
+          .timeout(const Duration(seconds: timeoutTime));
+
+      log('Refresh response: ${response.body}', name: 'MyRequest');
+      log('Refresh status: ${response.statusCode}', name: 'MyRequest');
+
+      if (response.statusCode == 200) {
+        final resp = jsonDecode(response.body);
+        final newAccessToken = resp['access']; // Adjust key based on backend response
+        final newRefreshToken = resp['refresh'] ?? authToken;
+
+        // Use AuthService instance
+        await AuthService.instance.saveTokens(newAccessToken, newRefreshToken, rememberMe: await AuthService.instance.getRememberMe());
+        log('Tokens saved successfully', name: 'MyRequest');
+        return true;
+      } else {
+        log('Token refresh failed: ${response.statusCode} - ${response.body}', name: 'MyRequest');
+        await AuthService.instance.removeTokens();
+        if (showToast) {
+          showFailureSnackbar('Session expired, please login again');
+        }
+        return false;
+      }
     } catch (e) {
+      log('Error refreshing token: $e', name: 'MyRequest');
+      await AuthService.instance.removeTokens();
+      if (showToast) {
+        showFailureSnackbar('Session expired, please login again');
+      }
       return false;
     }
   }
@@ -111,7 +166,7 @@ class MyRequest {
               'Session expired please login again',
             );
           }
-          removeToken();
+          await AuthService.instance.removeTokens();
           // await UserController.instance.removeUser();
           // toLogin();
           return null;
@@ -124,7 +179,7 @@ class MyRequest {
 
   Future<String?> postApi() async {
     try {
-      String? authToken = getToken();
+      String? authToken = await AuthService.instance.getToken();
       Map<String, String> headers = {
         'Content-Type': 'application/json',
         if (auth) 'Authorization': 'Bearer $authToken',
@@ -165,7 +220,7 @@ class MyRequest {
 
   Future<String?> getApi() async {
     try {
-      String? authToken = getToken();
+      String? authToken = await AuthService.instance.getToken();
       Map<String, String> headers = {'Authorization': 'Bearer $authToken'};
 
       log('body: $body');
@@ -197,7 +252,7 @@ class MyRequest {
 
   Future<String?> putApi() async {
     try {
-      String? authToken = getToken();
+      String? authToken = await AuthService.instance.getToken();
       Map<String, String> headers = {'Authorization': 'Bearer $authToken'};
 
       log('body: $body');
@@ -234,7 +289,7 @@ class MyRequest {
 
   Future<String?> patchApi() async {
     try {
-      String? authToken = getToken();
+      String? authToken = await AuthService.instance.getToken();
       Map<String, String> headers = {
       'Content-Type': 'application/json', 
       if (auth) 'Authorization': 'Bearer $authToken',
@@ -270,7 +325,7 @@ class MyRequest {
 
   Future<String?> deleteApi() async {
     try {
-      String? authToken = getToken();
+      String? authToken = await AuthService.instance.getToken();
       Map<String, String> headers = {'Authorization': 'Bearer $authToken'};
       final response = await http.delete(
         Uri.parse('$baseURL/$path'),
@@ -304,7 +359,10 @@ class MyRequest {
 
     final url = Uri.parse('$baseURL/$path');
     final request = http.MultipartRequest('POST', url);
-    request.headers.addAll(authHeader());
+    // request.headers.addAll(authHeader()); 
+    request.headers.addAll({
+      'Authorization': 'Bearer ${await AuthService.instance.getToken()}',
+    });
 
     request.files.add(http.MultipartFile(
       fieldName,
@@ -320,7 +378,7 @@ class MyRequest {
     if (response.statusCode == 401) {
       final res = await refreshAccessToken();
       if (!res) {
-        removeToken();
+        await AuthService.instance.removeTokens();
         // await UserController.instance.removeUser();
         // toLogin();
       }

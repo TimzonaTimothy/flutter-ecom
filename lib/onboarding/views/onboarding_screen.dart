@@ -2,7 +2,9 @@ import 'package:ecom_app/base/res/styles/app_styles.dart';
 import 'package:ecom_app/onboarding/views/welcome_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../base/utils/wrapper.dart';
 import '../../base/widgets/primary_button.dart';
 import '../models/onboarding_model.dart';
 
@@ -14,6 +16,20 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
+
+  Future<void> _completeOnboarding() async {
+    // Mark onboarding as completed
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_seen_onboarding', true);
+    
+    // auth check
+    Get.offAll(
+      () => const AppWrapper(),
+      transition: Transition.rightToLeftWithFade,
+      duration: const Duration(milliseconds: 500),
+    );
+  }
+  
   int currentIndex = 0;
   late PageController _controller;
 
@@ -134,18 +150,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           text: 'Next',
                           onTap: () {
                             if (currentIndex == contents.length - 1) {
-                              // Navigator.pushReplacement(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //       builder: (_) => const HomeScreen()),
-                              // );
-
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //       builder: (_) => const WelcomeScreen()),
-                              // );
-                              // Get.toNamed(RouteNames.welcomePage);
+                              _completeOnboarding();
                               Get.to(
                                 const WelcomeScreen(),
                                 transition: Transition.rightToLeftWithFade,

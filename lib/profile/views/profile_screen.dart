@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../auth/service/logout_helper.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../order/views/my_orders_screen.dart';
+import '../controllers/profile_controller.dart';
 import 'help_center_screen.dart';
 import 'password_manager_screen.dart';
 import 'privacy_screen.dart';
@@ -160,7 +162,9 @@ class ProfileScreen extends StatelessWidget {
                       // const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () async {
+                            await AuthHelpers.logout();
+                          },
                           label: Text(
                             "Yes, Logout",
                             style: AppStyles.headLineStyle3

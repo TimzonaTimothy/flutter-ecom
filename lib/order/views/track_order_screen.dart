@@ -83,7 +83,7 @@ class TrackOrderPage extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             
-            return const Center(child: CircularProgressIndicator());
+            return  Center(child: CircularProgressIndicator(color: AppStyles.primaryColor));
           }
 
           if (snapshot.hasError || snapshot.data == null) {
@@ -213,7 +213,7 @@ class TrackOrderPage extends StatelessWidget {
                   children: [
                     const Text("Tracking ID"),
                     Text(
-                      "TRK${order.id ?? 'N/A'}",
+                      "${order.id ?? 'N/A'}",
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
