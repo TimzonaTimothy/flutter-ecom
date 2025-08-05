@@ -98,8 +98,8 @@ class AuthService extends GetxController  {
     await prefs.setString('refresh_token', refreshToken);
     await prefs.setBool('remember_me', rememberMe);
     
-    // Set token expiry time (55 minutes from now to refresh before expiry)
-    final expiryTime = DateTime.now().add(const Duration(minutes: 55));
+    // Set token expiry time (50 minutes from now to refresh before expiry)
+    final expiryTime = DateTime.now().add(const Duration(minutes: 50));
     await prefs.setString('token_expiry', expiryTime.toIso8601String());
     
     _isAuthenticated.value = true;
@@ -169,7 +169,7 @@ class AuthService extends GetxController  {
 
   Future<void> _refreshTokenIfNeeded() async {
     final expiry = await getTokenExpiry();
-    if (expiry != null && DateTime.now().isAfter(expiry.subtract(const Duration(minutes: 5)))) {
+    if (expiry != null && DateTime.now().isAfter(expiry.subtract(const Duration(minutes: 10)))) {
       await refreshAccessToken();
     }
   }
