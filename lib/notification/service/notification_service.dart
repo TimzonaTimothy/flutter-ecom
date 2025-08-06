@@ -11,9 +11,8 @@ import 'package:http/http.dart' as http;
 class NotificationService {
 
   static const String _baseUrl =baseUrl;
- 
 
-  Future<List<NotificationModel>> getUnreadNotifications() async {
+  Future<List<NotificationModel>> getNotifications() async {
     try {
       final _token = await AuthService.instance.getToken();
       final response = await http.get(
@@ -107,4 +106,59 @@ class NotificationService {
       return false;
     }
   }
+
+ 
+Future<List<NotificationModel>> getAllNotifications() async {
+  try {
+    final _token = await AuthService.instance.getToken();
+    final response = await http.get(
+      Uri.parse('$_baseUrl/notifications/me/'), // same endpoint
+      headers: {
+        'Authorization': 'Bearer $_token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => NotificationModel.fromJson(json)).toList();
+    } else {
+      showFailureSnackbar('Failed to fetch notifications: ${response.statusCode}');
+      return [];
+    }
+  } catch (e) {
+    print('Error fetching notifications: $e');
+    showFailureSnackbar('Error fetching notifications');
+    return [];
+  }
+}
+
+  Future<List<NotificationModel>> getUnreadNotifications() async {
+    try {
+      final _token = await AuthService.instance.getToken();
+      final response = await http.get(
+        Uri.parse('$_baseUrl/notifications/me/'),
+        headers: {
+          'Authorization': 'Bearer $_token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => NotificationModel.fromJson(json)).toList();
+      } else {
+        showFailureSnackbar('Failed to fetch notifications: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error fetching notifications: $e');
+      showFailureSnackbar('Error fetching notifications');
+      return [];
+    }
+  }
+
+  
+
+ 
 }

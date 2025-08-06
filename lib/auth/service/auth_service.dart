@@ -183,9 +183,8 @@ class AuthService extends GetxController {
       final url = Uri.parse('$baseURLGeneral/auth/jwt/refresh/');
       final response = await http.post(
         url,
-        // headers: {'Content-Type': 'application/json'},
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
         body: jsonEncode({'refresh': refreshToken}),

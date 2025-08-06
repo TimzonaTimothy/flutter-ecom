@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
+import '../../order/views/review_screen.dart';
 import '../controllers/notification_controller.dart';
 import '../models/notification_models.dart';
 
@@ -131,15 +132,6 @@ import '../models/notification_models.dart';
 //   }
 // }
 
-// class NotificationItem {
-//   final IconData icon;
-//   final String title;
-//   final String time;
-
-//   NotificationItem(this.icon, this.title, this.time);
-// }
-
-
 
 
 class NotificationScreen extends StatelessWidget {
@@ -156,7 +148,7 @@ class NotificationScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppStyles.bgColor,
         elevation: 0,
-        title: Text("Notification", style: AppStyles.headLineStyle2),
+        title: Text("Notifications", style: AppStyles.headLineStyle2),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -174,18 +166,21 @@ class NotificationScreen extends StatelessWidget {
             padding: const EdgeInsets.only(right: 16),
             child: Obx(() {
               final count = controller.unreadCount.value;
-              return Chip(
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  side: BorderSide.none,
+              return Visibility(
+                visible: count > 0,
+                child: Chip(
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    side: BorderSide.none,
+                  ),
+                  label: Text(
+                    "$count NEW",
+                    style: const TextStyle(color: Colors.white),
+                    textScaler: TextScaler.linear(textScaleFactor),
+                  ),
+                  backgroundColor: AppStyles.primaryColor,
+                  elevation: 0,
                 ),
-                label: Text(
-                  "$count NEW",
-                  style: const TextStyle(color: Colors.white),
-                  textScaler: TextScaler.linear(textScaleFactor),
-                ),
-                backgroundColor: AppStyles.primaryColor,
-                elevation: 0,
               );
             }),
           ),
@@ -211,8 +206,11 @@ class NotificationScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'No new notifications',
-                  style:AppStyles.headLineStyle4,
+                  'No notifications',
+                  style: AppStyles.headLineStyle4.copyWith(
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w600,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -252,7 +250,7 @@ class NotificationScreen extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            if (notifications.isNotEmpty)
+            if (notifications.any((n) => !n.isRead))
               GestureDetector(
                 onTap: () async {
                   await controller.markAllAsRead();
@@ -284,13 +282,18 @@ class NotificationScreen extends StatelessWidget {
 
     return GestureDetector(
       onTap: () async {
-        await controller.markAsRead(notification.id);
+        if (!notification.isRead) {
+          await controller.markAsRead(notification.id);
+          if (notification.title.toLowerCase().contains('review')) {
+            Get.to(() => LeaveReviewPage(orderId: notification.orderId));
+          }
+        }
       },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppStyles.whiteColor,
+          color: notification.isRead ? AppStyles.whiteColor.withOpacity(0.7) : AppStyles.greColor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -314,15 +317,15 @@ class NotificationScreen extends StatelessWidget {
                         child: Text(
                           notification.title,
                           style: AppStyles.headLineStyle4.copyWith(
-                            color: AppStyles.blackColor,
-                            // textScaler: TextScaler.linear(textScaleFactor),
+                            color: notification.isRead ? AppStyles.blackColor.withOpacity(0.6) : AppStyles.blackColor,
+                            fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
                           ),
                         ),
                       ),
                       Text(
                         notification.getFormattedTime(),
                         style: AppStyles.headLineStyle4.copyWith(
-                          // textScaler: TextScaler.linear(textScaleFactor),
+                          color: notification.isRead ? Colors.grey[600] : AppStyles.blackColor,
                         ),
                       ),
                     ],
@@ -331,7 +334,7 @@ class NotificationScreen extends StatelessWidget {
                   Text(
                     notification.message,
                     style: AppStyles.textStyle.copyWith(
-                      // textScaler: TextScaler.linear(textScaleFactor),
+                      color: notification.isRead ? Colors.grey[600] : AppStyles.blackColor,
                     ),
                   ),
                 ],

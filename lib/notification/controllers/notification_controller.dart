@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 
 import '../models/notification_models.dart';
 import '../service/notification_service.dart';
-
 class NotificationController extends GetxController {
   final RxList<NotificationModel> notifications = <NotificationModel>[].obs;
   final RxInt unreadCount = 0.obs;
@@ -18,8 +17,9 @@ class NotificationController extends GetxController {
   Future<void> fetchNotifications() async {
     try {
       isLoading.value = true;
-      final fetchedNotifications = await NotificationService().getUnreadNotifications();
+      final fetchedNotifications = await NotificationService().getNotifications();
       notifications.assignAll(fetchedNotifications);
+      await fetchUnreadCount(); // Ensure count is updated after fetching
     } finally {
       isLoading.value = false;
     }
@@ -37,23 +37,51 @@ class NotificationController extends GetxController {
   Future<void> markAsRead(int notificationId) async {
     final success = await NotificationService().markNotificationAsRead(notificationId);
     if (success) {
-      notifications.removeWhere((n) => n.id == notificationId);
-      await fetchUnreadCount(); // Update count after marking as read
-    }
-  }
-
-  Future<void> markAllAsRead() async {
-    final unreadIds = notifications.map((n) => n.id).toList();
-    if (unreadIds.isNotEmpty) {
-      final success = await NotificationService().markAllNotificationsAsRead(unreadIds);
-      if (success) {
-        notifications.clear();
-        await fetchUnreadCount();
+      // Update the notification in-place instead of removing
+      final index = notifications.indexWhere((n) => n.id == notificationId);
+      if (index != -1) {
+        notifications[index] = NotificationModel(
+          id: notifications[index].id,
+          orderId: notifications[index].orderId,
+          title: notifications[index].title,
+          message: notifications[index].message,
+          isRead: true,
+          createdDate: notifications[index].createdDate,
+          modifiedDate: DateTime.now(),
+        );
+        notifications.refresh(); // Trigger UI update
+        await fetchUnreadCount(); // Update unread count reactively
       }
     }
   }
 
-  // Group notifications by section (Today, Yesterday, etc.)
+  Future<void> markAllAsRead() async {
+    // Only mark unread notifications
+    final unreadIds = notifications.where((n) => !n.isRead).map((n) => n.id).toList();
+    if (unreadIds.isNotEmpty) {
+      final success = await NotificationService().markAllNotificationsAsRead(unreadIds);
+      if (success) {
+        // Update all unread notifications in-place
+        for (final id in unreadIds) {
+          final index = notifications.indexWhere((n) => n.id == id);
+          if (index != -1) {
+            notifications[index] = NotificationModel(
+              id: notifications[index].id,
+              orderId: notifications[index].orderId,
+              title: notifications[index].title,
+              message: notifications[index].message,
+              isRead: true,
+              createdDate: notifications[index].createdDate,
+              modifiedDate: DateTime.now(),
+            );
+          }
+        }
+        notifications.refresh(); // Trigger UI update
+        await fetchUnreadCount(); // Update unread count reactively
+      }
+    }
+  }
+
   Map<String, List<NotificationModel>> getGroupedNotifications() {
     final Map<String, List<NotificationModel>> grouped = {};
     for (final notification in notifications) {
