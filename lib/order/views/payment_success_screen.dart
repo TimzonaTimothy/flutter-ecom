@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../auth/service/auth_service.dart';
 import '../../base/bottom_nav_bar.dart';
 import '../../base/res/base_url.dart';
 import '../../base/res/styles/app_styles.dart';
@@ -59,7 +60,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
       });
 
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+      final token = await AuthService.instance.getToken();
       if (token == null) {
         setState(() {
           _errorMessage =
@@ -490,71 +491,164 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                     ],
                   ),
                 ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                style: ButtonStyle(
-                  padding: WidgetStateProperty.all(
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14)),
-                  backgroundColor: WidgetStateProperty.all(
-                      AppStyles.primaryColor.withOpacity(0.1)),
-                  shape: WidgetStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(20), // ✅ Rounded corners
-                    ),
-                  ),
-                  side: WidgetStateProperty.all(
-                    BorderSide(
-                      color: AppStyles.primaryColor, // ✅ Border color
-                      width: 0.5,
-                    ),
-                  ),
-                ),
-                onPressed: () {
-                  Get.to(
-                    const EReceiptScreen(),
-                    transition: Transition.rightToLeftWithFade,
-                    duration: const Duration(milliseconds: 500),
-                  );
-                },
-                child: Text(
-                  'View E-Receipt',
-                  style: AppStyles.headLineStyle3
-                      .copyWith(color: AppStyles.primaryColor),
-                ),
-              ),
+      bottomNavigationBar: LayoutBuilder(
+        builder: (context, constraints) {
+          final screenWidth = MediaQuery.of(context).size.width;
+          final isSmallScreen = screenWidth < 360;
+          final horizontalPadding = screenWidth * 0.05;
+          final verticalPadding = screenWidth * 0.025;
+          final buttonPadding = EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.05,
+            vertical: screenWidth * 0.035,
+          );
+          final textScaleFactor =
+              screenWidth < 400 ? 0.9 : 1.0; 
+
+          return Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: verticalPadding,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Get.to(
-                    const TrackOrderPage(),
-                    transition: Transition.rightToLeftWithFade,
-                    duration: const Duration(milliseconds: 500),
-                  );
-                },
-                label: Text(
-                  "Track Order",
-                  style: AppStyles.headLineStyle3
-                      .copyWith(color: AppStyles.whiteColor),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppStyles.primaryColor,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+            child: isSmallScreen
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      OutlinedButton(
+                        style: ButtonStyle(
+                          padding: WidgetStateProperty.all(buttonPadding),
+                          backgroundColor: WidgetStateProperty.all(
+                            AppStyles.primaryColor.withOpacity(0.1),
+                          ),
+                          shape: WidgetStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          side: WidgetStateProperty.all(
+                            BorderSide(
+                              color: AppStyles.primaryColor,
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
+                        onPressed: () {
+                          Get.to(
+                            const EReceiptScreen(),
+                            transition: Transition.rightToLeftWithFade,
+                            duration: const Duration(milliseconds: 500),
+                          );
+                        },
+                        child: Text(
+                          'View E-Receipt',
+                          textScaler: TextScaler.linear(textScaleFactor),
+                          style: AppStyles.headLineStyle3.copyWith(
+                            color: AppStyles.primaryColor,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: verticalPadding),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Get.to(
+                            const TrackOrderPage(),
+                            transition: Transition.rightToLeftWithFade,
+                            duration: const Duration(milliseconds: 500),
+                          );
+                        },
+                        icon: Icon(
+                          Icons
+                              .local_shipping_outlined, // Added icon for consistency
+                          color: AppStyles.whiteColor,
+                        ),
+                        label: Text(
+                          'Track Order',
+                          textScaler: TextScaler.linear(textScaleFactor),
+                          style: AppStyles.headLineStyle3.copyWith(
+                            color: AppStyles.whiteColor,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppStyles.primaryColor,
+                          padding: buttonPadding,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          style: ButtonStyle(
+                            padding: WidgetStateProperty.all(buttonPadding),
+                            backgroundColor: WidgetStateProperty.all(
+                              AppStyles.primaryColor.withOpacity(0.1),
+                            ),
+                            shape: WidgetStateProperty.all(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                            side: WidgetStateProperty.all(
+                              BorderSide(
+                                color: AppStyles.primaryColor,
+                                width: 0.5,
+                              ),
+                            ),
+                          ),
+                          onPressed: () {
+                            Get.to(
+                              const EReceiptScreen(),
+                              transition: Transition.rightToLeftWithFade,
+                              duration: const Duration(milliseconds: 500),
+                            );
+                          },
+                          child: Text(
+                            'View E-Receipt',
+                            textScaler: TextScaler.linear(textScaleFactor),
+                            style: AppStyles.headLineStyle3.copyWith(
+                              color: AppStyles.primaryColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: horizontalPadding),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Get.to(
+                              const TrackOrderPage(),
+                              transition: Transition.rightToLeftWithFade,
+                              duration: const Duration(milliseconds: 500),
+                            );
+                          },
+                          icon: Icon(
+                            Icons
+                                .local_shipping_outlined, // Added icon for consistency
+                            color: AppStyles.whiteColor,
+                          ),
+                          label: Text(
+                            'Track Order',
+                            textScaler: TextScaler.linear(textScaleFactor),
+                            style: AppStyles.headLineStyle3.copyWith(
+                              color: AppStyles.whiteColor,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppStyles.primaryColor,
+                            padding: buttonPadding,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

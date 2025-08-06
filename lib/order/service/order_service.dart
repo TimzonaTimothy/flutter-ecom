@@ -4,8 +4,6 @@ import '../../base/utils/my_request.dart';
 import '../models/order_model.dart';
 
 class OrderService {
-
-  
   static Future<List<OrderModel>?> getOrdersByStatus(String status) async {
     try {
       String? response = await MyRequest('orders/me/?status=$status')
@@ -13,7 +11,6 @@ class OrderService {
           .getApi();
 
       if (response != null) {
-       
         List<dynamic> ordersJson = jsonDecode(response);
         return ordersJson.map((json) => OrderModel.fromJson(json)).toList();
       }

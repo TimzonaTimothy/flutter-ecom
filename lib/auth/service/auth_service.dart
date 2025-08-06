@@ -180,7 +180,7 @@ class AuthService extends GetxController {
         return false;
       }
 
-      final url = Uri.parse('$baseURLGeneral/auth/refresh/');
+      final url = Uri.parse('$baseURLGeneral/auth/jwt/refresh/');
       final response = await http.post(
         url,
         // headers: {'Content-Type': 'application/json'},

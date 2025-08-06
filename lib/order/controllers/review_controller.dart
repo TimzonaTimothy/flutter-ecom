@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
@@ -15,6 +16,7 @@ class ReviewController extends GetxController {
 
   @override
   void onClose() {
+    print('ReviewController onClose called');
     subjectController.dispose();
     reviewController.dispose();
     super.onClose();
@@ -42,7 +44,7 @@ class ReviewController extends GetxController {
         rating.value = 5.0;
       }
     } catch (e) {
-      
+      print('Error loading existing review: $e');
       showFailureSnackbar('Error loading existing review');
     } finally {
       isLoading.value = false;
@@ -87,7 +89,7 @@ class ReviewController extends GetxController {
         return false;
       }
     } catch (e) {
-      
+      print('Error submitting review: $e');
       showFailureSnackbar('Error submitting review: ${e.toString()}');
       return false;
     } finally {
