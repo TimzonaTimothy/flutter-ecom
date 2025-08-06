@@ -5,7 +5,6 @@ import '../../base/res/base_url.dart';
 import '../../auth/service/auth_service.dart';
 import '../models/review_model.dart';
 
-
 class ReviewService {
   static const String _baseUrl = baseUrl;
 
@@ -14,10 +13,11 @@ class ReviewService {
     required String subject,
     required String review,
     required double rating,
+    required bool isUpdate,
   }) async {
     try {
       final headers = await AuthService.instance.getAuthHeaders();
-      final url = Uri.parse('$_baseUrl/submit-review/$productId/');
+      final url = Uri.parse('$_baseUrl/products/submit-review/$productId/');
       
       final body = jsonEncode({
         'subject': subject,
@@ -25,27 +25,25 @@ class ReviewService {
         'rating': rating,
       });
 
-      log('Submitting review to: $url');
-      log('Request body: $body');
+      log('Submitting review to: $url', name: 'ReviewService');
+      log('Request body: $body', name: 'ReviewService');
 
-      final response = await http.post(
-        url,
-        headers: headers,
-        body: body,
-      );
+      final response = isUpdate
+          ? await http.patch(url, headers: headers, body: body)
+          : await http.post(url, headers: headers, body: body);
 
-      log('Review submission response: ${response.statusCode}');
-      log('Response body: ${response.body}');
+      log('Review submission response: ${response.statusCode}', name: 'ReviewService');
+      log('Response body: ${response.body}', name: 'ReviewService');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
         return data;
       } else {
-        log('Failed to submit review: ${response.body}');
+        log('Failed to submit review: ${response.body}', name: 'ReviewService');
         return null;
       }
     } catch (e) {
-      log('Error submitting review: $e');
+      log('Error submitting review: $e', name: 'ReviewService');
       return null;
     }
   }
@@ -57,15 +55,24 @@ class ReviewService {
       
       final response = await http.get(url, headers: headers);
 
+      log('Get reviews response: ${response.statusCode}', name: 'ReviewService');
+      log('Response body: ${response.body}', name: 'ReviewService');
+
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => ReviewModel.fromJson(json)).toList();
+        if (data.isEmpty) {
+          log('No reviews found for product $productId', name: 'ReviewService');
+          return [];
+        }
+        final reviews = data.map((json) => ReviewModel.fromJson(json)).toList();
+        log('Parsed reviews: $reviews', name: 'ReviewService');
+        return reviews;
       } else {
-        log('Failed to get reviews: ${response.body}');
+        log('Failed to get reviews: ${response.body}', name: 'ReviewService');
         return null;
       }
     } catch (e) {
-      log('Error getting reviews: $e');
+      log('Error getting reviews: $e', name: 'ReviewService');
       return null;
     }
   }
@@ -73,22 +80,26 @@ class ReviewService {
   static Future<ReviewModel?> getUserReviewForProduct(int productId) async {
     try {
       final headers = await AuthService.instance.getAuthHeaders();
-      final url = Uri.parse('$_baseUrl/user-review/$productId/');
+      final url = Uri.parse('$_baseUrl/products/user-review/$productId/');
       
       final response = await http.get(url, headers: headers);
 
+      log('Get user review response: ${response.statusCode}', name: 'ReviewService');
+      log('Response body: ${response.body}', name: 'ReviewService');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        log('User review data: $data', name: 'ReviewService');
         return ReviewModel.fromJson(data);
       } else if (response.statusCode == 404) {
-        // No existing review found
+        log('No review found for product $productId', name: 'ReviewService');
         return null;
       } else {
-        log('Failed to get user review: ${response.body}');
+        log('Failed to get user review: ${response.body}', name: 'ReviewService');
         return null;
       }
     } catch (e) {
-      log('Error getting user review: $e');
+      log('Error getting user review: $e', name: 'ReviewService');
       return null;
     }
   }

@@ -4,6 +4,7 @@ import 'package:ecom_app/base/res/media.dart';
 import 'package:ecom_app/base/utils/snackbar.dart';
 import 'package:ecom_app/base/widgets/app_double_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
@@ -12,6 +13,10 @@ import '../../base/widgets/product_card.dart';
 import '../../base/widgets/product_shimmer.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../../cart/models/create_cart_model.dart';
+import '../../order/controllers/review_controller.dart';
+import '../../order/models/review_model.dart';
+import '../../order/service/review_service.dart';
+import '../../order/views/review_screen.dart';
 import '../../wishlist/controllers/wishlist_controller.dart';
 import '../controllers/product_controller.dart';
 import '../models/product_model.dart';
@@ -31,17 +36,22 @@ class ProductDetail extends StatefulWidget {
 class _ProductDetailState extends State<ProductDetail> {
   late List<String> imageList;
   ProductModel? currentProduct;
+  List<ReviewModel> reviews = [];
   int selectedImageIndex = 0;
   String isSelectedSize = "";
   String isSelectedColor = "";
   bool isLoading = true;
   bool isLoadingProduct = false;
+  bool isLoadingReviews = false;
+
+  final ReviewController reviewController = Get.put(ReviewController());
 
   @override
   void initState() {
     super.initState();
     Get.put(CartController());
     _fetchProductById(widget.productId);
+    _fetchReviews(widget.productId);
   }
 
   void _initializeWithProduct() {
@@ -98,16 +108,35 @@ class _ProductDetailState extends State<ProductDetail> {
     }
   }
 
+  Future<void> _fetchReviews(int productId) async {
+    setState(() {
+      isLoadingReviews = true;
+    });
+
+    try {
+      final fetchedReviews = await ReviewService.getProductReviews(productId);
+
+      setState(() {
+        reviews = fetchedReviews ?? [];
+      });
+      await reviewController.loadExistingReview(productId);
+    } catch (e) {
+      showFailureSnackbar('Failed to load reviews');
+    } finally {
+      setState(() {
+        isLoadingReviews = false;
+      });
+    }
+  }
 
   bool _isInCart() {
-  final cartItems = CartController.to.cartItems;
+    final cartItems = CartController.to.cartItems;
 
-  return cartItems.any((item) =>
-      item.product?.id == currentProduct?.id &&
-      (item.size ?? '') == isSelectedSize &&
-      (item.color ?? '') == isSelectedColor);
-}
-
+    return cartItems.any((item) =>
+        item.product?.id == currentProduct?.id &&
+        (item.size ?? '') == isSelectedSize &&
+        (item.color ?? '') == isSelectedColor);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -345,6 +374,50 @@ class _ProductDetailState extends State<ProductDetail> {
               }).toList(),
             ),
             const SizedBox(height: 20),
+
+            // Reviews Section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Obx(
+                  () => AppDoubleText(
+                    bigText: "Customer Reviews (${reviews.length})",
+                    smallText: reviewController.hasExistingReview.value
+                        ? "Update Your Review"
+                        : "Write a Review",
+                    func: () {
+                      Get.to(
+                        () => LeaveReviewPage(
+                          productId: currentProduct!.id,
+                          onReviewSubmitted: () =>
+                              _fetchReviews(widget.productId),
+                        ),
+                        transition: Transition.rightToLeftWithFade,
+                        duration: const Duration(milliseconds: 500),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            isLoadingReviews
+                ? const Center(child: CircularProgressIndicator())
+                : reviews.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Text(
+                          "No reviews yet. Be the first to write one!",
+                          style:
+                              AppStyles.textStyle.copyWith(color: Colors.grey),
+                        ),
+                      )
+                    : Column(
+                        children: reviews
+                            .map((review) => _buildReviewCard(review))
+                            .toList(),
+                      ),
+            const SizedBox(height: 20),
             const AppDoubleText(bigText: 'Similar Products'),
             const SizedBox(height: 10),
             isLoading ? const ProductCardShimmer() : _buildProductGrid(),
@@ -378,138 +451,139 @@ class _ProductDetailState extends State<ProductDetail> {
               ],
             ),
             const Spacer(),
-            // ElevatedButton.icon(
-            //   onPressed: () async {
-            //     if (currentProduct == null) return;
+            ElevatedButton.icon(
+              onPressed: () async {
+                if (currentProduct == null) return;
 
-            //     // Validate size and color if required
-            //     if ((currentProduct!.sizes?.isNotEmpty ?? false) &&
-            //         isSelectedSize.isEmpty) {
-            //       showFailureSnackbar("Please select a size");
-            //       return;
-            //     }
+                if ((currentProduct!.sizes?.isNotEmpty ?? false) &&
+                    isSelectedSize.isEmpty) {
+                  showFailureSnackbar("Please select a size");
+                  return;
+                }
 
-            //     if ((currentProduct!.colors?.isNotEmpty ?? false) &&
-            //         isSelectedColor.isEmpty) {
-            //       showFailureSnackbar("Please select a color");
-            //       return;
-            //     }
+                if ((currentProduct!.colors?.isNotEmpty ?? false) &&
+                    isSelectedColor.isEmpty) {
+                  showFailureSnackbar("Please select a color");
+                  return;
+                }
 
-            //     final cartItem = CreateCartModel(
-            //       product: currentProduct!.id,
-            //       size: isSelectedSize.isNotEmpty ? isSelectedSize : null,
-            //       color: isSelectedColor.isNotEmpty ? isSelectedColor : null,
-            //       quantity: 1, // can later add quantity selector
-            //     );
+                final cartItem = CreateCartModel(
+                  product: currentProduct!.id,
+                  size: isSelectedSize.isNotEmpty ? isSelectedSize : null,
+                  color: isSelectedColor.isNotEmpty ? isSelectedColor : null,
+                  quantity: 1,
+                );
 
-            //     setState(() {
-            //       isLoading = true;
-            //     });
+                setState(() => isLoading = true);
+                bool success = false;
 
-            //     final success =
-            //         await CartController.instance.addToCart(cartItem);
+                if (_isInCart()) {
+                  final existing = CartController.to.cartItems.firstWhere(
+                      (item) =>
+                          item.product?.id == currentProduct?.id &&
+                          (item.size ?? '') == isSelectedSize &&
+                          (item.color ?? '') == isSelectedColor);
 
-            //     setState(() {
-            //       isLoading = false;
-            //     });
+                  success =
+                      await CartController.to.removeFromCart(existing.id!);
+                  if (success) {
+                    showSuccessSnackbar("Removed from cart!");
+                    await CartController.to
+                        .fetchCartItems(); // 👈 reload updated cart
+                  }
+                } else {
+                  success = await CartController.to.addToCart(cartItem);
+                  if (success) {
+                    showSuccessSnackbar("Added to cart!");
+                    await CartController.to
+                        .fetchCartItems(); // 👈 reload updated cart
+                  }
+                }
 
-            //     if (success && mounted) {
-            //       showSuccessSnackbar('Product added to cart!');
-            //       // You can optionally update UI or navigate, etc.
-            //       // e.g., CartController.instance.fetchCartItems(); or update cart count UI
-            //     } else {
-            //       showFailureSnackbar('Failed to add to cart');
-            //     }
-            //   },
-            //   icon: Icon(
-            //     Icons.shopping_bag_outlined,
-            //     color: AppStyles.whiteColor,
-            //   ),
-            //   label: Text(
-            //     "Add to Cart",
-            //     style: AppStyles.headLineStyle3
-            //         .copyWith(color: AppStyles.whiteColor),
-            //   ),
-            //   style: ElevatedButton.styleFrom(
-            //     backgroundColor: AppStyles.primaryColor,
-            //     padding:
-            //         const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            //     shape: RoundedRectangleBorder(
-            //       borderRadius: BorderRadius.circular(20),
-            //     ),
-            //   ),
-            // ),
-ElevatedButton.icon(
-  onPressed: () async {
-    if (currentProduct == null) return;
-
-    if ((currentProduct!.sizes?.isNotEmpty ?? false) && isSelectedSize.isEmpty) {
-      showFailureSnackbar("Please select a size");
-      return;
-    }
-
-    if ((currentProduct!.colors?.isNotEmpty ?? false) && isSelectedColor.isEmpty) {
-      showFailureSnackbar("Please select a color");
-      return;
-    }
-
-    final cartItem = CreateCartModel(
-      product: currentProduct!.id,
-      size: isSelectedSize.isNotEmpty ? isSelectedSize : null,
-      color: isSelectedColor.isNotEmpty ? isSelectedColor : null,
-      quantity: 1,
-    );
-
-    setState(() => isLoading = true);
-    bool success = false;
-
-    if (_isInCart()) {
-      final existing = CartController.to.cartItems.firstWhere((item) =>
-          item.product?.id == currentProduct?.id &&
-          (item.size ?? '') == isSelectedSize &&
-          (item.color ?? '') == isSelectedColor);
-
-      success = await CartController.to.removeFromCart(existing.id!);
-      if (success) {
-        showSuccessSnackbar("Removed from cart!");
-        await CartController.to.fetchCartItems(); // 👈 reload updated cart
-      }
-    } else {
-      success = await CartController.to.addToCart(cartItem);
-      if (success) {
-        showSuccessSnackbar("Added to cart!");
-        await CartController.to.fetchCartItems(); // 👈 reload updated cart
-      }
-    }
-
-    setState(() => isLoading = false);
-  },
-  icon: Icon(
-    Icons.shopping_bag_outlined,
-    color: AppStyles.whiteColor,
-  ),
-  label: isLoading
-      ? const SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-        )
-      : Text(
-          _isInCart() ? "Remove from Cart" : "Add to Cart",
-          style: AppStyles.headLineStyle3.copyWith(color: AppStyles.whiteColor),
-        ),
-  style: ElevatedButton.styleFrom(
-    backgroundColor: AppStyles.primaryColor,
-    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(20),
-    ),
-  ),
-)
-
-
+                setState(() => isLoading = false);
+              },
+              icon: Icon(
+                Icons.shopping_bag_outlined,
+                color: AppStyles.whiteColor,
+              ),
+              label: isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2),
+                    )
+                  : Text(
+                      _isInCart() ? "Remove from Cart" : "Add to Cart",
+                      style: AppStyles.headLineStyle3
+                          .copyWith(color: AppStyles.whiteColor),
+                    ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppStyles.primaryColor,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            )
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildReviewCard(ReviewModel review) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(review.subject, style: AppStyles.textStyle),
+              RatingBarIndicator(
+                rating: review.rating,
+                itemBuilder: (context, _) => const Icon(
+                  Icons.star,
+                  color: Colors.amber,
+                ),
+                itemCount: 5,
+                itemSize: 20.0,
+                unratedColor: Colors.grey.shade300,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            review.review,
+            style: AppStyles.textStyle.copyWith(color: Colors.grey[600]),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Reviewed on ${review.createdAt.toString().substring(0, 10)}',
+            style: AppStyles.textStyle.copyWith(
+              color: AppStyles.greColor,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
   }

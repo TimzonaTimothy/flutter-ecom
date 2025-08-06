@@ -19,12 +19,11 @@ class TrackOrderPage extends StatelessWidget {
     final OrderController orderController = Get.find<OrderController>();
 
     if (orderId == null) {
-      
       return Scaffold(
         appBar: AppBar(
           backgroundColor: AppStyles.bgColor,
           elevation: 0,
-          title:  Text("Track Order", style: AppStyles.headLineStyle2),
+          title: Text("Track Order", style: AppStyles.headLineStyle2),
           centerTitle: true,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -57,7 +56,8 @@ class TrackOrderPage extends StatelessWidget {
                 onPressed: () => Get.back(),
                 child: Text(
                   'Go Back',
-                  style: AppStyles.textStyle.copyWith(color: AppStyles.whiteColor),
+                  style:
+                      AppStyles.textStyle.copyWith(color: AppStyles.whiteColor),
                 ),
               ),
             ],
@@ -70,24 +70,26 @@ class TrackOrderPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppStyles.bgColor,
         elevation: 0,
-        title: Text("Track Order #${orderId ?? 'N/A'}", style: AppStyles.headLineStyle2),
+        title: Text("Track Order #${orderId ?? 'N/A'}",
+            style: AppStyles.headLineStyle2),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Get.back(),
-        ),
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Get.back();
+            }),
       ),
       backgroundColor: AppStyles.bgColor,
       body: FutureBuilder<OrderModel?>(
         future: OrderService.getOrderDetails(orderId!),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            
-            return  Center(child: CircularProgressIndicator(color: AppStyles.primaryColor));
+            return Center(
+                child:
+                    CircularProgressIndicator(color: AppStyles.primaryColor));
           }
 
           if (snapshot.hasError || snapshot.data == null) {
-           
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -116,7 +118,8 @@ class TrackOrderPage extends StatelessWidget {
                     onPressed: () => Get.back(),
                     child: Text(
                       'Go Back',
-                      style: AppStyles.textStyle.copyWith(color: AppStyles.whiteColor),
+                      style: AppStyles.textStyle
+                          .copyWith(color: AppStyles.whiteColor),
                     ),
                   ),
                 ],
@@ -125,8 +128,8 @@ class TrackOrderPage extends StatelessWidget {
           }
 
           final order = snapshot.data!;
-          final firstProduct = order.orderProducts.isNotEmpty ? order.orderProducts.first : null;
-         
+          final firstProduct =
+              order.orderProducts.isNotEmpty ? order.orderProducts.first : null;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -144,7 +147,6 @@ class TrackOrderPage extends StatelessWidget {
                               width: 100,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
-                                
                                 return Image.asset(
                                   AppMedia.welcomeImage,
                                   height: 100,
@@ -166,12 +168,14 @@ class TrackOrderPage extends StatelessWidget {
                           children: [
                             Text(
                               firstProduct.title ?? 'Unknown Product',
-                              style: AppStyles.headLineStyle3.copyWith(fontWeight: FontWeight.w600),
+                              style: AppStyles.headLineStyle3
+                                  .copyWith(fontWeight: FontWeight.w600),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               "Size: ${firstProduct.sizes ?? 'N/A'} | Qty: ${firstProduct.quantity ?? 0}pcs",
-                              style: AppStyles.textStyle.copyWith(color: AppStyles.greColor),
+                              style: AppStyles.textStyle
+                                  .copyWith(color: AppStyles.greColor),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -186,7 +190,9 @@ class TrackOrderPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                Divider(color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
+                Divider(
+                    color: AppStyles.whiteSmokeColor.withOpacity(0.2),
+                    height: 32),
                 const SizedBox(height: 20),
 
                 // Order Details
@@ -219,7 +225,9 @@ class TrackOrderPage extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 15),
-                Divider(color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
+                Divider(
+                    color: AppStyles.whiteSmokeColor.withOpacity(0.2),
+                    height: 32),
 
                 // Order Status
                 Align(
@@ -233,7 +241,8 @@ class TrackOrderPage extends StatelessWidget {
                       isFirst: true,
                       isLast: false,
                       title: "Order Placed",
-                      date: _formatDateTime(order.createdDate ?? DateTime.now()),
+                      date:
+                          _formatDateTime(order.createdDate ?? DateTime.now()),
                       isActive: true,
                       icon: Icons.receipt_long,
                     ),
@@ -253,10 +262,10 @@ class TrackOrderPage extends StatelessWidget {
                       isFirst: false,
                       isLast: false,
                       title: "Shipped",
-                      date: "Expected ${_formatDate(order.createdDate != null
-                          ? order.createdDate!.add(const Duration(days: 5))
-                          : DateTime.now())}",
-                      isActive: order.deliveryStatus == 'Shipped' || order.deliveryStatus == 'Delivered',
+                      date:
+                          "Expected ${_formatDate(order.createdDate != null ? order.createdDate!.add(const Duration(days: 5)) : DateTime.now())}",
+                      isActive: order.deliveryStatus == 'Shipped' ||
+                          order.deliveryStatus == 'Delivered',
                       icon: Icons.local_shipping,
                     ),
                     _buildTimelineTile(
@@ -264,10 +273,9 @@ class TrackOrderPage extends StatelessWidget {
                       isLast: true,
                       title: "Delivered",
                       date: order.deliveryStatus == 'Delivered'
-                          ? _formatDateTime(order.modifiedDate ?? DateTime.now())
-                          : "Expected ${_formatDate(order.createdDate != null
-                              ? order.createdDate!.add(const Duration(days: 7))
-                              : DateTime.now())}",
+                          ? _formatDateTime(
+                              order.modifiedDate ?? DateTime.now())
+                          : "Expected ${_formatDate(order.createdDate != null ? order.createdDate!.add(const Duration(days: 7)) : DateTime.now())}",
                       isActive: order.deliveryStatus == 'Delivered',
                       icon: Icons.inventory,
                     ),
@@ -291,14 +299,16 @@ class TrackOrderPage extends StatelessWidget {
                   duration: const Duration(milliseconds: 500),
                 );
               },
-              icon:  Icon(Icons.rate_review, color: AppStyles.whiteColor),
+              icon: Icon(Icons.rate_review, color: AppStyles.whiteColor),
               label: Text(
                 "Leave A Review",
-                style: AppStyles.headLineStyle3.copyWith(color: AppStyles.whiteColor),
+                style: AppStyles.headLineStyle3
+                    .copyWith(color: AppStyles.whiteColor),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppStyles.primaryColor,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -337,7 +347,8 @@ class TrackOrderPage extends StatelessWidget {
       endChild: ListTile(
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(date),
-        trailing: Icon(icon, color: isActive ? AppStyles.primaryColor : Colors.grey),
+        trailing:
+            Icon(icon, color: isActive ? AppStyles.primaryColor : Colors.grey),
       ),
     );
   }

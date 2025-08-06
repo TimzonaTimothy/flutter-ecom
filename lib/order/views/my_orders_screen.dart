@@ -1,17 +1,11 @@
-import 'package:ecom_app/home/views/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../base/bottom_nav_bar.dart';
-import '../../base/res/media.dart';
 import '../../base/res/styles/app_styles.dart';
-import '../../products/models/product_model.dart';
 import '../controllers/order_controller.dart';
 import '../models/order_model.dart';
-import '../service/order_service.dart';
-import 'review_screen.dart';
 import 'track_order_screen.dart';
-
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -84,10 +78,12 @@ class OrdersList extends StatelessWidget {
     return Obx(() {
       final isLoading = controller.isLoadingByStatus(status);
       final error = controller.getErrorByStatus(status);
-      final orders = status == 'Pending' ? controller.pendingOrders : controller.getOrdersByStatus(status);
+      final orders = status == 'Pending'
+          ? controller.pendingOrders
+          : controller.getOrdersByStatus(status);
 
       if (isLoading) {
-        return  Center(
+        return Center(
           child: CircularProgressIndicator(color: AppStyles.primaryColor),
         );
       }
@@ -145,7 +141,8 @@ class OrdersList extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 'No ${status.toLowerCase()} orders found',
-                style: AppStyles.headLineStyle3.copyWith(color: AppStyles.greColor),
+                style: AppStyles.headLineStyle3
+                    .copyWith(color: AppStyles.greColor),
               ),
               const SizedBox(height: 8),
               Text(
@@ -204,7 +201,8 @@ class OrderItemWidget extends StatelessWidget {
 
   void onButtonPressed() {
     if (order.id == null) {
-      Get.snackbar('Error', 'Invalid order ID', backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar('Error', 'Invalid order ID',
+          backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
     switch (status) {
@@ -244,7 +242,8 @@ class OrderItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Display the first product from the order
-    final firstProduct = order.orderProducts.isNotEmpty ? order.orderProducts.first : null;
+    final firstProduct =
+        order.orderProducts.isNotEmpty ? order.orderProducts.first : null;
     final additionalItemsCount = order.orderProducts.length - 1;
 
     return Column(
@@ -279,15 +278,19 @@ class OrderItemWidget extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(order.deliveryStatus ?? 'Unknown').withOpacity(0.1),
+                        color:
+                            _getStatusColor(order.deliveryStatus ?? 'Unknown')
+                                .withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         order.deliveryStatus ?? 'Unknown',
                         style: AppStyles.textStyle.copyWith(
-                          color: _getStatusColor(order.deliveryStatus ?? 'Unknown'),
+                          color: _getStatusColor(
+                              order.deliveryStatus ?? 'Unknown'),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -309,19 +312,22 @@ class OrderItemWidget extends StatelessWidget {
                                 width: 80,
                                 height: 80,
                                 fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) {
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
                                   if (loadingProgress == null) return child;
                                   return Container(
                                     width: 80,
                                     height: 80,
                                     decoration: BoxDecoration(
-                                      color: AppStyles.greColor.withOpacity(0.1),
+                                      color:
+                                          AppStyles.greColor.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Center(
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
                                           AppStyles.primaryColor,
                                         ),
                                       ),
@@ -333,7 +339,8 @@ class OrderItemWidget extends StatelessWidget {
                                     width: 80,
                                     height: 80,
                                     decoration: BoxDecoration(
-                                      color: AppStyles.greColor.withOpacity(0.2),
+                                      color:
+                                          AppStyles.greColor.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Icon(
@@ -433,15 +440,18 @@ class OrderItemWidget extends StatelessWidget {
                     Row(
                       children: [
                         Icon(
-                          _getPaymentStatusIcon(order.paymentStatus ?? 'Unknown'),
+                          _getPaymentStatusIcon(
+                              order.paymentStatus ?? 'Unknown'),
                           size: 14,
-                          color: _getPaymentStatusColor(order.paymentStatus ?? 'Unknown'),
+                          color: _getPaymentStatusColor(
+                              order.paymentStatus ?? 'Unknown'),
                         ),
                         const SizedBox(width: 4),
                         Text(
                           order.paymentStatus ?? 'Unknown',
                           style: AppStyles.textStyle.copyWith(
-                            color: _getPaymentStatusColor(order.paymentStatus ?? 'Unknown'),
+                            color: _getPaymentStatusColor(
+                                order.paymentStatus ?? 'Unknown'),
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
@@ -562,8 +572,13 @@ class OrderDetailsBottomSheet extends StatelessWidget {
                   _buildInfoRow('Order ID', '#${order.id ?? 'N/A'}'),
                   _buildInfoRow('Status', order.deliveryStatus ?? 'Unknown'),
                   _buildInfoRow('Payment', order.paymentStatus ?? 'Unknown'),
-                  _buildInfoRow('Total', '\$${order.total?.toStringAsFixed(2) ?? '0.00'}'),
-                  _buildInfoRow('Date', order.createdDate != null ? _formatDate(order.createdDate!) : 'N/A'),
+                  _buildInfoRow('Total',
+                      '\$${order.total?.toStringAsFixed(2) ?? '0.00'}'),
+                  _buildInfoRow(
+                      'Date',
+                      order.createdDate != null
+                          ? _formatDate(order.createdDate!)
+                          : 'N/A'),
                   const SizedBox(height: 20),
                   // Products
                   Text(
@@ -571,7 +586,8 @@ class OrderDetailsBottomSheet extends StatelessWidget {
                     style: AppStyles.headLineStyle3,
                   ),
                   const SizedBox(height: 12),
-                  ...order.orderProducts.map((product) => _buildProductItem(product)).toList(),
+                  ...order.orderProducts
+                      .map((product) => _buildProductItem(product)),
                   const SizedBox(height: 20),
                   // Address
                   Text(
@@ -605,8 +621,10 @@ class OrderDetailsBottomSheet extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppStyles.textStyle.copyWith(color: AppStyles.greColor)),
-          Text(value, style: AppStyles.textStyle.copyWith(fontWeight: FontWeight.w600)),
+          Text(label,
+              style: AppStyles.textStyle.copyWith(color: AppStyles.greColor)),
+          Text(value,
+              style: AppStyles.textStyle.copyWith(fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -645,13 +663,17 @@ class OrderDetailsBottomSheet extends StatelessWidget {
               children: [
                 Text(
                   product.title ?? 'Unknown Product',
-                  style: AppStyles.textStyle.copyWith(fontWeight: FontWeight.w600),
+                  style:
+                      AppStyles.textStyle.copyWith(fontWeight: FontWeight.w600),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  product.discountPrice != null ? '\$${product.discountPrice}' : 'N/A',
-                  style: AppStyles.textStyle.copyWith(color: AppStyles.primaryColor),
+                  product.discountPrice != null
+                      ? '\$${product.discountPrice}'
+                      : 'N/A',
+                  style: AppStyles.textStyle
+                      .copyWith(color: AppStyles.primaryColor),
                 ),
               ],
             ),

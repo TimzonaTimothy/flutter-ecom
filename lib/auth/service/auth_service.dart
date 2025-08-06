@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+
+import 'package:ecom_app/onboarding/views/welcome_screen.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,25 +14,17 @@ import '../views/sign_in.dart';
 const fullUrl = baseUrl;
 const baseURLGeneral = fullUrl;
 
-
-class AuthService extends GetxController  {
+class AuthService extends GetxController {
   static AuthService get instance => Get.find<AuthService>();
-  
+
   Timer? _tokenRefreshTimer;
   final RxBool _isAuthenticated = false.obs;
   final RxBool _isRefreshing = false.obs;
   final RxBool _isInitialized = false.obs;
-  
+
   bool get isAuthenticated => _isAuthenticated.value;
   bool get isRefreshing => _isRefreshing.value;
-   bool get isInitialized => _isInitialized.value;
-  
-
-  @override
-  void onInit() {
-    super.onInit();
-    // _initializeAuth();
-  }
+  bool get isInitialized => _isInitialized.value;
 
   @override
   void onClose() {
@@ -38,22 +32,19 @@ class AuthService extends GetxController  {
     super.onClose();
   }
 
-
-
-   Future<void> checkAuthenticationStatus() async {
+  Future<void> checkAuthenticationStatus() async {
     if (_isInitialized.value) return; // Already initialized
-    
+
     await _initializeAuth();
     _isInitialized.value = true;
   }
 
-
- // Initialize authentication
+  // Initialize authentication
   Future<void> _initializeAuth() async {
     try {
       final token = await getToken();
       final rememberMe = await getRememberMe();
-      
+
       if (token != null) {
         if (rememberMe) {
           // If remember me is enabled, try to refresh token
@@ -79,7 +70,6 @@ class AuthService extends GetxController  {
     }
   }
 
-
   // Force refresh authentication status (useful for logout, etc.)
   Future<void> refreshAuthStatus() async {
     _isInitialized.value = false;
@@ -87,24 +77,24 @@ class AuthService extends GetxController  {
     update(); // Notify GetBuilder widgets
   }
 
-
   // ============================================================================
   // TOKEN STORAGE METHODS
   // ============================================================================
 
-  Future<void> saveTokens(String accessToken, String refreshToken, {bool rememberMe = false}) async {
+  Future<void> saveTokens(String accessToken, String refreshToken,
+      {bool rememberMe = false}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('access_token', accessToken);
     await prefs.setString('refresh_token', refreshToken);
     await prefs.setBool('remember_me', rememberMe);
-    
+
     // Set token expiry time (50 minutes from now to refresh before expiry)
     final expiryTime = DateTime.now().add(const Duration(minutes: 50));
     await prefs.setString('token_expiry', expiryTime.toIso8601String());
-    
+
     _isAuthenticated.value = true;
     _startTokenRefreshTimer();
-    
+
     log('Tokens saved successfully. Remember me: $rememberMe');
   }
 
@@ -136,15 +126,17 @@ class AuthService extends GetxController  {
     await prefs.remove('remember_me');
     await prefs.remove('token_expiry');
     await prefs.remove('user_id');
-    
+
     _isAuthenticated.value = false;
     _tokenRefreshTimer?.cancel();
-    
-   update();
+
+    Get.offAll(() => const WelcomeScreen());
+
+    update();
   }
 
-
-  Future<void> handleSuccessfulLogin(String accessToken, String refreshToken, {bool rememberMe = false}) async {
+  Future<void> handleSuccessfulLogin(String accessToken, String refreshToken,
+      {bool rememberMe = false}) async {
     await saveTokens(accessToken, refreshToken, rememberMe: rememberMe);
     _isAuthenticated.value = true;
     update(); // Notify GetBuilder widgets
@@ -156,10 +148,10 @@ class AuthService extends GetxController  {
 
   void _startTokenRefreshTimer() {
     _tokenRefreshTimer?.cancel();
-    
+
     // Calculate time until token refresh (refresh 5 minutes before expiry)
     const refreshInterval = Duration(minutes: 55);
-    
+
     _tokenRefreshTimer = Timer.periodic(refreshInterval, (timer) async {
       if (!_isRefreshing.value) {
         await _refreshTokenIfNeeded();
@@ -169,16 +161,17 @@ class AuthService extends GetxController  {
 
   Future<void> _refreshTokenIfNeeded() async {
     final expiry = await getTokenExpiry();
-    if (expiry != null && DateTime.now().isAfter(expiry.subtract(const Duration(minutes: 10)))) {
+    if (expiry != null &&
+        DateTime.now().isAfter(expiry.subtract(const Duration(minutes: 10)))) {
       await refreshAccessToken();
     }
   }
 
   Future<bool> refreshAccessToken() async {
     if (_isRefreshing.value) return false;
-    
+
     _isRefreshing.value = true;
-    
+
     try {
       final refreshToken = await getRefreshToken();
       if (refreshToken == null) {
@@ -192,20 +185,22 @@ class AuthService extends GetxController  {
         url,
         // headers: {'Content-Type': 'application/json'},
         headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json',
-      },
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
         body: jsonEncode({'refresh': refreshToken}),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final newAccessToken = data['access'];
-        final newRefreshToken = data['refresh'] ?? refreshToken; // Use new refresh token if provided
-        
+        final newRefreshToken = data['refresh'] ??
+            refreshToken; // Use new refresh token if provided
+
         final rememberMe = await getRememberMe();
-        await saveTokens(newAccessToken, newRefreshToken, rememberMe: rememberMe);
-        
+        await saveTokens(newAccessToken, newRefreshToken,
+            rememberMe: rememberMe);
+
         log('Token refreshed successfully');
         return true;
       } else {
@@ -230,7 +225,12 @@ class AuthService extends GetxController  {
 
   Future<bool> verifyTokenOnly() async {
     final token = await getToken();
-    if (token == null) return false;
+
+    if (token == null) {
+      Get.offAll(() => const WelcomeScreen());
+
+      return false;
+    }
 
     final url = Uri.parse('$baseURLGeneral/auth/jwt/verify/');
 
@@ -253,7 +253,7 @@ class AuthService extends GetxController  {
     if (await verifyTokenOnly()) {
       return true;
     }
-    
+
     // If verification fails, try to refresh
     return await refreshAccessToken();
   }
@@ -269,7 +269,4 @@ class AuthService extends GetxController  {
       'Content-Type': 'application/json',
     };
   }
-
-
-  
 }

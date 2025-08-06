@@ -10,8 +10,6 @@ class ReviewController extends GetxController {
   final RxDouble rating = 5.0.obs;
   final TextEditingController subjectController = TextEditingController();
   final TextEditingController reviewController = TextEditingController();
-  
-  // For tracking existing review
   final Rxn<ReviewModel> existingReview = Rxn<ReviewModel>();
   final RxBool hasExistingReview = false.obs;
 
@@ -29,22 +27,22 @@ class ReviewController extends GetxController {
   Future<void> loadExistingReview(int productId) async {
     try {
       isLoading.value = true;
-      
       final review = await ReviewService.getUserReviewForProduct(productId);
-      
       if (review != null) {
         existingReview.value = review;
         hasExistingReview.value = true;
-        
-        // Pre-fill the form with existing review data
         subjectController.text = review.subject;
         reviewController.text = review.review;
         rating.value = review.rating;
       } else {
-        hasExistingReview.value = false;
         existingReview.value = null;
+        hasExistingReview.value = false;
+        subjectController.clear();
+        reviewController.clear();
+        rating.value = 5.0;
       }
     } catch (e) {
+      
       showFailureSnackbar('Error loading existing review');
     } finally {
       isLoading.value = false;
@@ -69,30 +67,27 @@ class ReviewController extends GetxController {
 
     try {
       isLoading.value = true;
-
       final result = await ReviewService.submitReview(
         productId: productId,
         subject: subjectController.text.trim(),
         review: reviewController.text.trim(),
         rating: rating.value,
+        isUpdate: hasExistingReview.value,
       );
 
       if (result != null) {
-        final message = hasExistingReview.value 
-            ? 'Review updated successfully!' 
+        final message = hasExistingReview.value
+            ? 'Review updated successfully!'
             : 'Review submitted successfully!';
-        
         showSuccessSnackbar(message);
-        
-        // Clear form
         clearForm();
-        
         return true;
       } else {
         showFailureSnackbar('Failed to submit review. Please try again.');
         return false;
       }
     } catch (e) {
+      
       showFailureSnackbar('Error submitting review: ${e.toString()}');
       return false;
     } finally {
