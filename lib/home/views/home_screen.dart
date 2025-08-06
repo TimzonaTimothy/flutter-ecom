@@ -11,6 +11,7 @@ import '../../base/widgets/filter_card.dart';
 import '../../base/widgets/image_sliders.dart';
 import '../../base/widgets/product_card.dart';
 import '../../base/widgets/product_shimmer.dart';
+import '../../cart/controllers/address_controller.dart';
 import '../../notification/controllers/notification_controller.dart';
 import '../../notification/views/notification_screen.dart';
 import '../../products/controllers/category_controller.dart';
@@ -37,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late final ProductsController productsController;
   late WishlistController wishlistController;
   late final NotificationController notificationController;
+  late final AddressController addressController;
 
   int selectedFilterIndex = 0;
 
@@ -64,13 +66,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (!Get.isRegistered<NotificationController>()) {
       Get.put(NotificationController(),
-          permanent: true); // Persistent controller
+          permanent: true); 
+    }
+    if (!Get.isRegistered<AddressController>()) {
+      Get.put(AddressController(),
+          permanent: true); 
     }
     wishlistController = Get.find<WishlistController>();
 
     categoryController = Get.find<CategoryController>();
     productsController = Get.find<ProductsController>();
     notificationController = Get.find<NotificationController>();
+
+    addressController = Get.find<AddressController>();
+
+
 
     // Simulate a delay like fetching from API
     Future.delayed(const Duration(seconds: 3), () {
@@ -120,15 +130,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.5,
-                      child: Text(
-                        "Please select a location",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16,
-                            color: AppStyles.primaryColor),
-                      ),
+                      child: GetX<AddressController>(
+  init: AddressController.to,
+  builder: (controller) {
+    final address = controller.selectedAddress.value?.address;
+
+    return Text(
+      address ?? "Please select a location",
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontWeight: FontWeight.w500,
+        fontSize: 16,
+        color: AppStyles.primaryColor,
+      ),
+    );
+  },
+),
                     ),
                   ],
                 ),
