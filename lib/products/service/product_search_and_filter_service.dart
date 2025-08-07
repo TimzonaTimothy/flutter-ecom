@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../base/res/base_url.dart';
 
-class ApiService {
+class SearchAndFilterApiService {
   static const String _baseUrl = baseUrl; 
   
   // Search products by text
@@ -21,7 +21,7 @@ class ApiService {
       );
       
       final response = await http.get(uri);
-      
+      print('Search response: ${response.body}');
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
@@ -178,16 +178,34 @@ class ApiService {
   
   // Get filter options
   static Future<Map<String, dynamic>> getFilterOptions() async {
-    try {
-      final response = await http.get(Uri.parse('$_baseUrl/products/filter/options/'));
-      
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        throw Exception('Failed to get filter options: ${response.statusCode}');
+    const maxRetries = 3;
+    const retryDelay = Duration(seconds: 2);
+    int attempt = 0;
+
+    while (attempt < maxRetries) {
+      try {
+        final uri = Uri.parse('$_baseUrl/products/filter/options/');
+        final response = await http.get(uri).timeout(
+          const Duration(seconds: 10), // Increase timeout
+          onTimeout: () {
+            throw Exception('Request timed out');
+          },
+        );
+        print('Filter options response: ${response.body}');
+        if (response.statusCode == 200) {
+          return json.decode(response.body);
+        } else {
+          throw Exception('Failed to get filter options: ${response.statusCode}');
+        }
+      } catch (e) {
+        attempt++;
+        print('Filter options attempt $attempt failed: $e');
+        if (attempt == maxRetries) {
+          throw Exception('Network error after $maxRetries attempts: $e');
+        }
+        await Future.delayed(retryDelay);
       }
-    } catch (e) {
-      throw Exception('Network error: $e');
     }
+    throw Exception('Failed to get filter options after $maxRetries attempts');
   }
 }

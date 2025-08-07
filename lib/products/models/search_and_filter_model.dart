@@ -1,3 +1,62 @@
+// class ProductSearchModel {
+//   final int id;
+//   final String title;
+//   final String slug;
+//   final double originalPrice;
+//   final double? discountPrice;
+//   final double rating;
+//   final String? productType;
+//   final int stock;
+//   final bool isAvailable;
+//   final CategorySearchModel category;
+//   final BrandSearchModel brand;
+//   final List<String> colors;
+//   final List<String> sizes;
+//   final String? image;
+
+//   ProductSearchModel({
+//     required this.id,
+//     required this.title,
+//     required this.slug,
+//     required this.originalPrice,
+//     this.discountPrice,
+//     required this.rating,
+//     this.productType,
+//     required this.stock,
+//     required this.isAvailable,
+//     required this.category,
+//     required this.brand,
+//     required this.colors,
+//     required this.sizes,
+//     this.image,
+//   });
+
+//   factory ProductSearchModel.fromJson(Map<String, dynamic> json) {
+//     return ProductSearchModel(
+//       id: json['id'],
+//       title: json['title'],
+//       slug: json['slug'],
+//       originalPrice: double.parse(json['original_price'].toString()),
+//       discountPrice: json['discount_price'] != null 
+//           ? double.parse(json['discount_price'].toString()) 
+//           : null,
+//       rating: double.parse(json['rating'].toString()),
+//       productType: json['product_type'],
+//       stock: json['stock'],
+//       isAvailable: json['is_available'],
+//       category: CategorySearchModel.fromJson(json['category']),
+//       brand: BrandSearchModel.fromJson(json['brand']),
+//       colors: List<String>.from(json['colors'].map((color) => color['name'])),
+//       sizes: List<String>.from(json['sizes'].map((size) => size['name'])),
+//       image: json['image_preview'],
+//     );
+//   }
+// }
+
+import '../../base/res/base_url.dart';
+
+const String _baseUrl = baseUrl; 
+
 class ProductSearchModel {
   final int id;
   final String title;
@@ -12,7 +71,7 @@ class ProductSearchModel {
   final BrandSearchModel brand;
   final List<String> colors;
   final List<String> sizes;
-  final String? imagePreview;
+  final String? image;
 
   ProductSearchModel({
     required this.id,
@@ -28,17 +87,27 @@ class ProductSearchModel {
     required this.brand,
     required this.colors,
     required this.sizes,
-    this.imagePreview,
+    this.image,
   });
 
   factory ProductSearchModel.fromJson(Map<String, dynamic> json) {
+    // Select the first image from imageUrls or fall back to a default
+    final imageUrls = json['imageUrls'] as List<dynamic>?;
+    String? image;
+    if (imageUrls != null && imageUrls.isNotEmpty) {
+      image = imageUrls[0] as String;
+    } else if (json['images'] != null && (json['images'] as List).isNotEmpty) {
+      // Optionally use the first image from the images field, prepending the base URL
+      image = '$baseUrl${json['images'][0]['image']}';
+    }
+
     return ProductSearchModel(
       id: json['id'],
       title: json['title'],
       slug: json['slug'],
       originalPrice: double.parse(json['original_price'].toString()),
-      discountPrice: json['discount_price'] != null 
-          ? double.parse(json['discount_price'].toString()) 
+      discountPrice: json['discount_price'] != null
+          ? double.parse(json['discount_price'].toString())
           : null,
       rating: double.parse(json['rating'].toString()),
       productType: json['product_type'],
@@ -46,9 +115,9 @@ class ProductSearchModel {
       isAvailable: json['is_available'],
       category: CategorySearchModel.fromJson(json['category']),
       brand: BrandSearchModel.fromJson(json['brand']),
-      colors: List<String>.from(json['colors'].map((color) => color['name'])),
-      sizes: List<String>.from(json['sizes'].map((size) => size['name'])),
-      imagePreview: json['image_preview'],
+      colors: List<String>.from(json['colors'] ?? []),
+      sizes: List<String>.from(json['sizes'] ?? []),
+      image: image,
     );
   }
 }
@@ -68,10 +137,10 @@ class CategorySearchModel {
 
   factory CategorySearchModel.fromJson(Map<String, dynamic> json) {
     return CategorySearchModel(
-      id: json['id'],
-      title: json['title'],
-      slug: json['slug'],
-      image: json['image'],
+      id: json['id'] as int,
+      title: json['title'] as String,
+      slug: json['slug'] as String,
+      image: json['image'] as String?,
     );
   }
 }
@@ -99,7 +168,6 @@ class BrandSearchModel {
 
 
 
-
 class FilterOptions {
   final List<BrandSearchModel> brands;
   final List<CategorySearchModel> categories;
@@ -122,21 +190,24 @@ class FilterOptions {
   });
 
   factory FilterOptions.fromJson(Map<String, dynamic> json) {
+    print('Using updated FilterOptions.fromJson');
+    print('Parsing colors: ${json['colors']}'); // Debug
+    print('Parsing sizes: ${json['sizes']}'); // Debug
     return FilterOptions(
-      brands: List<BrandSearchModel>.from(json['brands'].map((b) => BrandSearchModel.fromJson(b))),
-      categories: List<CategorySearchModel>.from(json['categories'].map((c) => CategorySearchModel.fromJson(c))),
-      colors: List<String>.from(json['colors'].map((c) => c['name'])),
-      sizes: List<String>.from(json['sizes'].map((s) => s['name'])),
-      productTypes: List<String>.from(json['product_types']),
+      brands: List<BrandSearchModel>.from(json['brands']?.map((b) => BrandSearchModel.fromJson(b)) ?? []),
+      categories: List<CategorySearchModel>.from(json['categories']?.map((c) => CategorySearchModel.fromJson(c)) ?? []),
+      colors: List<String>.from(json['colors']?.map((c) => c['name'] as String? ?? '')?.where((name) => name.isNotEmpty) ?? []),
+      sizes: List<String>.from(json['sizes']?.map((s) => s['name'] as String? ?? '')?.where((name) => name.isNotEmpty) ?? []),
+      productTypes: List<String>.from(json['product_types'] ?? []),
       priceRange: {
-        'min': json['price_range']['min_price']?.toDouble(),
-        'max': json['price_range']['max_price']?.toDouble(),
+        'min': json['price_range']?['min_price']?.toDouble() ?? 0.0,
+        'max': json['price_range']?['max_price']?.toDouble() ?? 1000.0,
       },
       ratingRange: {
-        'min': json['rating_range']['min_rating']?.toDouble(),
-        'max': json['rating_range']['max_rating']?.toDouble(),
+        'min': json['rating_range']?['min_rating']?.toDouble() ?? 0.0,
+        'max': json['rating_range']?['max_rating']?.toDouble() ?? 5.0,
       },
-      sortOptions: List<String>.from(json['sort_options']),
+      sortOptions: List<String>.from(json['sort_options'] ?? []),
     );
   }
 }

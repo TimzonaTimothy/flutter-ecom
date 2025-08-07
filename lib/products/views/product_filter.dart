@@ -12,7 +12,7 @@ class FilterScreen extends StatefulWidget {
 }
 
 class _FilterScreenState extends State<FilterScreen> {
-  final brands = ['All', 'Nike', 'Adidas', 'Puma', 'Reebok'];
+  final brands = ['All', 'Nike', 'Adidas', 'Puma', 'Reebok','Fila','Gucci'];
   final gender = ['All', 'Men', 'Women'];
   final sortBy = ['Most Recent', 'Popular', 'Price High'];
 
