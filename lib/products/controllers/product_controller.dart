@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:ecom_app/base/utils/my_request.dart';
 import 'package:get/get.dart';
 
-import '../hooks/product_service.dart';
+import '../service/product_service.dart';
 import '../models/product_model.dart';
 
 class ProductsController extends GetxController {

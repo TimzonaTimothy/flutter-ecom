@@ -23,7 +23,7 @@ import '../../products/views/product_filter.dart';
 import '../../products/views/product_list_by_category.dart';
 import '../../wishlist/controllers/wishlist_controller.dart';
 import 'location_screen.dart';
-import 'search_screen.dart';
+import '../../products/views/product_search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
