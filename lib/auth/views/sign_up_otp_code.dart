@@ -139,7 +139,7 @@ class _SignUpOtpCodeState extends State<SignUpOtpCode> {
             SizedBox(height: size.height * 0.06),
             PrimaryButton(
               verticalPadding: 10,
-              horizontalPadding: 100,
+              horizontalPadding: 10,
               hasBackground: true,
               text: 'Verify',
               onTap: () {

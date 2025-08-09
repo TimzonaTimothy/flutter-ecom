@@ -226,7 +226,7 @@ class _SignUpSreenState extends State<SignUpSreen> {
                   builder: (registerController) {
                     return PrimaryButton(
                       verticalPadding: 10,
-                      horizontalPadding: 130,
+                      horizontalPadding: 10,
                       text: 'Sign Up',
                       isLoading: registerController.isLoad.value,
                       onTap: () {

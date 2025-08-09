@@ -150,7 +150,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   builder: (controller) {
                     return PrimaryButton(
                       verticalPadding: 10,
-                      horizontalPadding: 130,
+                      horizontalPadding: 10,
                       text: 'Sign In',
                       isLoading: controller.isLoad.value,
                       onTap: () {
