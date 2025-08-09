@@ -179,17 +179,17 @@ double getItemPrice(CartModel item) {
               ),
             ),
             const SizedBox(height: 20),
-            PrimaryButton(
-              horizontalPadding: 10,
-              text: "Continue Shopping",
-              onTap: (){
-                Get.to(
-                  const BottomNavBar(),
-                  transition: Transition.rightToLeftWithFade,
-                  duration: const Duration(milliseconds: 500),
-                );
-              }
-            ),
+            // PrimaryButton(
+            //   horizontalPadding: 10,
+            //   text: "Continue Shopping",
+            //   onTap: (){
+            //     Get.to(
+            //       const BottomNavBar(),
+            //       transition: Transition.rightToLeftWithFade,
+            //       duration: const Duration(milliseconds: 500),
+            //     );
+            //   }
+            // ),
           ],
         ),
       ),

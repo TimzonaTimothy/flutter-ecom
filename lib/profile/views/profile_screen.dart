@@ -47,11 +47,11 @@ class ProfileScreen extends StatelessWidget {
                     "https://i.pravatar.cc/300",
                   ),
                 ),
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: AppStyles.primaryColor,
-                  child: const Icon(Icons.edit, size: 16, color: Colors.white),
-                ),
+                // CircleAvatar(
+                //   radius: 16,
+                //   backgroundColor: AppStyles.primaryColor,
+                //   child: const Icon(Icons.edit, size: 16, color: Colors.white),
+                // ),
               ],
             ),
             const SizedBox(height: 10),
