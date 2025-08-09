@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -109,33 +110,44 @@ class SearchProductController extends GetxController {
     }
   }
   
-  Future<void> performSearch(String query) async {
+ Future<void> performSearch(String query) async {
     if (query.trim().isEmpty) return;
-    
+
+    const maxRetries = 3;
+    const retryDelay = Duration(seconds: 2);
+    int attempt = 0;
+
     isLoading.value = true;
     showSuggestions.value = false;
     hasSearched.value = true;
     errorMessage.value = '';
-    
+
     searchFocusNode.unfocus();
-    
-    try {
-      final response = await SearchAndFilterApiService.searchProducts(query: query);
-      final results = (response['results'] as List)
-          .map((json) => ProductSearchModel.fromJson(json))
-          .toList();
-      
-      searchResults.assignAll(results);
-      
-      // Save to recent searches
-      await _saveRecentSearch(query);
-      
-    } catch (e) {
-      errorMessage.value = 'Failed to search products. Please try again.';
-      print('Search error: $e');
-    } finally {
-      isLoading.value = false;
+
+    while (attempt < maxRetries) {
+      try {
+        final response = await SearchAndFilterApiService.searchProducts(
+          query: query,
+          page: 1, // Start with page 1
+          pageSize: 20,
+        );
+        final results = (response['results'] as List)
+            .map((json) => ProductSearchModel.fromJson(json))
+            .toList();
+
+        searchResults.assignAll(results);
+        await _saveRecentSearch(query);
+        break; // Exit loop on success
+      } catch (e) {
+        attempt++;
+        if (attempt == maxRetries) {
+          errorMessage.value = 'Failed to search products after $maxRetries attempts';
+          print('Search error after $maxRetries attempts: $e');
+        }
+        await Future.delayed(retryDelay);
+      }
     }
+    isLoading.value = false;
   }
   
   void clearSearches() {
@@ -209,13 +221,19 @@ class FilterController extends GetxController {
     const retryDelay = Duration(seconds: 2);
     int attempt = 0;
 
+    // Check for cached options
+    final cachedOptions = await _getCachedFilterOptions();
+    if (cachedOptions != null) {
+      filterOptions.value = cachedOptions;
+      return;
+    }
+
     while (attempt < maxRetries) {
       try {
         isLoading.value = true;
         final options = await SearchAndFilterApiService.getFilterOptions();
         filterOptions.value = FilterOptions.fromJson(options);
 
-        // Update dynamic filter options
         if (filterOptions.value != null) {
           final dynamicBrands = ['All'] + filterOptions.value!.brands.map((b) => b.title).toList();
           brands.assignAll(dynamicBrands);
@@ -223,8 +241,10 @@ class FilterController extends GetxController {
             filterOptions.value!.priceRange['min'] ?? 0.0,
             filterOptions.value!.priceRange['max'] ?? 1000.0,
           );
+          // Cache the options
+          await _cacheFilterOptions(filterOptions.value!);
         }
-        break; // Exit loop on success
+        break;
       } catch (e) {
         attempt++;
         print('Filter options attempt $attempt failed: $e');
@@ -237,53 +257,64 @@ class FilterController extends GetxController {
       }
     }
   }
-  
- Future<void> applyFilters() async {
-  try {
-    isLoading.value = true;
-    errorMessage.value = '';
 
-    final selectedBrandName = selectedBrand.value == 0 ? null : brands[selectedBrand.value];
-    final selectedGenderName = selectedGender.value == 0 ? null : gender[selectedGender.value];
-    final selectedSortName = sortBy[selectedSort.value];
-
-    double? minRating;
-    if (selectedRating.value < ratings.length) {
-      final ratingText = ratings[selectedRating.value];
-      if (ratingText.contains('4.5')) {
-        minRating = 4.5;
-      } else if (ratingText.contains('4.0')) {
-        minRating = 4.0;
-      } else if (ratingText.contains('3.5')) {
-        minRating = 3.5;
-      } else if (ratingText.contains('3.0')) {
-        minRating = 3.0;
-      } else if (ratingText.contains('2.5')) {
-        minRating = 2.5;
-      }
-    }
-
-    final response = await SearchAndFilterApiService.filterProducts(
-      brand: selectedBrandName,
-      gender: selectedGenderName,
-      minPrice: priceRange.value.start,
-      maxPrice: priceRange.value.end,
-      minRating: minRating,
-      sortBy: selectedSortName,
-    );
-
-    final results = (response['results'] as List)
-        .map((json) => ProductSearchModel.fromJson(json))
-        .toList();
-
-    filteredProducts.assignAll(results);
-  } catch (e) {
-    errorMessage.value = 'Failed to apply filters. Please try again.';
-    print('Filter error: $e');
-  } finally {
-    isLoading.value = false;
+  Future<void> _cacheFilterOptions(FilterOptions options) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('filter_options', jsonEncode(options.toJson()));
   }
-}
+
+  Future<FilterOptions?> _getCachedFilterOptions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cached = prefs.getString('filter_options');
+    if (cached != null) {
+      return FilterOptions.fromJson(jsonDecode(cached));
+    }
+    return null;
+  }
+  
+ Future<void> applyFilters({int page = 1, int pageSize = 20}) async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      final selectedBrandName = selectedBrand.value == 0 ? null : brands[selectedBrand.value];
+      final selectedGenderName = selectedGender.value == 0 ? null : gender[selectedGender.value];
+      final selectedSortName = sortBy[selectedSort.value];
+
+      double? minRating;
+      if (selectedRating.value < ratings.length) {
+        final ratingText = ratings[selectedRating.value];
+        if (ratingText.contains('4.5')) minRating = 4.5;
+        else if (ratingText.contains('4.0')) minRating = 4.0;
+        else if (ratingText.contains('3.5')) minRating = 3.5;
+        else if (ratingText.contains('3.0')) minRating = 3.0;
+        else if (ratingText.contains('2.5')) minRating = 2.5;
+      }
+
+      final response = await SearchAndFilterApiService.advancedSearch(
+        query: null, // No search query for filters
+        brands: selectedBrandName != null ? [selectedBrandName] : null,
+        gender: selectedGenderName,
+        minPrice: priceRange.value.start,
+        maxPrice: priceRange.value.end,
+        minRating: minRating,
+        sortBy: selectedSortName,
+        page: page,
+        pageSize: pageSize,
+      );
+
+      final results = (response['results'] as List)
+          .map((json) => ProductSearchModel.fromJson(json))
+          .toList();
+
+      filteredProducts.assignAll(results);
+    } catch (e) {
+      errorMessage.value = 'Failed to apply filters. Please try again.';
+      print('Filter error: $e');
+     } finally {
+      isLoading.value = false;
+    }
+  }
   
   Future<void> advancedSearch({
     String? query,

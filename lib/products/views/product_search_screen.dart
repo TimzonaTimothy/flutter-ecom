@@ -320,6 +320,19 @@ class SearchScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Initialize the SearchController
     final SearchProductController searchController = Get.put(SearchProductController());
+     final ScrollController scrollController = ScrollController();
+    int currentPage = 1;
+    bool isLoadingMore = false;
+
+    scrollController.addListener(() {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent && !isLoadingMore) {
+        isLoadingMore = true;
+        currentPage++;
+        searchController.performSearch(searchController.searchController.text).then((_) {
+          isLoadingMore = false;
+        });
+      }
+    });
 
     return Scaffold(
       backgroundColor: AppStyles.bgColor,

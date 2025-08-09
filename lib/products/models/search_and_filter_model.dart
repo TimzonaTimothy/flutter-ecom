@@ -1,57 +1,4 @@
-// class ProductSearchModel {
-//   final int id;
-//   final String title;
-//   final String slug;
-//   final double originalPrice;
-//   final double? discountPrice;
-//   final double rating;
-//   final String? productType;
-//   final int stock;
-//   final bool isAvailable;
-//   final CategorySearchModel category;
-//   final BrandSearchModel brand;
-//   final List<String> colors;
-//   final List<String> sizes;
-//   final String? image;
 
-//   ProductSearchModel({
-//     required this.id,
-//     required this.title,
-//     required this.slug,
-//     required this.originalPrice,
-//     this.discountPrice,
-//     required this.rating,
-//     this.productType,
-//     required this.stock,
-//     required this.isAvailable,
-//     required this.category,
-//     required this.brand,
-//     required this.colors,
-//     required this.sizes,
-//     this.image,
-//   });
-
-//   factory ProductSearchModel.fromJson(Map<String, dynamic> json) {
-//     return ProductSearchModel(
-//       id: json['id'],
-//       title: json['title'],
-//       slug: json['slug'],
-//       originalPrice: double.parse(json['original_price'].toString()),
-//       discountPrice: json['discount_price'] != null 
-//           ? double.parse(json['discount_price'].toString()) 
-//           : null,
-//       rating: double.parse(json['rating'].toString()),
-//       productType: json['product_type'],
-//       stock: json['stock'],
-//       isAvailable: json['is_available'],
-//       category: CategorySearchModel.fromJson(json['category']),
-//       brand: BrandSearchModel.fromJson(json['brand']),
-//       colors: List<String>.from(json['colors'].map((color) => color['name'])),
-//       sizes: List<String>.from(json['sizes'].map((size) => size['name'])),
-//       image: json['image_preview'],
-//     );
-//   }
-// }
 
 import '../../base/res/base_url.dart';
 
@@ -143,6 +90,16 @@ class CategorySearchModel {
       image: json['image'] as String?,
     );
   }
+
+    Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'slug': slug,
+      'image': image,
+    };
+  }
+
 }
 
 class BrandSearchModel {
@@ -163,6 +120,15 @@ class BrandSearchModel {
       slug: json['slug'],
     );
   }
+
+    Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'slug': slug,
+    };
+  }
+
 }
 
 
@@ -210,4 +176,24 @@ class FilterOptions {
       sortOptions: List<String>.from(json['sort_options'] ?? []),
     );
   }
+
+    Map<String, dynamic> toJson() {
+    return {
+      'brands': brands.map((b) => b.toJson()).toList(),
+      'categories': categories.map((c) => c.toJson()).toList(),
+      'colors': colors.map((c) => {'name': c}).toList(),
+      'sizes': sizes.map((s) => {'name': s}).toList(),
+      'product_types': productTypes,
+      'price_range': {
+        'min_price': priceRange['min'],
+        'max_price': priceRange['max'],
+      },
+      'rating_range': {
+        'min_rating': ratingRange['min'],
+        'max_rating': ratingRange['max'],
+      },
+      'sort_options': sortOptions,
+    };
+  }
+
 }

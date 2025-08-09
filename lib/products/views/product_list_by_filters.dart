@@ -14,6 +14,9 @@ class ProductListByFilters extends StatelessWidget {
   Widget build(BuildContext context) {
     // final filterController = Get.find<FilterController>();
     final FilterController filterController = Get.put(FilterController());
+    final ScrollController scrollController = ScrollController();
+    int currentPage = 1;
+    bool isLoadingMore = false;
     
     // Apply filters when screen is opened
     // WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -27,6 +30,18 @@ class ProductListByFilters extends StatelessWidget {
           if (filterController.filterOptions.value != null) {
             filterController.applyFilters();
           }
+        });
+      }
+    });
+
+
+    // Pagination logic
+    scrollController.addListener(() {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent && !isLoadingMore) {
+        isLoadingMore = true;
+        currentPage++;
+        filterController.applyFilters(page: currentPage).then((_) {
+          isLoadingMore = false;
         });
       }
     });
