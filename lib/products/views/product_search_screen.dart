@@ -1,336 +1,28 @@
-import 'dart:async';
-
 import 'package:ecom_app/base/widgets/app_double_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../base/res/styles/app_styles.dart';
-
-
 import '../../base/widgets/product_card.dart';
 import '../controllers/search_and_filter_controller.dart';
-import '../models/search_and_filter_model.dart';
-import '../service/product_search_and_filter_service.dart';
 import 'product_detail.dart';
-
-// class SearchScreen extends StatefulWidget {
-//   @override
-//   _SearchScreenState createState() => _SearchScreenState();
-// }
-
-// class _SearchScreenState extends State<SearchScreen> {
-  
-//     final TextEditingController _searchController = TextEditingController();
-//   final FocusNode _searchFocusNode = FocusNode();
-  
-//   List<String> _recentSearches = [];
-//   List<String> _suggestions = [];
-//   List<ProductSearchModel> _searchResults = [];
-//   bool _isLoading = false;
-//   bool _showSuggestions = false;
-//   bool _hasSearched = false;
-//   String _errorMessage = '';
-  
-//   Timer? _debounceTimer;
-  
-//   @override
-//   void initState() {
-//     super.initState();
-//     _loadRecentSearches();
-//     _searchController.addListener(_onSearchChanged);
-//     _searchFocusNode.addListener(_onFocusChanged);
-//   }
-  
-//   @override
-//   void dispose() {
-//     _debounceTimer?.cancel();
-//     _searchController.dispose();
-//     _searchFocusNode.dispose();
-//     super.dispose();
-//   }
-  
-//   void _onSearchChanged() {
-//     if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
-    
-//     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-//       if (_searchController.text.isNotEmpty && _searchController.text.length >= 2) {
-//         _getSuggestions(_searchController.text);
-//       } else {
-//         setState(() {
-//           _suggestions.clear();
-//           _showSuggestions = false;
-//         });
-//       }
-//     });
-//   }
-  
-//   void _onFocusChanged() {
-//     if (_searchFocusNode.hasFocus && _searchController.text.isNotEmpty) {
-//       setState(() {
-//         _showSuggestions = true;
-//         _hasSearched = false;
-//       });
-//     }
-//   }
-  
-//   Future<void> _loadRecentSearches() async {
-//     // Load from local storage (SharedPreferences)
-//     final prefs = await SharedPreferences.getInstance();
-//     setState(() {
-//       _recentSearches = prefs.getStringList('recent_searches') ?? [
-//         'Blue Shirt',
-//         'CosmicChic Jacket',
-//         'EnchantedElegance Dress',
-//         'WhimsyWhirl Top',
-//         'Fluffernova Coat',
-//         'MirageMelody Cape',
-//         'BlossomBreeze Overalls',
-//       ];
-//     });
-//   }
-  
-//   Future<void> _saveRecentSearch(String search) async {
-//     final prefs = await SharedPreferences.getInstance();
-    
-//     // Remove if exists and add to top
-//     _recentSearches.remove(search);
-//     _recentSearches.insert(0, search);
-    
-//     // Keep only last 10 searches
-//     if (_recentSearches.length > 10) {
-//       _recentSearches = _recentSearches.take(10).toList();
-//     }
-    
-//     await prefs.setStringList('recent_searches', _recentSearches);
-//     setState(() {});
-//   }
-  
-//   Future<void> _getSuggestions(String query) async {
-//     try {
-//       final suggestions = await SearchAndFilterApiService.getSearchSuggestions(query);
-//       setState(() {
-//         _suggestions = suggestions;
-//         _showSuggestions = true;
-//       });
-//     } catch (e) {
-//       print('Error getting suggestions: $e');
-//     }
-//   }
-  
-//   Future<void> _performSearch(String query) async {
-//     if (query.trim().isEmpty) return;
-    
-//     setState(() {
-//       _isLoading = true;
-//       _showSuggestions = false;
-//       _hasSearched = true;
-//       _errorMessage = '';
-//     });
-    
-//     _searchFocusNode.unfocus();
-    
-//     try {
-//       final response = await SearchAndFilterApiService.searchProducts(query: query);
-//       setState(() {
-//         _searchResults = (response['results'] as List)
-//             .map((json) => ProductSearchModel.fromJson(json))
-//             .toList();
-//         _isLoading = false;
-//       });
-      
-//       // Save to recent searches
-//       await _saveRecentSearch(query);
-      
-//     } catch (e) {
-//       setState(() {
-//         _isLoading = false;
-//         _errorMessage = 'Failed to search products. Please try again.';
-//       });
-//     }
-//   }
-  
-//   void _clearSearches() {
-//     setState(() {
-//       _recentSearches.clear();
-//     });
-//     SharedPreferences.getInstance().then((prefs) {
-//       prefs.remove('recent_searches');
-//     });
-//   }
-  
-//   void _removeSearch(int index) {
-//     setState(() {
-//       _recentSearches.removeAt(index);
-//     });
-//     SharedPreferences.getInstance().then((prefs) {
-//       prefs.setStringList('recent_searches', _recentSearches);
-//     });
-//   }
-  
-//   void _selectSuggestion(String suggestion) {
-//     _searchController.text = suggestion;
-//     _performSearch(suggestion);
-//   }
-  
-//   void _selectRecentSearch(String search) {
-//     _searchController.text = search;
-//     _performSearch(search);
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//        backgroundColor: AppStyles.bgColor,
-//       appBar: AppBar(
-//         backgroundColor: AppStyles.bgColor,
-//         elevation: 0,
-//         title: Text("Search", style: AppStyles.headLineStyle2),
-//         centerTitle: true,
-//         leading: IconButton(
-//           icon: const Icon(Icons.arrow_back, color: Colors.black),
-//           onPressed: () {
-//             Get.back();
-//           },
-//         ),
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: Column(
-//           children: [
-//             // Search Input
-//             // Container(
-//             //   padding: EdgeInsets.symmetric(horizontal: 12),
-//             //   decoration: BoxDecoration(
-//             //     borderRadius: BorderRadius.circular(25),
-//             //     color: Colors.grey.shade100,
-//             //   ),
-//             //   child: Row(
-//             //     children: [
-//             //       Icon(Icons.search, color: Colors.brown),
-//             //       SizedBox(width: 10),
-//             //       Expanded(
-//             //         child: TextField(
-//             //           controller: _searchController,
-//             //           decoration: InputDecoration(
-//             //             hintText: 'Search',
-//             //             border: InputBorder.none,
-//             //           ),
-//             //         ),
-//             //       ),
-//             //     ],
-//             //   ),
-//             // ),
-//             // SizedBox(height: 20),
-
-//             // // Recent Label
-//             // Row(
-//             //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//             //   children: [
-//             //     Text('Recent', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-//             //     GestureDetector(
-//             //       onTap: _clearSearches,
-//             //       child: Text('Clear All', style: TextStyle(color: Colors.brown)),
-//             //     ),
-//             //   ],
-//             // ),
-//              Container(
-//             decoration: BoxDecoration(
-//               border: Border.all(
-//                 color: AppStyles.primaryColor,
-//                 width: 0.5,
-//               ),
-//               borderRadius: BorderRadius.circular(10),
-//             ),
-//             padding: const EdgeInsets.symmetric(horizontal: 12),
-//             child: TextFormField(
-//               textAlign: TextAlign.start,
-//               textAlignVertical: TextAlignVertical.center,
-//               validator: (value) =>
-//                   value == null ? 'please enter your query' : null,
-//               controller: _searchController,
-//               focusNode: _searchFocusNode,
-//               keyboardType: TextInputType.text,
-//               style: AppStyles.textStyle.copyWith(color: AppStyles.textColor),
-//               decoration: InputDecoration(
-//                 hintText: "Search products, brands, categories...",
-//                 alignLabelWithHint: true,
-//                 hintTextDirection: TextDirection.ltr,
-//                 hintStyle: AppStyles.textStyle.copyWith(
-//                   color: AppStyles.textColor.withOpacity(0.6),
-//                 ),
-//                 border: InputBorder.none,
-//                 prefixIcon: IconButton(
-//                   icon: Icon(
-//                     Icons.search,
-//                     color: AppStyles.primaryColor,
-//                   ),
-//                   onPressed: () {},
-//                 ),
-//               ),
-//             ),
-//           ),
-//           const SizedBox(
-//             height: 20,
-//           ),
-//            AppDoubleText(
-//             bigText: "Recent",
-//             smallText: "Clear All",
-//             func: _clearSearches,
-//           ),
-//             SizedBox(height: 10),
-
-//             // Search List
-//             Expanded(
-//               child: ListView.builder(
-//                 itemCount: _recentSearches.length,
-//                 itemBuilder: (context, index) {
-//                   return ListTile(
-//                     contentPadding: EdgeInsets.zero,
-//                     title: Text(_recentSearches[index]),
-//                     trailing: IconButton(
-//                       icon: Icon(Icons.cancel, color: AppStyles.primaryColor),
-//                       onPressed: () => _removeSearch(index),
-//                     ),
-//                     onTap: () {
-//                       // Handle re-search
-//                       _searchController.text = _recentSearches[index];
-//                     },
-//                   );
-//                 },
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-
-
-
-
-
 
 class SearchScreen extends StatelessWidget {
   const SearchScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Initialize the SearchController
-    final SearchProductController searchController = Get.put(SearchProductController());
-     final ScrollController scrollController = ScrollController();
-    int currentPage = 1;
-    bool isLoadingMore = false;
+    final SearchProductController searchController =
+        Get.put(SearchProductController());
+    final ScrollController scrollController = ScrollController();
 
+    // Setup pagination listener
     scrollController.addListener(() {
-      if (scrollController.position.pixels == scrollController.position.maxScrollExtent && !isLoadingMore) {
-        isLoadingMore = true;
-        currentPage++;
-        searchController.performSearch(searchController.searchController.text).then((_) {
-          isLoadingMore = false;
-        });
+      if (scrollController.position.pixels >=
+          scrollController.position.maxScrollExtent - 100) {
+        if (searchController.canLoadMore) {
+          searchController.loadMoreResults();
+        }
       }
     });
 
@@ -344,6 +36,7 @@ class SearchScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
+            searchController.clearResults();
             Get.back();
           },
         ),
@@ -352,8 +45,21 @@ class SearchScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Search Input
+            // Search Input - Fixed to avoid unnecessary Obx
             Container(
+              // decoration: BoxDecoration(
+              //   color: Colors.white,
+              //   border: Border.all(color: AppStyles.primaryColor, width: 1.0),
+              //   borderRadius: BorderRadius.circular(12),
+              //   boxShadow: [
+              //     BoxShadow(
+              //       color: Colors.grey.withOpacity(0.1),
+              //       spreadRadius: 1,
+              //       blurRadius: 3,
+              //       offset: const Offset(0, 2),
+              //     ),
+              //   ],
+              // ),
               decoration: BoxDecoration(
                 border: Border.all(
                   color: AppStyles.primaryColor,
@@ -361,14 +67,13 @@ class SearchScreen extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
               child: TextFormField(
                 textAlign: TextAlign.start,
                 textAlignVertical: TextAlignVertical.center,
-                validator: (value) => value == null ? 'please enter your query' : null,
                 controller: searchController.searchController,
                 focusNode: searchController.searchFocusNode,
-                keyboardType: TextInputType.text,
+                validator: (value) =>
+                    value == null ? 'please enter your query' : null,
                 style: AppStyles.textStyle.copyWith(color: AppStyles.textColor),
                 decoration: InputDecoration(
                   hintText: "Search products, brands, categories...",
@@ -378,148 +83,264 @@ class SearchScreen extends StatelessWidget {
                     color: AppStyles.textColor.withOpacity(0.6),
                   ),
                   border: InputBorder.none,
-                  prefixIcon: IconButton(
-                    icon: Icon(
-                      Icons.search,
-                      color: AppStyles.primaryColor,
-                    ),
-                    onPressed: () {
-                      searchController.performSearch(searchController.searchController.text);
-                    },
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  prefixIcon: Icon(Icons.search, color: AppStyles.primaryColor),
+                  suffixIcon: GetBuilder<SearchProductController>(
+                    builder: (controller) =>
+                        controller.searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: Icon(Icons.clear,
+                                    color: AppStyles.primaryColor),
+                                onPressed: () => controller.clearSearchField(),
+                              )
+                            : const SizedBox.shrink(),
                   ),
                 ),
                 onFieldSubmitted: (value) {
-                  searchController.performSearch(value);
+                  if (value.trim().isNotEmpty) {
+                    searchController.performSearch(value);
+                  }
+                },
+                onChanged: (value) {
+                  searchController.update(); // Trigger rebuild for clear button
                 },
               ),
             ),
             const SizedBox(height: 20),
 
-            // Recent Label
-            AppDoubleText(
-              bigText: "Recent",
-              smallText: "Clear All",
-              func: searchController.clearSearches,
+            // Header section - Fixed Obx
+            GetBuilder<SearchProductController>(
+              builder: (controller) {
+                if (!controller.hasSearched.value) {
+                  return AppDoubleText(
+                    bigText: "Recent",
+                    smallText:
+                        controller.recentSearches.isEmpty ? "" : "Clear All",
+                    func: controller.recentSearches.isEmpty
+                        ? null
+                        : controller.clearSearches,
+                  );
+                } else {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Search Results", style: AppStyles.headLineStyle3),
+                      Obx(() => controller.searchResults.isNotEmpty
+                          ? Text(
+                              "${controller.searchResults.length} found",
+                              style: AppStyles.textStyle.copyWith(
+                                color: AppStyles.textColor.withOpacity(0.7),
+                              ),
+                            )
+                          : const SizedBox.shrink()),
+                    ],
+                  );
+                }
+              },
             ),
             const SizedBox(height: 10),
 
-            // Suggestions or Results
-            Obx(() => Expanded(
-                  child: searchController.isLoading.value
-                      ? const Center(child: CircularProgressIndicator())
-                      : searchController.errorMessage.value.isNotEmpty
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.error_outline,
-                                    size: 64,
-                                    color: Colors.red.withOpacity(0.5),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    searchController.errorMessage.value,
-                                    style: AppStyles.textStyle.copyWith(
-                                      color: Colors.red,
-                                      fontSize: 16,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      searchController.performSearch(
-                                          searchController.searchController.text);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppStyles.primaryColor,
-                                    ),
-                                    child: Text(
-                                      'Retry',
-                                      style: TextStyle(color: AppStyles.whiteColor),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : searchController.showSuggestions.value &&
-                                  searchController.suggestions.isNotEmpty
-                              ? ListView.builder(
-                                  itemCount: searchController.suggestions.length,
-                                  itemBuilder: (context, index) {
-                                    return ListTile(
-                                      contentPadding: EdgeInsets.zero,
-                                      title:
-                                          Text(searchController.suggestions[index]),
-                                      onTap: () {
-                                        searchController.selectSuggestion(
-                                            searchController.suggestions[index]);
-                                      },
-                                    );
-                                  },
-                                )
-                              : searchController.hasSearched.value &&
-                                      searchController.searchResults.isNotEmpty
-                                  ? 
-                                  
-                  
-                    GridView.count(
-  physics: const NeverScrollableScrollPhysics(),
-  shrinkWrap: true,
-  crossAxisCount: 2,
-  crossAxisSpacing: 15,
-  mainAxisSpacing: 20,
-  childAspectRatio: 0.76,
-  children: searchController.searchResults.map((product) {
-    final imageUrl = product.image ?? 'assets/images/default_product.png';
+            // Main content area - Fixed Obx usage
+            Expanded(
+              child: GetBuilder<SearchProductController>(
+                builder: (controller) {
+                  // Loading state
+                  if (controller.isLoading.value &&
+                      controller.searchResults.isEmpty) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-    return ProductCard(
-      productId: product.id,
-      imagePath: imageUrl,
-      title: product.title,
-      price: product.originalPrice?.toString() ?? '0',
-      rating: product.rating,
-      oldPrice: product.discountPrice?.toString() ?? '0',
-      onTap: () {
-        Get.to(
-          () => ProductDetail(productId: product.id),
-          transition: Transition.rightToLeftWithFade,
-          duration: const Duration(milliseconds: 500),
-        );
-      },
-    );
-  }).toList(),
-)
+                  // Error state
+                  if (controller.errorMessage.value.isNotEmpty) {
+                    return _buildErrorState(controller);
+                  }
 
-                                  : 
-                                  
-                                  ListView.builder(
-                                      itemCount:
-                                          searchController.recentSearches.length,
-                                      itemBuilder: (context, index) {
-                                        return ListTile(
-                                          contentPadding: EdgeInsets.zero,
-                                          title: Text(searchController
-                                              .recentSearches[index]),
-                                          trailing: IconButton(
-                                            icon: Icon(Icons.cancel,
-                                                color: AppStyles.primaryColor),
-                                            onPressed: () => searchController
-                                                .removeSearch(index),
-                                          ),
-                                          onTap: () {
-                                            searchController.selectRecentSearch(
-                                                searchController
-                                                    .recentSearches[index]);
-                                          },
-                                        );
-                                      },
-                                    ),
-                )),
+                  // Show suggestions
+                  if (controller.showSuggestions.value &&
+                      controller.suggestions.isNotEmpty &&
+                      !controller.hasSearched.value) {
+                    return _buildSuggestionsList(controller);
+                  }
+
+                  // Show search results
+                  if (controller.hasSearched.value) {
+                    return _buildSearchResults(controller, scrollController);
+                  }
+
+                  // Show recent searches
+                  return _buildRecentSearches(controller);
+                },
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildErrorState(SearchProductController controller) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline,
+              size: 64, color: Colors.red.withOpacity(0.5)),
+          const SizedBox(height: 16),
+          Obx(() => Text(
+                controller.errorMessage.value,
+                style: AppStyles.textStyle
+                    .copyWith(color: Colors.red, fontSize: 16),
+                textAlign: TextAlign.center,
+              )),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.searchController.text.isNotEmpty) {
+                controller.performSearch(controller.searchController.text);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppStyles.primaryColor),
+            child: Text('Retry', style: TextStyle(color: AppStyles.whiteColor)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuggestionsList(SearchProductController controller) {
+    return Obx(() => ListView.builder(
+          itemCount: controller.suggestions.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(Icons.search, color: AppStyles.primaryColor),
+              title: Text(controller.suggestions[index],
+                  style: AppStyles.textStyle),
+              onTap: () =>
+                  controller.selectSuggestion(controller.suggestions[index]),
+            );
+          },
+        ));
+  }
+
+  Widget _buildSearchResults(
+      SearchProductController controller, ScrollController scrollController) {
+    return Obx(() {
+      if (controller.searchResults.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.search_off,
+                  size: 64, color: AppStyles.textColor.withOpacity(0.5)),
+              const SizedBox(height: 16),
+              Text(
+                'No products found',
+                style: AppStyles.headLineStyle3.copyWith(
+                  color: AppStyles.textColor.withOpacity(0.7),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Try searching with different keywords',
+                style: AppStyles.textStyle.copyWith(
+                  color: AppStyles.textColor.withOpacity(0.5),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return Column(
+        children: [
+          Expanded(
+            child: GridView.builder(
+              controller: scrollController,
+              padding: const EdgeInsets.only(top: 8),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 15,
+                mainAxisSpacing: 20,
+                childAspectRatio: 0.76,
+              ),
+              itemCount: controller.searchResults.length,
+              itemBuilder: (context, index) {
+                final product = controller.searchResults[index];
+                final imageUrl =
+                    product.image ?? 'assets/images/default_product.png';
+
+                return ProductCard(
+                  productId: product.id,
+                  imagePath: imageUrl,
+                  title: product.title,
+                  price: product.originalPrice.toString(),
+                  rating: product.rating,
+                  oldPrice: product.discountPrice?.toString() ?? '',
+                  onTap: () {
+                    Get.to(
+                      () => ProductDetail(productId: product.id),
+                      transition: Transition.rightToLeftWithFade,
+                      duration: const Duration(milliseconds: 500),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          // Loading more indicator
+          Obx(() => controller.isLoadingMore.value
+              ? const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(),
+                )
+              : const SizedBox.shrink()),
+        ],
+      );
+    });
+  }
+
+  Widget _buildRecentSearches(SearchProductController controller) {
+    return Obx(() {
+      if (controller.recentSearches.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.history,
+                  size: 64, color: AppStyles.textColor.withOpacity(0.3)),
+              const SizedBox(height: 16),
+              Text(
+                'No recent searches',
+                style: AppStyles.textStyle.copyWith(
+                  color: AppStyles.textColor.withOpacity(0.5),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return ListView.builder(
+        itemCount: controller.recentSearches.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.history, color: AppStyles.primaryColor),
+            title: Text(controller.recentSearches[index],
+                style: AppStyles.textStyle),
+            trailing: IconButton(
+              icon: Icon(Icons.close,
+                  color: AppStyles.textColor.withOpacity(0.5)),
+              onPressed: () => controller.removeSearch(index),
+            ),
+            onTap: () =>
+                controller.selectRecentSearch(controller.recentSearches[index]),
+          );
+        },
+      );
+    });
   }
 }

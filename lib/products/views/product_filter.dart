@@ -2,37 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../base/res/styles/app_styles.dart';
+import '../controllers/search_and_filter_controller.dart';
 import 'product_list_by_filters.dart';
 
-class FilterScreen extends StatefulWidget {
+class FilterScreen extends StatelessWidget {
   const FilterScreen({super.key});
 
   @override
-  _FilterScreenState createState() => _FilterScreenState();
-}
-
-class _FilterScreenState extends State<FilterScreen> {
-  final brands = ['All', 'Nike', 'Adidas', 'Puma', 'Reebok','Fila','Gucci'];
-  final gender = ['All', 'Men', 'Women'];
-  final sortBy = ['Most Recent', 'Popular', 'Price High'];
-
-  int selectedBrand = 0;
-  int selectedGender = 0;
-  int selectedSort = 1;
-
-  RangeValues priceRange = const RangeValues(7, 100);
-
-  int selectedRating = 0;
-  final ratings = [
-    '4.5 and above',
-    '4.0 - 4.5',
-    '3.5 - 4.0',
-    '3.0 - 3.5',
-    '2.5 - 3.0'
-  ];
-
-  @override
   Widget build(BuildContext context) {
+    final FilterController controller = Get.put(FilterController());
+
     return Scaffold(
       backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
@@ -47,70 +26,79 @@ class _FilterScreenState extends State<FilterScreen> {
           },
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
-        shrinkWrap: true,
-        children: [
-          _buildSection('Brands', brands, selectedBrand,
-              (i) => setState(() => selectedBrand = i)),
-          _buildSection('Gender', gender, selectedGender,
-              (i) => setState(() => selectedGender = i)),
-          _buildSection('Sort by', sortBy, selectedSort,
-              (i) => setState(() => selectedSort = i)),
-          const SizedBox(height: 20),
-          const Text('Pricing Range',
-              style: TextStyle(fontWeight: FontWeight.bold)),
-          RangeSlider(
-            values: priceRange,
-            min: 2,
-            max: 150,
-            divisions: 10,
-            labels: RangeLabels(
-              priceRange.start.round().toString(),
-              priceRange.end.round().toString(),
-            ),
-            activeColor: AppStyles.primaryColor,
-            onChanged: (values) {
-              setState(() {
-                priceRange = values;
-              });
-            },
-          ),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Obx(() => ListView(
+            padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
+            shrinkWrap: true,
             children: [
-              Text('2'),
-              Text('7'),
-              Text('22'),
-              Text('50'),
-              Text('100'),
-              Text('150+'),
-            ],
-          ),
-          const SizedBox(height: 20),
-          const Text('Reviews', style: TextStyle(fontWeight: FontWeight.bold)),
-          ...List.generate(ratings.length, (i) {
-            return RadioListTile(
-              value: i,
-              groupValue: selectedRating,
-              onChanged: (val) => setState(() => selectedRating = val!),
-              title: Row(
+              _buildSection(
+                'Brands',
+                controller.brands,
+                controller.selectedBrand.value,
+                (i) => controller.updateBrand(i),
+              ),
+              _buildSection(
+                'Gender',
+                controller.gender,
+                controller.selectedGender.value,
+                (i) => controller.updateGender(i),
+              ),
+              _buildSection(
+                'Sort by',
+                controller.sortBy,
+                controller.selectedSort.value,
+                (i) => controller.updateSort(i),
+              ),
+              const SizedBox(height: 20),
+              const Text('Pricing Range',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              RangeSlider(
+  values: controller.priceRange.value,
+  min: controller.filterOptions.value!.priceRange['min'] ?? 150.0,
+        max: controller.filterOptions.value!.priceRange['max'] ?? 1000.0,
+  divisions: 10,
+  labels: RangeLabels(
+    controller.priceRange.value.start.round().toString(),
+    controller.priceRange.value.end.round().toString(),
+  ),
+  activeColor: AppStyles.primaryColor,
+  onChanged: (values) => controller.updatePriceRange(values),
+),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: List.generate(
-                        5,
-                        (_) => const Icon(Icons.star,
-                            color: Colors.amber, size: 20)),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(ratings[i]),
+                  Text('150'),
+                  Text('200'),
+                  Text('500'),
+                  Text('900'),
+                  
+                  Text('1000+'),
                 ],
               ),
-              activeColor: AppStyles.primaryColor,
-            );
-          }),
-        ],
-      ),
+              const SizedBox(height: 20),
+              const Text('Reviews',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              ...List.generate(controller.ratings.length, (i) {
+                return RadioListTile(
+                  value: i,
+                  groupValue: controller.selectedRating.value,
+                  onChanged: (val) => controller.updateRating(val!),
+                  title: Row(
+                    children: [
+                      Row(
+                        children: List.generate(
+                            5,
+                            (_) => const Icon(Icons.star,
+                                color: Colors.amber, size: 20)),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(controller.ratings[i]),
+                    ],
+                  ),
+                  activeColor: AppStyles.primaryColor,
+                );
+              }),
+            ],
+          )),
       bottomNavigationBar: LayoutBuilder(
         builder: (context, constraints) {
           final screenWidth = MediaQuery.of(context).size.width;
@@ -151,13 +139,7 @@ class _FilterScreenState extends State<FilterScreen> {
                           ),
                         ),
                         onPressed: () {
-                          setState(() {
-                            selectedBrand = 0;
-                            selectedGender = 0;
-                            selectedSort = 1;
-                            priceRange = const RangeValues(7, 100);
-                            selectedRating = 0;
-                          });
+                          controller.resetFilters();
                         },
                         child: Text(
                           'Reset',
@@ -170,13 +152,13 @@ class _FilterScreenState extends State<FilterScreen> {
                       SizedBox(height: verticalPadding),
                       ElevatedButton.icon(
                         onPressed: () {
+                          controller.applyFilters();
                           Get.to(() => const ProductListByFilters(),
                               transition: Transition.rightToLeftWithFade,
                               duration: const Duration(milliseconds: 500));
                         },
                         icon: Icon(
-                          Icons
-                              .local_shipping_outlined, // Added icon for consistency
+                          Icons.local_shipping_outlined,
                           color: AppStyles.whiteColor,
                         ),
                         label: Text(
@@ -218,13 +200,7 @@ class _FilterScreenState extends State<FilterScreen> {
                             ),
                           ),
                           onPressed: () {
-                            setState(() {
-                              selectedBrand = 0;
-                              selectedGender = 0;
-                              selectedSort = 1;
-                              priceRange = const RangeValues(7, 100);
-                              selectedRating = 0;
-                            });
+                            controller.resetFilters();
                           },
                           child: Text(
                             'Reset',
@@ -239,13 +215,13 @@ class _FilterScreenState extends State<FilterScreen> {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
+                            controller.applyFilters();
                             Get.to(() => const ProductListByFilters(),
                                 transition: Transition.rightToLeftWithFade,
                                 duration: const Duration(milliseconds: 500));
                           },
                           icon: Icon(
-                            Icons
-                                .local_shipping_outlined, // Added icon for consistency
+                            Icons.local_shipping_outlined,
                             color: AppStyles.whiteColor,
                           ),
                           label: Text(
@@ -272,8 +248,8 @@ class _FilterScreenState extends State<FilterScreen> {
     );
   }
 
-  Widget _buildSection(String title, List<String> items, int selected,
-      Function(int) onSelected) {
+  Widget _buildSection(
+      String title, List<String> items, int selected, Function(int) onSelected) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

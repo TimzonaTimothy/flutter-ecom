@@ -21,25 +21,7 @@ class CategoryController extends GetxController {
     fetchCategories();
   }
 
-  // void fetchCategories() async {
-  //   isLoading.value = true;
-
-  //   final response = await MyRequest('products/categories/', {}, false)
-  //       .init(showToast: true)
-  //       .getApi();
-
-  //   if (response != null) {
-  //     try {
-  //       final List data = jsonDecode(response);
-        
-  //       categories.value = data.map((e) => CategoryModel.fromJson(e)).toList();
-  //     } catch (e) {
-  //       showFailureSnackbar('Failed to parse category data');
-  //     }
-  //   }
-
-  //   isLoading.value = false;
-  // }
+  
 
   Future<void> fetchCategories() async {
     isLoading.value = true;

@@ -178,34 +178,36 @@ class SearchAndFilterApiService {
   
   // Get filter options
   static Future<Map<String, dynamic>> getFilterOptions() async {
-    const maxRetries = 3;
-    const retryDelay = Duration(seconds: 2);
-    int attempt = 0;
+  const maxRetries = 3;
+  const retryDelay = Duration(seconds: 2);
+  int attempt = 0;
 
-    while (attempt < maxRetries) {
-      try {
-        final uri = Uri.parse('$_baseUrl/products/filter/options/');
-        final response = await http.get(uri).timeout(
-          const Duration(seconds: 10), // Increase timeout
-          onTimeout: () {
-            throw Exception('Request timed out');
-          },
-        );
-        print('Filter options response: ${response.body}');
-        if (response.statusCode == 200) {
-          return json.decode(response.body);
-        } else {
-          throw Exception('Failed to get filter options: ${response.statusCode}');
-        }
-      } catch (e) {
-        attempt++;
-        print('Filter options attempt $attempt failed: $e');
-        if (attempt == maxRetries) {
-          throw Exception('Network error after $maxRetries attempts: $e');
-        }
-        await Future.delayed(retryDelay);
+  while (attempt < maxRetries) {
+    try {
+      final uri = Uri.parse('$_baseUrl/products/filter/options/');
+      final response = await http.get(uri).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('Request timed out');
+        },
+      );
+      print('Raw filter options response: ${response.body}');
+      final jsonResponse = json.decode(response.body);
+      print('Parsed filter options JSON: $jsonResponse');
+      if (response.statusCode == 200) {
+        return jsonResponse;
+      } else {
+        throw Exception('Failed to get filter options: ${response.statusCode}');
       }
+    } catch (e) {
+      attempt++;
+      print('Filter options attempt $attempt failed: $e');
+      if (attempt == maxRetries) {
+        throw Exception('Network error after $maxRetries attempts: $e');
+      }
+      await Future.delayed(retryDelay);
     }
-    throw Exception('Failed to get filter options after $maxRetries attempts');
   }
+  throw Exception('Failed to get filter options after $maxRetries attempts');
+}
 }

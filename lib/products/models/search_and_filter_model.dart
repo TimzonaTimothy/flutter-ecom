@@ -1,8 +1,6 @@
-
-
 import '../../base/res/base_url.dart';
 
-const String _baseUrl = baseUrl; 
+const String _baseUrl = baseUrl;
 
 class ProductSearchModel {
   final int id;
@@ -84,14 +82,14 @@ class CategorySearchModel {
 
   factory CategorySearchModel.fromJson(Map<String, dynamic> json) {
     return CategorySearchModel(
-      id: json['id'] as int,
-      title: json['title'] as String,
-      slug: json['slug'] as String,
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
+      slug: json['slug'] as String? ?? '',
       image: json['image'] as String?,
     );
   }
 
-    Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'title': title,
@@ -99,7 +97,6 @@ class CategorySearchModel {
       'image': image,
     };
   }
-
 }
 
 class BrandSearchModel {
@@ -115,24 +112,20 @@ class BrandSearchModel {
 
   factory BrandSearchModel.fromJson(Map<String, dynamic> json) {
     return BrandSearchModel(
-      id: json['id'],
-      title: json['title'],
-      slug: json['slug'],
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
+      slug: json['slug'] as String? ?? '',
     );
   }
 
-    Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'title': title,
       'slug': slug,
     };
   }
-
 }
-
-
-
 
 class FilterOptions {
   final List<BrandSearchModel> brands;
@@ -160,10 +153,25 @@ class FilterOptions {
     print('Parsing colors: ${json['colors']}'); // Debug
     print('Parsing sizes: ${json['sizes']}'); // Debug
     return FilterOptions(
-      brands: List<BrandSearchModel>.from(json['brands']?.map((b) => BrandSearchModel.fromJson(b)) ?? []),
-      categories: List<CategorySearchModel>.from(json['categories']?.map((c) => CategorySearchModel.fromJson(c)) ?? []),
-      colors: List<String>.from(json['colors']?.map((c) => c['name'] as String? ?? '')?.where((name) => name.isNotEmpty) ?? []),
-      sizes: List<String>.from(json['sizes']?.map((s) => s['name'] as String? ?? '')?.where((name) => name.isNotEmpty) ?? []),
+      brands: List<BrandSearchModel>.from(
+          json['brands']?.map((b) => BrandSearchModel.fromJson(b)) ?? []),
+      categories: List<CategorySearchModel>.from(
+          json['categories']?.map((c) => CategorySearchModel.fromJson(c)) ??
+              []),
+      colors: List<String>.from(
+        (json['colors'] as List<dynamic>?)
+                ?.map(
+                    (c) => (c as Map<String, dynamic>)['name'] as String? ?? '')
+                .where((name) => name.isNotEmpty) ??
+            [],
+      ),
+      sizes: List<String>.from(
+        (json['sizes'] as List<dynamic>?)
+                ?.map(
+                    (s) => (s as Map<String, dynamic>)['name'] as String? ?? '')
+                .where((name) => name.isNotEmpty) ??
+            [],
+      ),
       productTypes: List<String>.from(json['product_types'] ?? []),
       priceRange: {
         'min': json['price_range']?['min_price']?.toDouble() ?? 0.0,
@@ -173,11 +181,14 @@ class FilterOptions {
         'min': json['rating_range']?['min_rating']?.toDouble() ?? 0.0,
         'max': json['rating_range']?['max_rating']?.toDouble() ?? 5.0,
       },
-      sortOptions: List<String>.from(json['sort_options'] ?? []),
+      // sortOptions: List<String>.from(json['sort_options'] ?? []),
+      sortOptions: List<String>.from((json['sort_options'] ?? [])
+          .where((item) => item != null)
+          .cast<String>()),
     );
   }
 
-    Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'brands': brands.map((b) => b.toJson()).toList(),
       'categories': categories.map((c) => c.toJson()).toList(),
@@ -195,5 +206,4 @@ class FilterOptions {
       'sort_options': sortOptions,
     };
   }
-
 }

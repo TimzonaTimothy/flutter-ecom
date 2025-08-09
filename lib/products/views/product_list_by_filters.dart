@@ -64,16 +64,16 @@ class ProductListByFilters extends StatelessWidget {
             Get.back();
           },
         ),
-        actions: [
-          Obx(() => filterController.hasActiveFilters
-              ? IconButton(
-                  icon: Icon(Icons.clear_all, color: AppStyles.primaryColor),
-                  onPressed: () {
-                    filterController.resetFilters();
-                  },
-                )
-              : const SizedBox.shrink()),
-        ],
+        // actions: [
+        //   Obx(() => filterController.hasActiveFilters
+        //       ? IconButton(
+        //           icon: Icon(Icons.clear_all, color: AppStyles.primaryColor),
+        //           onPressed: () {
+        //             filterController.resetFilters();
+        //           },
+        //         )
+        //       : const SizedBox.shrink()),
+        // ],
       ),
       body: Column(
         children: [
@@ -267,20 +267,22 @@ class ProductListByFilters extends StatelessWidget {
       ),
       
       // Floating action button to open filters
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Get.to(
-            () => const FilterScreen(),
-            transition: Transition.rightToLeftWithFade,
-            duration: const Duration(milliseconds: 500),
-          );
-        },
-        backgroundColor: AppStyles.primaryColor,
-        child: Icon(
-          Icons.filter_list,
-          color: AppStyles.whiteColor,
-        ),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     Get.to(
+      //       () => const FilterScreen(),
+      //       transition: Transition.rightToLeftWithFade,
+      //       duration: const Duration(milliseconds: 500),
+      //     );
+      //   },
+      //   backgroundColor: AppStyles.primaryColor,
+      //   child: Icon(
+      //     Icons.filter_list,
+      //     color: AppStyles.whiteColor,
+      //   ),
+      // ),
     );
   }
 }
+
+
