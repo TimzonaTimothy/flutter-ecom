@@ -159,8 +159,8 @@ class ProfileScreen extends StatelessWidget {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () async {
-                              await AuthHelpers.logout();
                               Navigator.of(context).pop(true);
+                              await AuthHelpers.logout();
                             },
                             label: Text(
                               "Yes, Logout",
