@@ -495,7 +495,7 @@ class NotificationScreen extends StatelessWidget {
               radius: 24,
               backgroundColor: Colors.grey[200],
               child: Icon(
-                _getIconForNotification(notification.title),
+                _getIconForNotification(notification.notificationType),
                 color: AppStyles.primaryColor,
               ),
             ),
@@ -539,18 +539,18 @@ class NotificationScreen extends StatelessWidget {
     );
   }
 
-  IconData _getIconForNotification(String title) {
-    final lowerTitle = title.toLowerCase();
+  IconData _getIconForNotification(String notificationType) {
+    final lowerNotificationType  = notificationType.toLowerCase();
     
-    if (lowerTitle.contains('shipped')) {
+    if (lowerNotificationType.contains('shipped')) {
       return Icons.local_shipping;
-    } else if (lowerTitle.contains('delivered')) {
+    } else if (lowerNotificationType.contains('delivered')) {
       return Icons.check_circle;
-    }else if (lowerTitle.contains('placed')) {
+    }else if (lowerNotificationType.contains('placed')) {
       return Icons.shopping_cart_checkout;
-    } else if (lowerTitle.contains('promotion')) {
+    } else if (lowerNotificationType.contains('promotion')) {
       return Icons.local_offer;
-    }else if (lowerTitle.contains('announcement')) {
+    }else if (lowerNotificationType.contains('announcement')) {
       return Icons.campaign;
     } else {
       return Icons.notifications;
