@@ -7,6 +7,7 @@ import '../base/bottom_nav_bar.dart';
 import '../base/res/media.dart';
 import '../base/res/styles/app_styles.dart';
 import '../base/utils/app_routes.dart';
+import '../base/utils/push_notification_service.dart';
 import '../base/utils/token.dart';
 import '../base/utils/wrapper.dart';
 
@@ -24,6 +25,15 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     _initializeApp();
+    PushNotificationService.instance.initialize(
+      userId: '0',
+      updateTokenCallback: (String token) async {
+        print('FCM Token updated: $token');
+      },
+      onTokenRefresh: (String token) {
+        print('FCM Token refreshed: $token');
+      },
+    );
   }
 
   Future<void> _initializeApp() async {

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../auth/service/logout_helper.dart';
 import '../../base/res/styles/app_styles.dart';
+import '../../notification/views/notification_settings_screen.dart';
 import '../../order/views/my_orders_screen.dart';
 import '../controllers/profile_controller.dart';
 import 'help_center_screen.dart';
@@ -88,7 +89,14 @@ class ProfileScreen extends StatelessWidget {
                 );
               }),
               _buildListTile(Icons.settings_outlined, "Settings", () {}),
-              _buildListTile(Icons.notifications, "Notification", () {}),
+              _buildListTile(Icons.notifications, "Notification", () {
+                
+                Get.to(
+                   NotificationSettingsScreen(),
+                  transition: Transition.rightToLeftWithFade,
+                  duration: const Duration(milliseconds: 500),
+                );
+              }),
               _buildListTile(Icons.password, "Password Manager", () {
                 Get.to(
                   const PasswordManagerScreen(),

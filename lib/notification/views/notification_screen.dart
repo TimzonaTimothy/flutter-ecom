@@ -541,12 +541,17 @@ class NotificationScreen extends StatelessWidget {
 
   IconData _getIconForNotification(String title) {
     final lowerTitle = title.toLowerCase();
+    
     if (lowerTitle.contains('shipped')) {
       return Icons.local_shipping;
-    } else if (lowerTitle.contains('sale')) {
-      return Icons.flash_on;
-    } else if (lowerTitle.contains('review')) {
-      return Icons.star_border;
+    } else if (lowerTitle.contains('delivered')) {
+      return Icons.check_circle;
+    }else if (lowerTitle.contains('placed')) {
+      return Icons.shopping_cart_checkout;
+    } else if (lowerTitle.contains('promotion')) {
+      return Icons.local_offer;
+    }else if (lowerTitle.contains('announcement')) {
+      return Icons.campaign;
     } else {
       return Icons.notifications;
     }
