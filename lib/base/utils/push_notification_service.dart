@@ -465,14 +465,28 @@ class PushNotificationService {
     }
   }
 
-  /// Store FCM token locally and send to server
   Future<void> _storeFCMToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_fcmTokenKey, token);
+    final storedToken = prefs.getString(_fcmTokenKey);
 
-    // TODO: Send token to your backend server
-    await _sendTokenToServer(token);
-  }
+    // Only send token if it's new or different
+    if (storedToken != token) {
+        await prefs.setString(_fcmTokenKey, token);
+        await _sendTokenToServer(token);
+        log('Stored and sent new FCM token: $token');
+    } else {
+        log('Token unchanged, skipping server send: $token');
+    }
+}
+
+  /// Store FCM token locally and send to server
+  // Future<void> _storeFCMToken(String token) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setString(_fcmTokenKey, token);
+
+  //   // TODO: Send token to your backend server
+  //   await _sendTokenToServer(token);
+  // }
 
   Future<void> _sendTokenToServer(String token) async {
     const fullUrl = baseUrl;
@@ -480,8 +494,10 @@ class PushNotificationService {
     final url = Uri.parse('$fullUrl/notifications/fcm/register/token/');
 
     final headers = await AuthService.instance.getAuthHeaders();
+    final String platform = Platform.isAndroid ? 'android' : 'ios';
+    
 
-    final body = json.encode({'token': token});
+    final body = json.encode({'token': token,'platform': platform});
 
     final response = await http.post(url, headers: headers, body: body);
 
@@ -591,21 +607,50 @@ class PushNotificationService {
   }
 
   /// Setup token refresh listener
+  // void _setupTokenRefreshListener(
+  //     Function(String) onTokenRefresh, Function(String) updateTokenCallback) {
+  //   try {
+  //     FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
+  //       if (await areNotificationsEnabled()) {
+  //         log('FCM Token refreshed: $token');
+  //         await _storeFCMToken(token);
+  //         await updateTokenCallback(token);
+  //         onTokenRefresh(token);
+  //       }
+  //     });
+  //   } catch (e) {
+  //     log('Error setting up token refresh listener: $e');
+  //   }
+  // }
+
+
   void _setupTokenRefreshListener(
-      Function(String) onTokenRefresh, Function(String) updateTokenCallback) {
+    Function(String) onTokenRefresh, Function(String) updateTokenCallback) {
     try {
-      FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
-        if (await areNotificationsEnabled()) {
-          log('FCM Token refreshed: $token');
-          await _storeFCMToken(token);
-          await updateTokenCallback(token);
-          onTokenRefresh(token);
-        }
-      });
+        DateTime? lastSentTime;
+        const debounceDuration = Duration(seconds: 5); // Adjust as needed
+
+        FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
+            if (await areNotificationsEnabled()) {
+                final now = DateTime.now();
+                // Only process if no token was sent in the last 5 seconds
+                if (lastSentTime == null ||
+                    now.difference(lastSentTime!) > debounceDuration) {
+                    log('FCM Token refreshed: $token');
+                    await _storeFCMToken(token);
+                    await updateTokenCallback(token);
+                    onTokenRefresh(token);
+                    lastSentTime = now;
+                } else {
+                    log('Skipping token refresh due to debounce: $token');
+                }
+            }
+        });
     } catch (e) {
-      log('Error setting up token refresh listener: $e');
+        log('Error setting up token refresh listener: $e');
     }
-  }
+}
+
 
   /// Setup message listeners for different app states
   Future<void> _setupMessagingListeners() async {
