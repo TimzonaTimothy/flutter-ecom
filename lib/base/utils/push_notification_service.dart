@@ -205,7 +205,7 @@ import '../res/base_url.dart';
 //       final token = await _firebase.getToken();
 //       if (token != null) {
 //         await updateTokenCallback(token);
-//         await _firebase.subscribeToTopic('benji-vendor');
+//         await _firebase.subscribeToTopic('user');
 //       }
 //     } catch (e) {
 //       log('Error setting up FCM token: $e');
@@ -365,8 +365,9 @@ class PushNotificationService {
   static const String _generalChannelId = 'general_channel';
 
   // Notification sound file names
-  static const String _androidSoundFile = 'benji4';
-  static const String _iosSoundFile = 'benji4';
+ 
+  static const String? _androidSoundFile = null;
+static const String? _iosSoundFile = null;
 
   // SharedPreferences keys
   static const String _notificationEnabledKey = 'notifications_enabled';
@@ -408,7 +409,7 @@ class PushNotificationService {
       final token = await _firebase.getToken();
       if (token != null) {
         await _storeFCMToken(token);
-        await _firebase.subscribeToTopic('benji-vendor');
+        await _firebase.subscribeToTopic('all');
         log('Subscribed to notifications with token: $token');
       }
 
@@ -575,7 +576,9 @@ class PushNotificationService {
           'High Importance Notifications',
           description: 'This channel is used for important notifications.',
           importance: Importance.high,
-          sound: RawResourceAndroidNotificationSound(_androidSoundFile),
+          sound: _androidSoundFile != null
+      ? RawResourceAndroidNotificationSound(_androidSoundFile)
+      : null,
         );
 
         const AndroidNotificationChannel generalChannel =
@@ -751,7 +754,9 @@ class PushNotificationService {
         importance: Importance.high,
         priority: Priority.high,
         styleInformation: bigPictureStyleInformation,
-        sound: const RawResourceAndroidNotificationSound(_androidSoundFile),
+         sound: _androidSoundFile != null
+      ? RawResourceAndroidNotificationSound(_androidSoundFile!)
+      : null,
         icon: 'notificationicon',
       );
 
