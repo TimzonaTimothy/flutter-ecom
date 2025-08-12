@@ -143,7 +143,10 @@ class ProfileScreen extends StatelessWidget {
                         ],
                       ),
                       actions: [
-                        Expanded(
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Expanded(
                           child: OutlinedButton(
                             style: ButtonStyle(
                               padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 20, vertical: 14)),
@@ -164,6 +167,7 @@ class ProfileScreen extends StatelessWidget {
                             ),
                           ),
                         ),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () async {
@@ -171,7 +175,7 @@ class ProfileScreen extends StatelessWidget {
                               await AuthHelpers.logout();
                             },
                             label: Text(
-                              "Yes, Logout",
+                              "Logout",
                               style: AppStyles.headLineStyle3.copyWith(color: AppStyles.whiteColor),
                             ),
                             style: ElevatedButton.styleFrom(
@@ -181,6 +185,8 @@ class ProfileScreen extends StatelessWidget {
                             ),
                           ),
                         ),
+                          ],
+                        )
                       ],
                     );
                   },

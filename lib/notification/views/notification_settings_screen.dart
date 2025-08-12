@@ -100,7 +100,10 @@ class _NotificationSettingsScreenState
                 'You can disable this anytime in settings.',
               ),
               actions: [
-                Expanded(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children:[
+                    Expanded(
                   child: OutlinedButton(
                     style: ButtonStyle(
                       padding: WidgetStateProperty.all(
@@ -124,6 +127,7 @@ class _NotificationSettingsScreenState
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => Navigator.of(context).pop(true),
@@ -140,6 +144,8 @@ class _NotificationSettingsScreenState
                           borderRadius: BorderRadius.circular(20)),
                     ),
                   ),
+                ),
+                  ]
                 ),
               ],
             );

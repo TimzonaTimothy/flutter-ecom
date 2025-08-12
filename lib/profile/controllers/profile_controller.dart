@@ -145,7 +145,7 @@ Future<bool> updateUserProfile({
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
 
-      print('Update profile response: $responseBody');
+      // print('Update profile response: $responseBody');
 
       if (response.statusCode == 200) {
         final json = jsonDecode(responseBody);
