@@ -7,6 +7,7 @@ import '../../base/widgets/app_double_text.dart';
 import '../../base/widgets/primary_button.dart';
 import '../../base/widgets/primary_input.dart';
 import '../controllers/login.dart';
+import 'forgot_password.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -88,6 +89,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       : null,
                   controller: emailController,
                   hintText: "Email",
+                  keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(
                   height: 20,
@@ -134,7 +136,13 @@ class _SignInScreenState extends State<SignInScreen> {
                       ],
                     ),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        Get.to(
+                          () => ForgotPasswordScreen(),
+                          transition: Transition.rightToLeftWithFade,
+                          duration: const Duration(milliseconds: 500),
+                        );
+                      },
                       child: Text(
                         "Forgot Password?",
                         style: AppStyles.textStyle
