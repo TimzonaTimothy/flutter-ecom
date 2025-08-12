@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -8,10 +9,12 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../auth/service/auth_service.dart';
+import '../res/base_url.dart';
+
 // Inputs to accept for the push notifications
 // https://www.youtube.com/watch?v=OHFyGRLfKxo
 // https://www.youtube.com/watch?v=uKz8tWbMuUw
-
 
 // Firebase configuration file lib\firebase_options.dart generated successfully with the following Firebase apps:
 
@@ -22,17 +25,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 // macos     1:689947014186:ios:5094f14ee8afe2fe457f53
 // windows   1:689947014186:web:5ee299cd5b086ad4457f53
 
-// for Android: 
+// for Android:
 //   Android package name (hint: com.company.appname)
-//   google-services.json 
+//   google-services.json
 
-// for ios: 
+// for ios:
 //   Apple bundle ID (hint: com.company.appname)
 //   GoogleServices-info.plist
-
-
-
-
 
 // Pre-requisites Before Renaming
 // Before we perform a package rename, it's critical to have a clean slate to start from and ensure nothing's lost in translation. Here's what you need to do:
@@ -47,57 +46,48 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // flutter clean
 
-
 // Fetch and Update Packages: Ensure you have the latest packages by running:
 // flutter pub get
 
-
-// necessary configurations 
-// for android: google-services.json 
+// necessary configurations
+// for android: google-services.json
 // path => project/android/app/google-services.json
-
 
 // for ios: GoogleServices-info.plist
 // path => project/ios/Runner/GoogleServices-info.plist
 
-// make sure the bundle id matches with bundle identifier 
+// make sure the bundle id matches with bundle identifier
 
-// changing of platform package name | bundle id 
-// for android 
+// changing of platform package name | bundle id
+// for android
 // reference: https://www.dhiwise.com/post/flutter-change-package-name-essentials-for-flutter-developers
-    // For Android, navigate to your android/app/src/main directory and look for the AndroidManifest.xml file. This file contains the package attribute you need to modify.
-    // <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    // package="your.new.package.name">
+// For Android, navigate to your android/app/src/main directory and look for the AndroidManifest.xml file. This file contains the package attribute you need to modify.
+// <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+// package="your.new.package.name">
 
-    // Don't forget to update the 'applicationId' in your build.gradle file located at android/app to reflect your new package name:
-    // android {
-    // ...
-    // defaultConfig {
-    //     ...
-    //     applicationId "your.new.package.name"
-    //     ...
-    //   }
-    // }
-
-
+// Don't forget to update the 'applicationId' in your build.gradle file located at android/app to reflect your new package name:
+// android {
+// ...
+// defaultConfig {
+//     ...
+//     applicationId "your.new.package.name"
+//     ...
+//   }
+// }
 
 // for ios
-// To change bundle id 
+// To change bundle id
 // 1. Adding the rename dependency to your pubspec.yaml file
 // 2. Running flutter pub get
 // 3. Running flutter pub run rename --bundleId your.new.package.name
 // 4. Searching for CFBundleIdentifier in your IDE and replacing its value with the new bundle ID
 // 5. Running the flutter clean command in the terminal
 
-
-
 // How to use Flutter Package Rename Tool for automated Package Name Change
 // video reference: https://youtu.be/vyhxHlx8bik?si=bieXvX1fxJG-dAjB
 // First, you'll need to add the rename dependency to your pubspec.yaml file:
 // dev_dependencies:
 //   rename: ^3.0.2
-
-
 
 // Next, save the file and run:
 // flutter pub get
@@ -118,7 +108,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 // • Version Control Conflicts: If you're using version control like Git, renaming might lead to a large number of changes. Always rename in a separate branch to avoid disrupting the main development line.
 
 // • Mismatched Configuration: Make sure your pubspec.yaml and Info.plist (for iOS) reflect the new settings. A mismatch here can lead to inconsistent app behavior.
-
 
 // class PushNotificationService {
 //   static final PushNotificationService _instance = PushNotificationService._();
@@ -203,7 +192,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 //       // await _createNotificationChannels();
 //     } catch (e) {
 //       log('Error setting up local notifications: $e');
-     
+
 //     }
 //   }
 
@@ -220,7 +209,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 //       }
 //     } catch (e) {
 //       log('Error setting up FCM token: $e');
-      
+
 //     }
 //   }
 
@@ -328,7 +317,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 //       );
 //     } catch (e) {
 //       log('Error showing notification: $e');
-    
+
 //     }
 //   }
 
@@ -363,10 +352,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 //   }
 // }
 
-
-
-
-
 class PushNotificationService {
   static final PushNotificationService _instance = PushNotificationService._();
   static PushNotificationService get instance => _instance;
@@ -397,7 +382,7 @@ class PushNotificationService {
   Future<void> setNotificationEnabled(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_notificationEnabledKey, enabled);
-    
+
     if (enabled) {
       await enableNotifications();
     } else {
@@ -418,7 +403,7 @@ class PushNotificationService {
       await _setupLocalNotifications();
       await _createNotificationChannels();
       await _setupMessagingListeners();
-      
+
       // Get and store FCM token
       final token = await _firebase.getToken();
       if (token != null) {
@@ -430,7 +415,7 @@ class PushNotificationService {
       // Set enabled in preferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_notificationEnabledKey, true);
-      
+
       return true;
     } catch (e) {
       log('Error enabling notifications: $e');
@@ -443,12 +428,12 @@ class PushNotificationService {
     try {
       // Unsubscribe from topics
       await _firebase.unsubscribeFromTopic('benji-vendor');
-      
+
       // Clear stored token
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_notificationEnabledKey, false);
       await prefs.remove(_fcmTokenKey);
-      
+
       log('Notifications disabled');
     } catch (e) {
       log('Error disabling notifications: $e');
@@ -484,9 +469,28 @@ class PushNotificationService {
   Future<void> _storeFCMToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_fcmTokenKey, token);
-    
+
     // TODO: Send token to your backend server
-    // await _sendTokenToServer(token);
+    await _sendTokenToServer(token);
+  }
+
+  Future<void> _sendTokenToServer(String token) async {
+    const fullUrl = baseUrl;
+
+    final url = Uri.parse('$fullUrl/notifications/fcm/register/token/');
+
+    final headers = await AuthService.instance.getAuthHeaders();
+
+    final body = json.encode({'token': token});
+
+    final response = await http.post(url, headers: headers, body: body);
+
+    if (response.statusCode == 201) {
+      print('FCM token registered successfully on backend');
+    } else {
+      print(
+          'Failed to register FCM token: ${response.statusCode} - ${response.body}');
+    }
   }
 
   /// Request notification permissions
@@ -502,8 +506,9 @@ class PushNotificationService {
         provisional: false,
       );
 
-      final isGranted = settings.authorizationStatus == AuthorizationStatus.authorized ||
-                       settings.authorizationStatus == AuthorizationStatus.provisional;
+      final isGranted =
+          settings.authorizationStatus == AuthorizationStatus.authorized ||
+              settings.authorizationStatus == AuthorizationStatus.provisional;
 
       if (isGranted && Platform.isIOS) {
         await _firebase.setForegroundNotificationPresentationOptions(
@@ -524,7 +529,8 @@ class PushNotificationService {
   /// Setup local notifications
   Future<void> _setupLocalNotifications() async {
     try {
-      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const androidSettings =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
       const iosSettings = DarwinInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,
@@ -532,7 +538,8 @@ class PushNotificationService {
       );
 
       await _localNotifications.initialize(
-        const InitializationSettings(android: androidSettings, iOS: iosSettings),
+        const InitializationSettings(
+            android: androidSettings, iOS: iosSettings),
         onDidReceiveNotificationResponse: _handleNotificationTap,
       );
 
@@ -546,7 +553,8 @@ class PushNotificationService {
   Future<void> _createNotificationChannels() async {
     if (Platform.isAndroid) {
       try {
-        const AndroidNotificationChannel highImportanceChannel = AndroidNotificationChannel(
+        const AndroidNotificationChannel highImportanceChannel =
+            AndroidNotificationChannel(
           _highImportanceChannelId,
           'High Importance Notifications',
           description: 'This channel is used for important notifications.',
@@ -554,7 +562,8 @@ class PushNotificationService {
           sound: RawResourceAndroidNotificationSound(_androidSoundFile),
         );
 
-        const AndroidNotificationChannel generalChannel = AndroidNotificationChannel(
+        const AndroidNotificationChannel generalChannel =
+            AndroidNotificationChannel(
           _generalChannelId,
           'General Notifications',
           description: 'This channel is used for general notifications.',
@@ -565,11 +574,13 @@ class PushNotificationService {
             FlutterLocalNotificationsPlugin();
 
         await flutterLocalNotificationsPlugin
-            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
             ?.createNotificationChannel(highImportanceChannel);
 
         await flutterLocalNotificationsPlugin
-            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
             ?.createNotificationChannel(generalChannel);
 
         log('Notification channels created');
@@ -580,7 +591,8 @@ class PushNotificationService {
   }
 
   /// Setup token refresh listener
-  void _setupTokenRefreshListener(Function(String) onTokenRefresh, Function(String) updateTokenCallback) {
+  void _setupTokenRefreshListener(
+      Function(String) onTokenRefresh, Function(String) updateTokenCallback) {
     try {
       FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
         if (await areNotificationsEnabled()) {
@@ -631,9 +643,9 @@ class PushNotificationService {
   Future<void> _handleMessage(RemoteMessage message) async {
     try {
       if (!await areNotificationsEnabled()) return;
-      
+
       log('Handling message: ${message.notification?.title}');
-      
+
       if (message.notification != null) {
         await showNotification(
           title: message.notification?.title ?? '',
@@ -720,7 +732,7 @@ class PushNotificationService {
         title,
         body,
         NotificationDetails(android: androidDetails, iOS: iosDetails),
-        payload: data != null ? data.toString() : null,
+        payload: data?.toString(),
       );
 
       log('Notification shown: $title');
@@ -747,7 +759,8 @@ class PushNotificationService {
   Future<String> _saveImageToFile(Uint8List bytes) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final fileName = 'notification_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final fileName =
+          'notification_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final filePath = '${directory.path}/$fileName';
 
       await File(filePath).writeAsBytes(bytes);

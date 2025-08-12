@@ -109,7 +109,7 @@ class NotificationModel {
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
-    print('Parsing notification JSON: $json'); // Debug log
+    
     return NotificationModel(
       id: json['id'] as int? ?? 0, // Fallback for null id
       orderId: json['orderId'] as int?, // Nullable

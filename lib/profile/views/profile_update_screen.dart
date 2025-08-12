@@ -30,6 +30,7 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
   final _formKey = GlobalKey<FormState>();
   String? selectedGender;
   XFile? selectedImage;
+  
 
   @override
   void initState() {
@@ -43,7 +44,9 @@ class _ProfileUpdateScreenState extends State<ProfileUpdateScreen> {
       cityController.text = user.city ?? '';
       stateController.text = user.state ?? '';
       countryController.text = user.country ?? '';
-      
+      if (user.gender == 'Male' || user.gender == 'Female') {
+        selectedGender = user.gender;
+      }
     }
   }
 
@@ -211,6 +214,7 @@ Future<void> _pickImage() async {
                   ButtonTheme(
                     alignedDropdown: true,
                     child: DropdownButtonFormField<String>(
+                      
                       isExpanded: true,
                       decoration: InputDecoration(
                         // labelText: 'Gender',
@@ -274,6 +278,12 @@ value: selectedGender,
                       setState(() {
                         selectedGender = value;
                       });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select a gender';
+                      }
+                      return null;
                     },
                     ),
                   ),

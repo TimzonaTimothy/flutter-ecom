@@ -495,7 +495,7 @@ class NotificationScreen extends StatelessWidget {
               radius: 24,
               backgroundColor: Colors.grey[200],
               child: Icon(
-                _getIconForNotification(notification.notificationType),
+                _getIconForNotification(notification.title),
                 color: AppStyles.primaryColor,
               ),
             ),
