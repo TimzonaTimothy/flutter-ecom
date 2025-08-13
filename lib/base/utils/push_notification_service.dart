@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:ecom_app/base/utils/snackbar.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -365,9 +366,9 @@ class PushNotificationService {
   static const String _generalChannelId = 'general_channel';
 
   // Notification sound file names
- 
+
   static const String? _androidSoundFile = null;
-static const String? _iosSoundFile = null;
+  static const String? _iosSoundFile = null;
 
   // SharedPreferences keys
   static const String _notificationEnabledKey = 'notifications_enabled';
@@ -428,7 +429,7 @@ static const String? _iosSoundFile = null;
   Future<void> disableNotifications() async {
     try {
       // Unsubscribe from topics
-      await _firebase.unsubscribeFromTopic('benji-vendor');
+      await _firebase.unsubscribeFromTopic('all');
 
       // Clear stored token
       final prefs = await SharedPreferences.getInstance();
@@ -472,41 +473,63 @@ static const String? _iosSoundFile = null;
 
     // Only send token if it's new or different
     if (storedToken != token) {
-        await prefs.setString(_fcmTokenKey, token);
-        await _sendTokenToServer(token);
-        log('Stored and sent new FCM token: $token');
+      await prefs.setString(_fcmTokenKey, token);
+      await _sendTokenToServer(token);
+      log('Stored and sent new FCM token: $token');
     } else {
-        log('Token unchanged, skipping server send: $token');
+      log('Token unchanged, skipping server send: $token');
     }
-}
+  }
 
-  /// Store FCM token locally and send to server
-  // Future<void> _storeFCMToken(String token) async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   await prefs.setString(_fcmTokenKey, token);
+  // Future<void> _sendTokenToServer(String token) async {
+  //   const fullUrl = baseUrl;
 
-  //   // TODO: Send token to your backend server
-  //   await _sendTokenToServer(token);
+  //   final url = Uri.parse('$fullUrl/notifications/fcm/register/token/');
+
+  //   final headers = await AuthService.instance.getAuthHeaders();
+  //   final String platform = Platform.isAndroid ? 'android' : 'ios';
+
+  //   final body = json.encode({'token': token,'platform': platform});
+
+  //   final response = await http.post(url, headers: headers, body: body);
+
+  //   if (response.statusCode == 201) {
+  //     print('FCM token registered successfully on backend');
+  //   } else {
+  //     print(
+  //         'Failed to register FCM token: ${response.statusCode} - ${response.body}');
+  //   }
   // }
 
   Future<void> _sendTokenToServer(String token) async {
     const fullUrl = baseUrl;
-
     final url = Uri.parse('$fullUrl/notifications/fcm/register/token/');
-
     final headers = await AuthService.instance.getAuthHeaders();
     final String platform = Platform.isAndroid ? 'android' : 'ios';
-    
+    final body = json.encode({'token': token, 'platform': platform});
 
-    final body = json.encode({'token': token,'platform': platform});
+    try {
+      final response = await http.post(url, headers: headers, body: body);
 
-    final response = await http.post(url, headers: headers, body: body);
-
-    if (response.statusCode == 201) {
-      print('FCM token registered successfully on backend');
-    } else {
-      print(
-          'Failed to register FCM token: ${response.statusCode} - ${response.body}');
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        print('FCM token registered successfully on backend');
+      } else {
+        final errorData = json.decode(response.body);
+        String errorMessage =
+            'Failed to register FCM token: ${response.statusCode}';
+        if (errorData['error'] != null) {
+          errorMessage = errorData['error'];
+        } else if (errorData['token'] != null) {
+          errorMessage =
+              'This device is already registered with another account';
+        }
+        print(errorMessage);
+        showFailureSnackbar(errorMessage); // Show error to user
+      }
+    } catch (e) {
+      print('Error sending FCM token to server: $e');
+      showFailureSnackbar(
+          'Failed to register device for notifications. Please try again.');
     }
   }
 
@@ -577,8 +600,8 @@ static const String? _iosSoundFile = null;
           description: 'This channel is used for important notifications.',
           importance: Importance.high,
           sound: _androidSoundFile != null
-      ? RawResourceAndroidNotificationSound(_androidSoundFile)
-      : null,
+              ? RawResourceAndroidNotificationSound(_androidSoundFile)
+              : null,
         );
 
         const AndroidNotificationChannel generalChannel =
@@ -626,34 +649,64 @@ static const String? _iosSoundFile = null;
   //   }
   // }
 
+//   void _setupTokenRefreshListener(
+//     Function(String) onTokenRefresh, Function(String) updateTokenCallback) {
+//     try {
+//         DateTime? lastSentTime;
+//         const debounceDuration = Duration(seconds: 5); // Adjust as needed
 
-  void _setupTokenRefreshListener(
-    Function(String) onTokenRefresh, Function(String) updateTokenCallback) {
+//         FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
+//             if (await areNotificationsEnabled()) {
+//                 final now = DateTime.now();
+//                 // Only process if no token was sent in the last 5 seconds
+//                 if (lastSentTime == null ||
+//                     now.difference(lastSentTime!) > debounceDuration) {
+//                     log('FCM Token refreshed: $token');
+//                     await _storeFCMToken(token);
+//                     await updateTokenCallback(token);
+//                     onTokenRefresh(token);
+//                     lastSentTime = now;
+//                 } else {
+//                     log('Skipping token refresh due to debounce: $token');
+//                 }
+//             }
+//         });
+//     } catch (e) {
+//         log('Error setting up token refresh listener: $e');
+//     }
+// }
+
+  void _setupTokenRefreshListener(Function(String) onTokenRefresh,
+      Future<void> Function(String) updateTokenCallback) {
     try {
-        DateTime? lastSentTime;
-        const debounceDuration = Duration(seconds: 5); // Adjust as needed
+      DateTime? lastSentTime;
+      const debounceDuration = Duration(seconds: 5);
 
-        FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
-            if (await areNotificationsEnabled()) {
-                final now = DateTime.now();
-                // Only process if no token was sent in the last 5 seconds
-                if (lastSentTime == null ||
-                    now.difference(lastSentTime!) > debounceDuration) {
-                    log('FCM Token refreshed: $token');
-                    await _storeFCMToken(token);
-                    await updateTokenCallback(token);
-                    onTokenRefresh(token);
-                    lastSentTime = now;
-                } else {
-                    log('Skipping token refresh due to debounce: $token');
-                }
+      FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
+        if (await areNotificationsEnabled()) {
+          final now = DateTime.now();
+          if (lastSentTime == null ||
+              now.difference(lastSentTime!) > debounceDuration) {
+            log('FCM Token refreshed: $token');
+            try {
+              await _storeFCMToken(token);
+              await updateTokenCallback(token);
+              onTokenRefresh(token);
+              lastSentTime = now;
+            } catch (e) {
+              log('Error handling token refresh: $e');
+              showFailureSnackbar(
+                  'Failed to update device token. Please try again.');
             }
-        });
+          } else {
+            log('Skipping token refresh due to debounce: $token');
+          }
+        }
+      });
     } catch (e) {
-        log('Error setting up token refresh listener: $e');
+      log('Error setting up token refresh listener: $e');
     }
-}
-
+  }
 
   /// Setup message listeners for different app states
   Future<void> _setupMessagingListeners() async {
@@ -754,9 +807,9 @@ static const String? _iosSoundFile = null;
         importance: Importance.high,
         priority: Priority.high,
         styleInformation: bigPictureStyleInformation,
-         sound: _androidSoundFile != null
-      ? RawResourceAndroidNotificationSound(_androidSoundFile!)
-      : null,
+        sound: _androidSoundFile != null
+            ? RawResourceAndroidNotificationSound(_androidSoundFile!)
+            : null,
         icon: 'notificationicon',
       );
 

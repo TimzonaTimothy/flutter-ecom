@@ -1,9 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:ecom_app/base/utils/snackbar.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
+import '../../auth/service/auth_service.dart';
+import '../../base/res/base_url.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../base/utils/push_notification_service.dart';
 
@@ -19,6 +24,7 @@ class _NotificationSettingsScreenState
     extends State<NotificationSettingsScreen> {
   bool _notificationsEnabled = false;
   bool _isLoading = true;
+  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -28,12 +34,31 @@ class _NotificationSettingsScreenState
 
   Future<void> _loadNotificationSettings() async {
     try {
-      final enabled =
+      
+      final localEnabled =
           await PushNotificationService.instance.areNotificationsEnabled();
+      print('Local notifications enabled: $localEnabled');
+
+      final backendEnabled = await _getBackendNotificationPreference();
+      print('Backend notifications enabled: $backendEnabled');
+
+      final actualEnabled = backendEnabled ?? localEnabled;
+      print('Actual enabled state: $actualEnabled');
+
       setState(() {
-        _notificationsEnabled = enabled;
+        _notificationsEnabled = actualEnabled;
         _isLoading = false;
       });
+
+      if (localEnabled != actualEnabled) {
+        print('Syncing local settings to: $actualEnabled');
+        await PushNotificationService.instance
+            .setNotificationEnabled(actualEnabled);
+        if (!actualEnabled) {
+          await FirebaseMessaging.instance.unsubscribeFromTopic('all');
+          print('Unsubscribed from topic "all" during settings load');
+        }
+      }
     } catch (e) {
       print('Error loading notification settings: $e');
       setState(() {
@@ -42,42 +67,127 @@ class _NotificationSettingsScreenState
     }
   }
 
+  Future<bool> _updateBackendNotificationPreference(bool enabled) async {
+    try {
+      const fullUrl = baseUrl;
+      final url = Uri.parse('$fullUrl/notifications/preferences/');
+      final headers = await AuthService.instance.getAuthHeaders();
+      final body = json.encode({'push_notifications_enabled': enabled});
+
+      print('Sending PATCH to $url with headers: $headers, body: $body');
+
+      final response = await http.patch(url, headers: headers, body: body);
+
+      print('Response status: ${response.statusCode}, body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print(
+            'Backend notification preference updated successfully to: $enabled');
+        return true;
+      } else {
+        print(
+            'Failed to update backend notification preference: ${response.statusCode}, ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Error updating backend notification preference: $e');
+      return false;
+    }
+  }
+
+  Future<bool?> _getBackendNotificationPreference() async {
+    try {
+      const fullUrl = baseUrl;
+      final url = Uri.parse('$fullUrl/notifications/preferences/');
+      final headers = await AuthService.instance.getAuthHeaders();
+
+      print('Sending GET to $url with headers: $headers');
+
+      final response = await http.get(url, headers: headers);
+
+      print(
+          'GET response status: ${response.statusCode}, body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final enabled = data['push_notifications_enabled'] as bool?;
+        print('Backend push_notifications_enabled: $enabled');
+        return enabled;
+      } else {
+        print(
+            'Failed to get backend notification preference: ${response.statusCode}, ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Error getting backend notification preference: $e');
+      return null;
+    }
+  }
+
   Future<void> _toggleNotifications(bool value) async {
     setState(() {
-      _isLoading = true;
+      _isSyncing = true;
     });
 
     try {
+      print('Toggling notifications to: $value');
       if (value) {
-        // Show dialog asking user to confirm
         final confirmed = await _showEnableNotificationDialog();
+        print('Dialog confirmed: $confirmed');
         if (confirmed) {
           final success =
               await PushNotificationService.instance.enableNotifications();
+          print('Enable notifications success: $success');
           if (success) {
-            await PushNotificationService.instance.setNotificationEnabled(true);
-            setState(() {
-              _notificationsEnabled = true;
-            });
-            showSuccessSnackbar('Notifications enabled successfully!');
+            final backendSuccess =
+                await _updateBackendNotificationPreference(true);
+            print('Backend update (enable) success: $backendSuccess');
+            if (backendSuccess) {
+              setState(() {
+                _notificationsEnabled = true;
+              });
+              showSuccessSnackbar('Notifications enabled successfully!');
+            } else {
+              await PushNotificationService.instance
+                  .setNotificationEnabled(false);
+              showFailureSnackbar(
+                  'Failed to sync with server. Please try again.');
+            }
           } else {
             showFailureSnackbar(
                 'Failed to enable notifications. Please check your permissions.');
           }
         }
       } else {
+        print('Attempting to disable notifications');
+        // Update local state first to prevent notifications during sync
         await PushNotificationService.instance.setNotificationEnabled(false);
-        setState(() {
-          _notificationsEnabled = false;
-        });
-        showSuccessSnackbar('Notifications disabled');
+        final backendSuccess =
+            await _updateBackendNotificationPreference(false);
+        print('Backend update (disable) success: $backendSuccess');
+        if (backendSuccess) {
+          await FirebaseMessaging.instance.unsubscribeFromTopic('all');
+          print('Unsubscribed from topic "all"');
+          setState(() {
+            _notificationsEnabled = false;
+          });
+          showSuccessSnackbar('Notifications disabled');
+        } else {
+          // Rollback local state
+          await PushNotificationService.instance.setNotificationEnabled(true);
+          setState(() {
+            _notificationsEnabled = true;
+          });
+          showFailureSnackbar('Failed to sync with server. Please try again.');
+        }
       }
     } catch (e) {
       print('Error toggling notifications: $e');
+      await _loadNotificationSettings();
       showFailureSnackbar('An error occurred. Please try again.');
     } finally {
       setState(() {
-        _isLoading = false;
+        _isSyncing = false;
       });
     }
   }
@@ -101,52 +211,52 @@ class _NotificationSettingsScreenState
               ),
               actions: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children:[
-                    Expanded(
-                  child: OutlinedButton(
-                    style: ButtonStyle(
-                      padding: WidgetStateProperty.all(
-                          const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 14)),
-                      backgroundColor: WidgetStateProperty.all(
-                          AppStyles.primaryColor.withOpacity(0.1)),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          style: ButtonStyle(
+                            padding: WidgetStateProperty.all(
+                                const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 14)),
+                            backgroundColor: WidgetStateProperty.all(
+                                AppStyles.primaryColor.withOpacity(0.1)),
+                            shape: WidgetStateProperty.all(
+                              RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
+                            side: WidgetStateProperty.all(
+                              BorderSide(
+                                  color: AppStyles.primaryColor, width: 0.5),
+                            ),
+                          ),
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: Text(
+                            'Cancel',
+                            style: AppStyles.headLineStyle3
+                                .copyWith(color: AppStyles.primaryColor),
+                          ),
+                        ),
                       ),
-                      side: WidgetStateProperty.all(
-                        BorderSide(color: AppStyles.primaryColor, width: 0.5),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          label: Text(
+                            "Enable",
+                            style: AppStyles.headLineStyle3
+                                .copyWith(color: AppStyles.whiteColor),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppStyles.primaryColor,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 14),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                          ),
+                        ),
                       ),
-                    ),
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text(
-                      'Cancel',
-                      style: AppStyles.headLineStyle3
-                          .copyWith(color: AppStyles.primaryColor),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    label: Text(
-                      "Enable",
-                      style: AppStyles.headLineStyle3
-                          .copyWith(color: AppStyles.whiteColor),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppStyles.primaryColor,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20)),
-                    ),
-                  ),
-                ),
-                  ]
-                ),
+                    ]),
               ],
             );
           },
@@ -170,7 +280,7 @@ class _NotificationSettingsScreenState
               color: AppStyles.primaryColor,
             ))
           : ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               children: [
                 Card(
                   color: AppStyles.whiteColor.withOpacity(0.7),
