@@ -58,6 +58,8 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   firebase_messaging: ^14.7.10
   firebase_core: ^2.0.0
+  flutter_launcher_icons: ^0.14.4
+  
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +74,7 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+
 
 # The following section is specific to Flutter packages.
 flutter:
@@ -111,3 +114,12 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path_android: "assets/icon/app-icon.png" 
+  image_path_ios: "assets/icon/app-icon.png" 
+  name: "Zona Shop"
+  # android_package_name: "com.ecom.ecom"
+  # ios_bundle_identifier: "com.ecom.ecom"
