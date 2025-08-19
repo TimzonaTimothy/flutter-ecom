@@ -26,79 +26,85 @@ class FilterScreen extends StatelessWidget {
           },
         ),
       ),
-      body: Obx(() => ListView(
-            padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
-            shrinkWrap: true,
-            children: [
-              _buildSection(
-                'Brands',
-                controller.brands,
-                controller.selectedBrand.value,
-                (i) => controller.updateBrand(i),
+      body: Obx(() {
+        // Show loading indicator if filterOptions is null
+        if (controller.filterOptions.value == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return ListView(
+          padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
+          shrinkWrap: true,
+          children: [
+            _buildSection(
+              'Brands',
+              controller.brands,
+              controller.selectedBrand.value,
+              (i) => controller.updateBrand(i),
+            ),
+            _buildSection(
+              'Gender',
+              controller.gender,
+              controller.selectedGender.value,
+              (i) => controller.updateGender(i),
+            ),
+            _buildSection(
+              'Sort by',
+              controller.sortBy,
+              controller.selectedSort.value,
+              (i) => controller.updateSort(i),
+            ),
+            const SizedBox(height: 20),
+            const Text('Pricing Range',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            RangeSlider(
+              values: controller.priceRange.value,
+              min: controller.filterOptions.value!.priceRange['min']?.toDouble() ?? 150.0,
+              max: controller.filterOptions.value!.priceRange['max']?.toDouble() ?? 1000.0,
+              divisions: 10,
+              labels: RangeLabels(
+                controller.priceRange.value.start.round().toString(),
+                controller.priceRange.value.end.round().toString(),
               ),
-              _buildSection(
-                'Gender',
-                controller.gender,
-                controller.selectedGender.value,
-                (i) => controller.updateGender(i),
-              ),
-              _buildSection(
-                'Sort by',
-                controller.sortBy,
-                controller.selectedSort.value,
-                (i) => controller.updateSort(i),
-              ),
-              const SizedBox(height: 20),
-              const Text('Pricing Range',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              RangeSlider(
-  values: controller.priceRange.value,
-  min: controller.filterOptions.value!.priceRange['min'] ?? 150.0,
-        max: controller.filterOptions.value!.priceRange['max'] ?? 1000.0,
-  divisions: 10,
-  labels: RangeLabels(
-    controller.priceRange.value.start.round().toString(),
-    controller.priceRange.value.end.round().toString(),
-  ),
-  activeColor: AppStyles.primaryColor,
-  onChanged: (values) => controller.updatePriceRange(values),
-),
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('150'),
-                  Text('200'),
-                  Text('500'),
-                  Text('900'),
-                  
-                  Text('1000+'),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Text('Reviews',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              ...List.generate(controller.ratings.length, (i) {
-                return RadioListTile(
-                  value: i,
-                  groupValue: controller.selectedRating.value,
-                  onChanged: (val) => controller.updateRating(val!),
-                  title: Row(
-                    children: [
-                      Row(
-                        children: List.generate(
-                            5,
-                            (_) => const Icon(Icons.star,
-                                color: Colors.amber, size: 20)),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(controller.ratings[i]),
-                    ],
-                  ),
-                  activeColor: AppStyles.primaryColor,
-                );
-              }),
-            ],
-          )),
+              activeColor: AppStyles.primaryColor,
+              onChanged: (values) => controller.updatePriceRange(values),
+            ),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('150'),
+                Text('200'),
+                Text('500'),
+                Text('900'),
+                Text('1000+'),
+              ],
+            ),
+            const SizedBox(height: 20),
+            const Text('Reviews',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            ...List.generate(controller.ratings.length, (i) {
+              return RadioListTile(
+                value: i,
+                groupValue: controller.selectedRating.value,
+                onChanged: (val) => controller.updateRating(val!),
+                title: Row(
+                  children: [
+                    Row(
+                      children: List.generate(
+                          5,
+                          (_) => const Icon(Icons.star,
+                              color: Colors.amber, size: 20)),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(controller.ratings[i]),
+                  ],
+                ),
+                activeColor: AppStyles.primaryColor,
+              );
+            }),
+          ],
+        );
+      }),
       bottomNavigationBar: LayoutBuilder(
         builder: (context, constraints) {
           final screenWidth = MediaQuery.of(context).size.width;

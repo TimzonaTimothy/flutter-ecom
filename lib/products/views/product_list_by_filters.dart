@@ -18,10 +18,7 @@ class ProductListByFilters extends StatelessWidget {
     int currentPage = 1;
     bool isLoadingMore = false;
     
-    // Apply filters when screen is opened
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   filterController.applyFilters();
-    // });
+  
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (filterController.filterOptions.value != null) {
         filterController.applyFilters();
