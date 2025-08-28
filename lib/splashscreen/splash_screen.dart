@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../auth/service/auth_service.dart';
 import '../base/bottom_nav_bar.dart';
 import '../base/res/media.dart';
 import '../base/res/styles/app_styles.dart';
@@ -25,41 +26,60 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     _initializeApp();
-    PushNotificationService.instance.initialize(
-      userId: '0',
-      updateTokenCallback: (String token) async {
-        print('FCM Token updated: $token');
-      },
-      onTokenRefresh: (String token) {
-        print('FCM Token refreshed: $token');
-      },
-    );
   }
 
   Future<void> _initializeApp() async {
-    // Show splash for minimum 2 seconds
-    await Future.delayed(const Duration(seconds: 2));
-    
-    // Check if user has completed onboarding
-    final hasSeenOnboarding = await _hasSeenOnboarding();
-    
-    if (!hasSeenOnboarding) {
-      // First time user - show onboarding
+    try {
+      // Show splash for minimum 2 seconds
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Retrieve user ID from AuthService
+      final userId = await AuthService.instance.getUserId();
+      print('Retrieved user ID: $userId');
+
+      // Initialize push notifications if user ID is available
+      if (userId != null) {
+        await PushNotificationService.instance.initialize(
+          userId: userId,
+          updateTokenCallback: (String token) async {
+            print('FCM Token updated: $token');
+          },
+          onTokenRefresh: (String token) {
+            print('FCM Token refreshed: $token');
+          },
+        );
+      } else {
+        print('No user ID found, skipping push notification initialization');
+      }
+
+      // Check if user has completed onboarding
+      final hasSeenOnboarding = await _hasSeenOnboarding();
+
+      if (!hasSeenOnboarding) {
+        // First-time user - show onboarding
+        Get.offAll(
+          () => const OnboardingScreen(),
+          transition: Transition.rightToLeftWithFade,
+          duration: const Duration(milliseconds: 500),
+        );
+      } else {
+        // User has seen onboarding - go to main app
+        Get.offAll(
+          () => const AppWrapper(),
+          transition: Transition.rightToLeftWithFade,
+          duration: const Duration(milliseconds: 500),
+        );
+      }
+    } catch (e) {
+      print('Error initializing app: $e');
+      // Fallback navigation to onboarding screen
       Get.offAll(
         () => const OnboardingScreen(),
         transition: Transition.rightToLeftWithFade,
         duration: const Duration(milliseconds: 500),
       );
-    } else {
-      // User has seen onboarding - check authentication
-      Get.offAll(
-        () =>  AppWrapper(),
-        transition: Transition.rightToLeftWithFade,
-        duration: const Duration(milliseconds: 500),
-      );
     }
   }
-
   Future<bool> _hasSeenOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('has_seen_onboarding') ?? false;

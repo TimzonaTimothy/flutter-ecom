@@ -135,6 +135,12 @@ class AuthService extends GetxController {
     update();
   }
 
+  Future<String?> getUserId() async {
+  final prefs = await SharedPreferences.getInstance();
+  final userId = prefs.getInt('user_id');
+  return userId?.toString();
+}
+
   Future<void> handleSuccessfulLogin(String accessToken, String refreshToken,
       {bool rememberMe = false}) async {
     await saveTokens(accessToken, refreshToken, rememberMe: rememberMe);

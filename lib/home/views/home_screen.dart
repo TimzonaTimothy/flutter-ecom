@@ -191,7 +191,12 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           GestureDetector(
             onTap: () {
-              Get.to(const NotificationScreen());
+              // Get.to(const NotificationScreen());
+              Get.to(
+          () => NotificationScreen(),
+          transition: Transition.rightToLeftWithFade,
+          duration: const Duration(milliseconds: 500),
+        );
             },
             child: Container(
               padding: const EdgeInsets.all(10),

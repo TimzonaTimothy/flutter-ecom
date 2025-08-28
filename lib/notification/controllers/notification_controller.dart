@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../../base/utils/push_notification_service.dart';
+import '../../base/utils/snackbar.dart';
 import '../models/notification_models.dart';
 import '../service/notification_service.dart';
 
@@ -102,9 +104,11 @@ import '../service/notification_service.dart';
 
 class NotificationController extends GetxController {
   final NotificationService _service = NotificationService();
+  final PushNotificationService _pushService = PushNotificationService.instance;
   final RxList<NotificationModel> notifications = <NotificationModel>[].obs;
   final RxInt unreadCount = 0.obs;
   final RxBool isLoading = false.obs;
+  final RxMap<String, bool> notificationPreferences = <String, bool>{}.obs;
 
   @override
   void onInit() {
@@ -125,6 +129,26 @@ class NotificationController extends GetxController {
     }
   }
 
+Future<void> fetchNotificationPreferences() async {
+    try {
+      final prefs = await _pushService.getNotificationPreferences();
+      notificationPreferences.assignAll(prefs);
+    } catch (e) {
+      print('Error fetching notification preferences: $e');
+    }
+  }
+
+  Future<void> toggleNotificationType(String type, bool enabled) async {
+    try {
+      await _pushService.setNotificationTypeEnabled(type, enabled);
+      notificationPreferences[type] = enabled;
+      notificationPreferences.refresh();
+    } catch (e) {
+      print('Error toggling notification type $type: $e');
+      showFailureSnackbar('Failed to update notification preference');
+    }
+  }
+  
   Future<void> markAsRead(int notificationId) async {
     final success = await _service.markNotificationAsRead(notificationId);
     if (success) {

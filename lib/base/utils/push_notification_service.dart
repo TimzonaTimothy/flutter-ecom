@@ -3,14 +3,18 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:ecom_app/base/utils/snackbar.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../auth/service/auth_service.dart';
+import '../../notification/views/notification_screen.dart';
+import '../../order/views/track_order_screen.dart';
 import '../res/base_url.dart';
 
 // Inputs to accept for the push notifications
@@ -353,6 +357,8 @@ import '../res/base_url.dart';
 //   }
 // }
 
+
+
 class PushNotificationService {
   static final PushNotificationService _instance = PushNotificationService._();
   static PushNotificationService get instance => _instance;
@@ -373,11 +379,34 @@ class PushNotificationService {
   // SharedPreferences keys
   static const String _notificationEnabledKey = 'notifications_enabled';
   static const String _fcmTokenKey = 'fcm_token';
+  static const String _orderUpdatesEnabledKey = 'order_updates_enabled';
+  static const String _promotionsEnabledKey = 'promotions_enabled';
+  static const String _announcementsEnabledKey = 'announcements_enabled';
+
+
+  // Topic names to match backend
+  static const String _topicAllUsers = 'all_users';
+  static const String _topicOrderUpdates = 'order_updates';
+  static const String _topicPromotions = 'promotions';
+  static const String _topicAnnouncements = 'announcements';
+  static const String _topicAndroidUsers = 'android_users';
+  static const String _topicIosUsers = 'ios_users';
 
   /// Check if notifications are enabled by user
   Future<bool> areNotificationsEnabled() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_notificationEnabledKey) ?? false;
+  }
+
+
+  /// Check specific notification type preferences
+  Future<Map<String, bool>> getNotificationPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'order_updates': prefs.getBool(_orderUpdatesEnabledKey) ?? true,
+      'promotions': prefs.getBool(_promotionsEnabledKey) ?? true,
+      'announcements': prefs.getBool(_announcementsEnabledKey) ?? true,
+    };
   }
 
   /// Set notification preference
@@ -389,6 +418,38 @@ class PushNotificationService {
       await enableNotifications();
     } else {
       await disableNotifications();
+    }
+  }
+
+
+  /// Set specific notification type preference
+  Future<void> setNotificationTypeEnabled(String type, bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    String key;
+    String topic;
+
+    switch (type) {
+      case 'order_updates':
+        key = _orderUpdatesEnabledKey;
+        topic = _topicOrderUpdates;
+        break;
+      case 'promotions':
+        key = _promotionsEnabledKey;
+        topic = _topicPromotions;
+        break;
+      case 'announcements':
+        key = _announcementsEnabledKey;
+        topic = _topicAnnouncements;
+        break;
+      default:
+        return;
+    }
+
+    await prefs.setBool(key, enabled);
+    if (enabled) {
+      await _firebase.subscribeToTopic(topic);
+    } else {
+      await _firebase.unsubscribeFromTopic(topic);
     }
   }
 
@@ -425,11 +486,42 @@ class PushNotificationService {
     }
   }
 
+
+  /// Subscribe to topics based on preferences
+  Future<void> _subscribeToTopics() async {
+    final prefs = await SharedPreferences.getInstance();
+    await _firebase.subscribeToTopic(_topicAllUsers);
+    if (Platform.isAndroid) {
+      await _firebase.subscribeToTopic(_topicAndroidUsers);
+    } else if (Platform.isIOS) {
+      await _firebase.subscribeToTopic(_topicIosUsers);
+    }
+
+    if (prefs.getBool(_orderUpdatesEnabledKey) ?? true) {
+      await _firebase.subscribeToTopic(_topicOrderUpdates);
+    }
+    if (prefs.getBool(_promotionsEnabledKey) ?? true) {
+      await _firebase.subscribeToTopic(_topicPromotions);
+    }
+    if (prefs.getBool(_announcementsEnabledKey) ?? true) {
+      await _firebase.subscribeToTopic(_topicAnnouncements);
+    }
+  }
+
+
   /// Disable notifications
   Future<void> disableNotifications() async {
     try {
-      // Unsubscribe from topics
-      await _firebase.unsubscribeFromTopic('all');
+      // Unsubscribe from all topics
+      await _firebase.unsubscribeFromTopic(_topicAllUsers);
+      await _firebase.unsubscribeFromTopic(_topicOrderUpdates);
+      await _firebase.unsubscribeFromTopic(_topicPromotions);
+      await _firebase.unsubscribeFromTopic(_topicAnnouncements);
+      if (Platform.isAndroid) {
+        await _firebase.unsubscribeFromTopic(_topicAndroidUsers);
+      } else if (Platform.isIOS) {
+        await _firebase.unsubscribeFromTopic(_topicIosUsers);
+      }
 
       // Clear stored token
       final prefs = await SharedPreferences.getInstance();
@@ -765,10 +857,48 @@ class PushNotificationService {
   void _handleNotificationTap(NotificationResponse response) {
     try {
       log('Notification tapped: ${response.payload}');
-      // Add your notification tap handling logic here
-      // For example, navigate to a specific screen based on the payload
+      if (response.payload != null) {
+        final data = jsonDecode(response.payload!);
+        final notificationType = data['notification_type'];
+        final orderId = data['order_id'];
+
+        switch (notificationType) {
+          case 'order_placed':
+          case 'order_confirmed':
+          case 'order_shipped':
+          case 'order_delivered':
+          case 'order_cancelled':
+            if (orderId != null && orderId.isNotEmpty) {
+              Get.to(
+          () => TrackOrderPage(orderId: orderId),
+          transition: Transition.rightToLeftWithFade,
+          duration: const Duration(milliseconds: 500),
+        );
+              // Get.toNamed('/order-details', arguments: {'orderId': orderId});
+            }
+            break;
+          case 'promotion':
+            // Get.toNamed('/promotions');
+            Get.to(
+          () => NotificationScreen(),
+          transition: Transition.rightToLeftWithFade,
+          duration: const Duration(milliseconds: 500),
+        );
+            break;
+          case 'announcement':
+          case 'system':
+            // Get.toNamed('/notifications'); 
+             Get.to(
+          () => NotificationScreen(),
+          transition: Transition.rightToLeftWithFade,
+          duration: const Duration(milliseconds: 500),
+        );
+            break;
+        }
+      }
     } catch (e) {
       log('Error handling notification tap: $e');
+      showFailureSnackbar('Error navigating to notification content');
     }
   }
 
@@ -873,4 +1003,10 @@ class PushNotificationService {
       rethrow;
     }
   }
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  log('Handling background message: ${message.notification?.title}');
+  await PushNotificationService.instance._handleMessage(message);
+}
 }
