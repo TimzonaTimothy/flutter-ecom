@@ -109,6 +109,8 @@ class LoginController extends GetxController {
         // Save user ID
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt("user_id", data['user']['id']);
+        final uId = data['user']['id'];
+        print('Login user id: $uId');
         
         Get.offAll(
           () => const BottomNavBar(),
