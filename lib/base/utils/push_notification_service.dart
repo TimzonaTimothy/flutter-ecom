@@ -471,7 +471,7 @@ class PushNotificationService {
       final token = await _firebase.getToken();
       if (token != null) {
         await _storeFCMToken(token);
-        await _firebase.subscribeToTopic('all');
+        await _firebase.subscribeToTopic('all_users');
         log('Subscribed to notifications with token: $token');
       }
 
