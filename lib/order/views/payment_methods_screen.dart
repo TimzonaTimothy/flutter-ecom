@@ -5,6 +5,7 @@ import '../../base/res/styles/app_styles.dart';
 import '../../base/utils/snackbar.dart';
 import '../../base/widgets/primary_button.dart';
 import '../../cart/controllers/cart_controller.dart';
+import '../../cart/views/checkout_screen.dart';
 import '../controllers/payment_controller.dart';
 import 'payment_success_screen.dart';
 
@@ -60,7 +61,11 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Get.back();
+            Get.to(
+                  const CheckoutPage(),
+                  transition: Transition.rightToLeftWithFade,
+                  duration: const Duration(milliseconds: 500),
+                );
           },
         ),
       ),

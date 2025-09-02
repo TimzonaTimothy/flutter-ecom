@@ -87,11 +87,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
             return _buildAddressSection(selectedAddress);
           }),
-          Divider(
-              color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
-          Text("Choose Shipping Type", style: AppStyles.headLineStyle3),
-          const SizedBox(height: 8),
-          _buildShippingTypeSection(),
+          // Divider(
+          //     color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
+          // Text("Choose Shipping Type", style: AppStyles.headLineStyle3),
+          // const SizedBox(height: 8),
+          // _buildShippingTypeSection(),
 
           Divider(
               color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),

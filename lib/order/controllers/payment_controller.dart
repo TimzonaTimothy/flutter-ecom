@@ -262,6 +262,8 @@ class PaystackPaymentController extends BasePaymentController {
     }
 
     logger.i('Opening Paystack WebView: $url, Reference: $reference');
+    print('Opening $paymentMethod WebView: $url, Reference: $reference');
+  print('URL details: scheme=${Uri.parse(url).scheme}, host=${Uri.parse(url).host}, path=${Uri.parse(url).path}');
 
     try {
       final result = await Get.to<bool>(
