@@ -711,11 +711,13 @@ class PushNotificationService {
             .resolvePlatformSpecificImplementation<
                 AndroidFlutterLocalNotificationsPlugin>()
             ?.createNotificationChannel(highImportanceChannel);
+            print('High importance channel created: $_highImportanceChannelId');
 
         await flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
                 AndroidFlutterLocalNotificationsPlugin>()
             ?.createNotificationChannel(generalChannel);
+        
 
         log('Notification channels created');
       } catch (e) {
@@ -812,19 +814,28 @@ class PushNotificationService {
 
       // Foreground state
       FirebaseMessaging.onMessage.listen((message) async {
-        if (await areNotificationsEnabled()) {
-          log('Received message in foreground: ${message.notification?.title}');
-          _handleMessage(message);
-        }
+        print('Received foreground message: ${message.notification?.title}');
+        _handleMessage(message);
+        // if (await areNotificationsEnabled()) {
+        //   print('Received foreground message: ${message.notification?.title}');
+        //   print('Message data: ${message.data}');
+        //   log('Received message in foreground: ${message.notification?.title}');
+        //   _handleMessage(message);
+        // }
       });
 
       // Background state
+      // FirebaseMessaging.onMessageOpenedApp.listen((message) async {
+      //   if (await areNotificationsEnabled()) {
+      //     log('App opened from background via notification');
+      //     _handleMessage(message);
+      //   }
+      // });
+
       FirebaseMessaging.onMessageOpenedApp.listen((message) async {
-        if (await areNotificationsEnabled()) {
-          log('App opened from background via notification');
-          _handleMessage(message);
-        }
-      });
+      print('🔥 BACKGROUND MESSAGE OPENED');
+      await _handleMessage(message);
+    });
 
       log('Message listeners setup complete');
     } catch (e) {
