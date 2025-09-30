@@ -69,7 +69,7 @@ class BasePaymentController extends GetxController {
         'customer_id': userId,
         'total_quantity': cartController.totalQuantity,
         'subtotal': cartController.totalPrice,
-        'total': cartController.totalPrice + 7.50, // Add shipping + tax
+        'total': cartController.totalPrice + 7.50, // shipping + tax
         'delivery_status': 'Pending',
         'payment_status': 'Unpaid',
       };

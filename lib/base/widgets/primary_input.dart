@@ -32,6 +32,7 @@ class PrimaryInput extends StatefulWidget {
 
 class _PrimaryInputState extends State<PrimaryInput> {
   late bool _obscureText;
+  String? _errorText;
 
   @override
   void initState() {
@@ -43,6 +44,14 @@ class _PrimaryInputState extends State<PrimaryInput> {
     setState(() {
       _obscureText = !_obscureText;
     });
+  }
+
+   void _validate(String value) {
+    if (widget.validator != null) {
+      setState(() {
+        _errorText = widget.validator!(value);
+      });
+    }
   }
 
   @override
@@ -84,6 +93,8 @@ class _PrimaryInputState extends State<PrimaryInput> {
                 )
               : null,
         ),
+        onChanged: _validate,
+            onEditingComplete: () => _validate(widget.controller.text),
       ),
     );
   }
