@@ -274,7 +274,7 @@ class PaystackPaymentController extends BasePaymentController {
           orderId: orderId,
           onPaymentComplete: (success, message, {orderId}) {
             if (success) {
-              Get.off(() => PaymentSuccessScreen(
+              Get.offAll(() => PaymentSuccessScreen(
                     orderId: orderId!,
                     amount: Get.find<CartController>().totalPrice + 7.50,
                     paymentMethod: paymentMethod,
@@ -456,7 +456,7 @@ class FlutterwavePaymentController extends BasePaymentController {
           orderId: orderId,
           onPaymentComplete: (success, message, {orderId}) {
             if (success) {
-              Get.off(() => PaymentSuccessScreen(
+              Get.offAll(() => PaymentSuccessScreen(
                     orderId: orderId!,
                     amount: Get.find<CartController>().totalPrice + 7.50,
                     paymentMethod: paymentMethod,
@@ -635,7 +635,7 @@ class StripePaymentController extends BasePaymentController {
           orderId: orderId,
           onPaymentComplete: (success, message, {orderId}) {
             if (success) {
-              Get.off(() => PaymentSuccessScreen(
+              Get.offAll(() => PaymentSuccessScreen(
                     orderId: orderId!,
                     amount: Get.find<CartController>().totalPrice + 7.50,
                     paymentMethod: paymentMethod,
