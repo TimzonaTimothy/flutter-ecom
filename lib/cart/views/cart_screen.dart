@@ -23,8 +23,6 @@ class _CartScreenState extends State<CartScreen> {
 
   final TextEditingController promoCodeController = TextEditingController();
   
-  final double deliveryFee = 25.00;
-  final double discount = 35.00;
 
   @override
   void initState() {
@@ -412,14 +410,8 @@ double getItemPrice(CartModel item) {
             "Sub-Total",
             "\$${getCartSubTotal().toStringAsFixed(2)}",
           ),
-          _buildPriceRow("Delivery Fee", "\$${deliveryFee.toStringAsFixed(2)}"),
-          _buildPriceRow("Discount", "-\$${discount.toStringAsFixed(2)}"),
-          Divider(color: AppStyles.whiteSmokeColor.withOpacity(0.2)),
-          _buildPriceRow(
-            "Total Cost",
-            "\$${(getCartSubTotal() + deliveryFee - discount).toStringAsFixed(2)}",
-            isBold: true,
-          ),
+          const SizedBox(height: 8),
+          const Text('Shipping and tax are shown at checkout.'),
           const SizedBox(height: 20),
           PrimaryButton(
             verticalPadding: 10,

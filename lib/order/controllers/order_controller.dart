@@ -1,8 +1,38 @@
 import 'package:get/get.dart';
 import '../models/order_model.dart';
+import '../../cart/controllers/cart_controller.dart';
+import '../../cart/views/cart_screen.dart';
 import '../service/order_service.dart';
 
 class OrderController extends GetxController {
+  final reorderingIds = <int>{}.obs;
+
+  Future<void> buyAgain(int orderId) async {
+    if (reorderingIds.contains(orderId)) return;
+    reorderingIds.add(orderId);
+    try {
+      final result = await OrderService.buyAgain(orderId);
+      if (result == null) {
+        Get.snackbar('Could not reorder', 'Please try again.');
+        return;
+      }
+      final added = (result['added'] as List).length;
+      final skipped = (result['skipped'] as List).length;
+      if (added > 0) {
+        if (Get.isRegistered<CartController>()) {
+          await Get.find<CartController>().fetchCartItems();
+        }
+        Get.to(() => const CartScreen());
+      }
+      Get.snackbar(added > 0 ? 'Added to cart' : 'No items added',
+          '$added item(s) added, $skipped unavailable or short of stock. Review current prices before checkout.');
+    } catch (_) {
+      Get.snackbar('Could not reorder', 'Check your cart before trying again.');
+    } finally {
+      reorderingIds.remove(orderId);
+    }
+  }
+
   // Observable lists for different order statuses
   var pendingOrders = <OrderModel>[].obs;
   var deliveredOrders = <OrderModel>[].obs;
@@ -25,62 +55,92 @@ class OrderController extends GetxController {
     loadAllOrders();
   }
 
+  final Map<String, Future<void>> _requests = {};
+
   Future<void> loadAllOrders() async {
     await Future.wait([
       loadOrdersByStatus('Pending'),
-      loadOrdersByStatus('Shipped'),
       loadOrdersByStatus('Delivered'),
       loadOrdersByStatus('Cancelled'),
     ]);
   }
 
-  Future<void> loadOrdersByStatus(String status) async {
+  String _bucket(String status) => status == 'Shipped' ? 'Pending' : status;
+
+  Future<void> loadOrdersByStatus(String status) {
+    final bucket = _bucket(status);
+    return _requests[bucket] ??= _loadBucket(bucket).whenComplete(() {
+      _requests.remove(bucket);
+    });
+  }
+
+  Future<void> _loadBucket(String status) async {
+    _setLoading(status, true);
+    _setError(status, '');
     try {
-      _setLoading(status, true);
-      _setError(status, '');
-
-      List<OrderModel>? orders = await OrderService.getOrdersByStatus(status);
-      print('Fetched ${orders?.length ?? 0} orders for status: $status');
-
-      if (orders != null) {
-        _setOrders(status, orders);
+      final orders = await OrderService.getOrdersByStatus(status);
+      if (isClosed) return;
+      if (orders == null) {
+        _setError(status, 'Could not load your orders. Please try again.');
       } else {
-        _setError(status, 'Failed to load $status orders');
+        final unique = <int, OrderModel>{};
+        for (final order in orders) {
+          if (order.id != null &&
+              _bucket(order.deliveryStatus ?? '') == status) {
+            unique[order.id!] = order;
+          }
+        }
+        _list(status).assignAll(_sorted(unique.values));
       }
-    } catch (e) {
-      _setError(status, 'Error loading $status orders: ${e.toString()}');
+    } catch (_) {
+      if (!isClosed)
+        _setError(status, 'Could not load your orders. Please try again.');
     } finally {
-      _setLoading(status, false);
+      if (!isClosed) _setLoading(status, false);
     }
   }
 
-  Future<void> refreshOrders(String status) async {
-    await loadOrdersByStatus(status);
+  List<OrderModel> _sorted(Iterable<OrderModel> orders) => orders.toList()
+    ..sort((a, b) => (b.createdDate ?? DateTime(1970))
+        .compareTo(a.createdDate ?? DateTime(1970)));
+
+  RxList<OrderModel> _list(String status) {
+    switch (_bucket(status)) {
+      case 'Delivered':
+        return deliveredOrders;
+      case 'Cancelled':
+        return cancelledOrders;
+      default:
+        return pendingOrders;
+    }
   }
 
-  OrderModel? getOrderById(int orderId) {
-    try {
-      // Check cached orders first
-      OrderModel? order = pendingOrders.firstWhereOrNull((order) => order.id == orderId) ??
-          deliveredOrders.firstWhereOrNull((order) => order.id == orderId) ??
-          cancelledOrders.firstWhereOrNull((order) => order.id == orderId);
+  Future<void> refreshOrders(String status) => loadOrdersByStatus(status);
 
-      if (order != null) {
-        
-        return order;
-      }
+  OrderModel? getOrderById(int orderId) => [
+        ...pendingOrders,
+        ...deliveredOrders,
+        ...cancelledOrders
+      ].firstWhereOrNull((order) => order.id == orderId);
 
-      return null; // Return null if not found, let FutureBuilder handle API call
-    } catch (e) {
-      
-      return null;
+  void cacheOrder(OrderModel order) {
+    if (order.id == null || isClosed) return;
+    for (final list in [pendingOrders, deliveredOrders, cancelledOrders]) {
+      list.removeWhere((item) => item.id == order.id);
     }
+    final list = _list(order.deliveryStatus ?? 'Pending');
+    list.assignAll(_sorted([...list, order]));
+  }
+
+  Future<OrderModel?> fetchOrder(int orderId) async {
+    final order = await OrderService.getOrderDetails(orderId);
+    if (order != null) cacheOrder(order);
+    return order;
   }
 
   void _setLoading(String status, bool loading) {
-    switch (status) {
+    switch (_bucket(status)) {
       case 'Pending':
-      case 'Shipped':
         isPendingLoading.value = loading;
         break;
       case 'Delivered':
@@ -93,9 +153,8 @@ class OrderController extends GetxController {
   }
 
   void _setError(String status, String error) {
-    switch (status) {
+    switch (_bucket(status)) {
       case 'Pending':
-      case 'Shipped':
         pendingError.value = error;
         break;
       case 'Delivered':
@@ -103,31 +162,6 @@ class OrderController extends GetxController {
         break;
       case 'Cancelled':
         cancelledError.value = error;
-        break;
-    }
-  }
-
-  void _setOrders(String status, List<OrderModel> orders) {
-    switch (status) {
-      case 'Pending':
-        // Combine Pending orders with existing Shipped orders
-        pendingOrders.value = [
-          ...orders,
-          ...pendingOrders.where((order) => order.deliveryStatus == 'Shipped')
-        ];
-        break;
-      case 'Shipped':
-        // Combine Shipped orders with existing Pending orders
-        pendingOrders.value = [
-          ...orders,
-          ...pendingOrders.where((order) => order.deliveryStatus == 'Pending')
-        ];
-        break;
-      case 'Delivered':
-        deliveredOrders.value = orders;
-        break;
-      case 'Cancelled':
-        cancelledOrders.value = orders;
         break;
     }
   }

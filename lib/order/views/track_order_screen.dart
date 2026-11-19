@@ -1,532 +1,259 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:timeline_tile/timeline_tile.dart';
-
 import '../../base/res/styles/app_styles.dart';
-import '../../base/utils/snackbar.dart';
 import '../controllers/order_controller.dart';
 import '../models/order_model.dart';
-import '../service/order_service.dart';
 import 'review_screen.dart';
 
-class TrackOrderPage extends StatelessWidget {
+class TrackOrderPage extends StatefulWidget {
   final int? orderId;
-
-  const TrackOrderPage({super.key, this.orderId});
+  final bool isReceipt;
+  const TrackOrderPage({super.key, this.orderId, this.isReceipt = false});
 
   @override
-  Widget build(BuildContext context) {
-    late final OrderController orderController;
+  State<TrackOrderPage> createState() => _TrackOrderPageState();
+}
+
+class _TrackOrderPageState extends State<TrackOrderPage> {
+  late final OrderController controller;
+  OrderModel? _order;
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.isRegistered<OrderController>()
+        ? Get.find<OrderController>()
+        : Get.put(OrderController());
+    _load();
+  }
+
+  Future<void> _load() async {
+    if (widget.orderId == null || widget.orderId! <= 0) {
+      setState(() {
+        _loading = false;
+        _error = 'Invalid order ID.';
+      });
+      return;
+    }
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
-      orderController = Get.find<OrderController>();
-    } catch (e) {
-      orderController = Get.put(OrderController());
+      final order = await controller.fetchOrder(widget.orderId!);
+      if (!mounted) return;
+      setState(() {
+        _order = order;
+        if (order == null)
+          _error = 'Could not load this order. Please try again.';
+      });
+    } catch (_) {
+      if (mounted)
+        setState(() => _error = 'Could not load this order. Please try again.');
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
-
-    if (orderId == null) {
-      return _buildErrorScaffold("Invalid order ID");
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppStyles.bgColor,
-        elevation: 0,
-        title: Text("Track Order #${orderId ?? 'N/A'}",
-            style: AppStyles.headLineStyle2),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            try {
-              Get.back();
-            } catch (e) {
-              print('Error navigating back: $e');
-              Navigator.of(context).pop();
-            }
-          },
-        ),
-      ),
-      backgroundColor: AppStyles.bgColor,
-      body: FutureBuilder<OrderModel?>(
-        future: _getOrderDetails(orderController, orderId!),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(color: AppStyles.primaryColor),
-            );
-          }
-
-          if (snapshot.hasError || snapshot.data == null) {
-            return _buildErrorState(
-              context,
-              orderController,
-              snapshot.error?.toString() ?? 'Order not found',
-            );
-          }
-
-          final order = snapshot.data!;
-          return _buildOrderContent(order);
-        },
-      ),
-      bottomNavigationBar: _buildBottomNavBar(orderController),
-    );
   }
 
-  Widget _buildErrorScaffold(String message) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppStyles.bgColor,
-        elevation: 0,
-        title: Text("Track Order", style: AppStyles.headLineStyle2),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            try {
-              Get.back();
-            } catch (e) {
-              Navigator.of(Get.context!).pop();
-            }
-          },
-        ),
-      ),
-      body: _buildErrorState(Get.context!, null, message),
-    );
+  Future<void> _review(OrderProduct product) async {
+    final submitted = await Get.to<bool>(() => LeaveReviewPage(
+          orderId: widget.orderId,
+          product: product,
+        ));
+    if (submitted == true && mounted) await _load();
   }
 
-  Widget _buildErrorState(
-      BuildContext context, OrderController? controller, String message) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final textScaleFactor = screenWidth < 400 ? 0.9 : 1.0;
-
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.red.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.red.withOpacity(0.3)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 40,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Unable to Load Order Details',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.red.shade700,
-              ),
-              textAlign: TextAlign.center,
-              textScaler: TextScaler.linear(textScaleFactor),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              style: AppStyles.textStyle.copyWith(
-                color: Colors.grey[600],
-                fontSize: 14,
-              ),
-              textAlign: TextAlign.center,
-              textScaler: TextScaler.linear(textScaleFactor),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                OutlinedButton(
-                  onPressed: () {
-                    try {
-                      Get.back();
-                    } catch (e) {
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  style: ButtonStyle(
-                    padding: WidgetStateProperty.all(
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    ),
-                    backgroundColor: WidgetStateProperty.all(
-                      AppStyles.whiteSmokeColor.withOpacity(0.1),
-                    ),
-                    shape: WidgetStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    side: WidgetStateProperty.all(
-                      BorderSide(
-                        color: AppStyles.primaryColor,
-                        width: 0.5,
-                      ),
-                    ),
-                  ),
-                  child: Text(
-                    'Go Back',
-                    style: AppStyles.headLineStyle3.copyWith(
-                      color: AppStyles.primaryColor,
-                    ),
-                    textScaler: TextScaler.linear(textScaleFactor),
-                  ),
-                ),
-                if (controller != null) ...[
-                  const SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final order =
-                          await _getOrderDetails(controller, orderId!);
-                      if (order != null && context.mounted) {
-                        // Force rebuild to update UI
-                        (context as Element).markNeedsBuild();
-                      } else {
-                        showFailureSnackbar('Failed to reload order details');
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppStyles.primaryColor,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      'Retry',
-                      style: AppStyles.headLineStyle3.copyWith(
-                        color: AppStyles.whiteColor,
-                      ),
-                      textScaler: TextScaler.linear(textScaleFactor),
-                    ),
-                  ),
-                ],
-              ],
-            ),
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        backgroundColor: AppStyles.bgColor,
+        appBar: AppBar(
+          backgroundColor: AppStyles.bgColor,
+          title: Text(widget.orderId == null
+              ? 'Order Details'
+              : '${widget.isReceipt ? 'Receipt' : 'Order'} #${widget.orderId}'),
+          actions: [
+            IconButton(
+                tooltip: 'Refresh order',
+                onPressed: _loading ? null : _load,
+                icon: const Icon(Icons.refresh))
           ],
         ),
-      ),
-    );
-  }
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null
+                ? Center(
+                    child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(Icons.error_outline, size: 48),
+                      const SizedBox(height: 16),
+                      Text(_error!, textAlign: TextAlign.center),
+                      if (widget.orderId != null && widget.orderId! > 0)
+                        TextButton(
+                            onPressed: _load, child: const Text('Retry')),
+                    ]),
+                  ))
+                : RefreshIndicator(
+                    onRefresh: _load,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(20),
+                      children: [
+                        _status(_order!),
+                        const SizedBox(height: 20),
+                        Text('Items (${_order!.orderProducts.length})',
+                            style: AppStyles.headLineStyle3),
+                        const SizedBox(height: 12),
+                        for (final product in _order!.orderProducts)
+                          _product(product, _order!),
+                        const Divider(height: 32),
+                        Text('Payment summary',
+                            style: AppStyles.headLineStyle3),
+                        _row('Payment status',
+                            _order!.paymentStatus ?? 'Unknown'),
+                        if (_order!.subtotal != null)
+                          _row('Subtotal', _money(_order!.subtotal)),
+                        if (_order!.shipping != null)
+                          _row('Shipping', _money(_order!.shipping)),
+                        if (_order!.tax != null)
+                          _row('Tax', _money(_order!.tax)),
+                        _row('Order total', _money(_order!.total)),
+                        if (_order!.createdDate != null)
+                          _row('Ordered', _date(_order!.createdDate!)),
+                        const Divider(height: 32),
+                        Text('Delivery address',
+                            style: AppStyles.headLineStyle3),
+                        const SizedBox(height: 8),
+                        Text(_order!.address.address.isEmpty
+                            ? 'Address unavailable'
+                            : _order!.address.address),
+                        if (_order!.address.phone.isNotEmpty)
+                          Text(_order!.address.phone),
+                        const SizedBox(height: 24),
+                        if (!widget.isReceipt &&
+                            _order!.paymentStatus == 'Paid')
+                          OutlinedButton.icon(
+                            onPressed: () => Get.to(() => TrackOrderPage(
+                                orderId: widget.orderId, isReceipt: true)),
+                            icon: const Icon(Icons.receipt_long_outlined),
+                            label: const Text('View Receipt'),
+                          ),
+                        if (!widget.isReceipt &&
+                            (_order!.deliveryStatus == 'Delivered' ||
+                                _order!.deliveryStatus == 'Cancelled'))
+                          Obx(() {
+                            final busy = controller.reorderingIds
+                                .contains(widget.orderId);
+                            return ElevatedButton.icon(
+                              onPressed: busy
+                                  ? null
+                                  : () => controller.buyAgain(widget.orderId!),
+                              icon: const Icon(Icons.shopping_cart_outlined),
+                              label: Text(busy ? 'Adding…' : 'Buy Again'),
+                            );
+                          }),
+                      ],
+                    ),
+                  ),
+      );
 
-  Widget _buildOrderContent(OrderModel order) {
-    final firstProduct =
-        order.orderProducts.isNotEmpty ? order.orderProducts.first : null;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          if (firstProduct != null) _buildProductCard(firstProduct, order),
-          Divider(
-              color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
-          const SizedBox(height: 20),
-          _buildOrderDetails(order),
-          const SizedBox(height: 15),
-          Divider(
-              color: AppStyles.whiteSmokeColor.withOpacity(0.2), height: 32),
-          _buildOrderStatus(order),
+  Widget _status(OrderModel order) {
+    final cancelled = order.deliveryStatus == 'Cancelled';
+    final progress =
+        ['Pending', 'Shipped', 'Delivered'].indexOf(order.deliveryStatus ?? '');
+    return Card(
+        child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(order.deliveryStatus ?? 'Status unavailable',
+            style: AppStyles.headLineStyle3),
+        const SizedBox(height: 8),
+        if (cancelled)
+          const Text(
+              'This order was cancelled. You can check available items with Buy Again.')
+        else if (progress >= 0) ...[
+          for (var index = 0; index < 3; index++)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(children: [
+                Icon(
+                    index <= progress
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
+                    color: index <= progress
+                        ? AppStyles.primaryColor
+                        : Colors.grey),
+                const SizedBox(width: 12),
+                Text(['Order placed', 'Shipped', 'Delivered'][index]),
+              ]),
+            ),
+          if (order.deliveryStatus != 'Delivered')
+            const Text(
+                'Delivery updates will appear here as your order progresses.'),
         ],
-      ),
-    );
+      ]),
+    ));
   }
 
-  Widget _buildProductCard(OrderProduct product, OrderModel order) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        product.imageUrls.isNotEmpty
-            ? Image.network(
-                product.imageUrls.first,
-                height: 100,
-                width: 100,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 100,
-                    width: 100,
-                    color: Colors.grey.shade200,
-                    child: const Icon(Icons.image_not_supported,
-                        color: Colors.grey),
-                  );
-                },
-              )
-            : Container(
-                height: 100,
-                width: 100,
-                color: Colors.grey.shade200,
-                child: const Icon(Icons.image, color: Colors.grey),
+  Widget _product(OrderProduct product, OrderModel order) => Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              SizedBox(
+                  width: 64,
+                  height: 64,
+                  child: product.imageUrls.isEmpty
+                      ? const Icon(Icons.shopping_bag_outlined)
+                      : Image.network(product.imageUrls.first,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, error, stack) =>
+                              const Icon(Icons.image_not_supported_outlined))),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                    Text(product.title ?? 'Product unavailable',
+                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Text('Quantity: ${product.quantity ?? 1}'),
+                    if (product.sizes.isNotEmpty)
+                      Text('Size: ${product.sizes.join(', ')}'),
+                    if (product.colors.isNotEmpty)
+                      Text('Color: ${product.colors.join(', ')}'),
+                    Text('Unit price: ${_money(product.unitPrice)}'),
+                    Text('Item total: ${_money(product.lineTotal)}'),
+                  ])),
+            ]),
+            if (!widget.isReceipt &&
+                order.deliveryStatus == 'Delivered' &&
+                product.id != null)
+              TextButton.icon(
+                onPressed: () => _review(product),
+                icon: const Icon(Icons.rate_review_outlined),
+                label: Text(order.rated.contains(product.id)
+                    ? 'View / Edit Review'
+                    : 'Review Item'),
               ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                product.title ?? 'Unknown Product',
-                style: AppStyles.headLineStyle3
-                    .copyWith(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                "Size: ${product.sizes.isNotEmpty ? product.sizes.first : 'N/A'} | Qty: ${product.quantity ?? 0}pcs",
-                style: AppStyles.textStyle.copyWith(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                "\$${order.total?.toStringAsFixed(2) ?? '0.00'}",
-                style: AppStyles.headLineStyle4.copyWith(
-                  color: AppStyles.blackColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
+          ]),
         ),
-      ],
-    );
-  }
+      );
 
-  Widget _buildOrderDetails(OrderModel order) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text("Order Details", style: AppStyles.headLineStyle3),
-        ),
-        const SizedBox(height: 15),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text("Expected Delivery Date"),
-            Text(
-              _formatDate(order.createdDate != null
-                  ? order.createdDate!.add(const Duration(days: 7))
-                  : DateTime.now()),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text("Tracking ID"),
-            Text(
-              "${order.id ?? 'N/A'}",
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildOrderStatus(OrderModel order) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text("Order Status", style: AppStyles.headLineStyle3),
-        ),
-        const SizedBox(height: 15),
-        Column(
-          children: [
-            _buildTimelineTile(
-              isFirst: true,
-              isLast: false,
-              title: "Order Placed",
-              date: _formatDateTime(order.createdDate ?? DateTime.now()),
-              isActive: true,
-              icon: Icons.receipt_long,
-            ),
-            _buildTimelineTile(
-              isFirst: false,
-              isLast: false,
-              title: "In Progress",
-              date: _formatDateTime(order.createdDate != null
-                  ? order.createdDate!.add(const Duration(hours: 1))
-                  : DateTime.now()),
-              isActive: order.deliveryStatus == 'Pending' ||
-                  order.deliveryStatus == 'Shipped' ||
-                  order.deliveryStatus == 'Delivered',
-              icon: Icons.local_shipping_outlined,
-            ),
-            _buildTimelineTile(
-              isFirst: false,
-              isLast: false,
-              title: "Shipped",
-              date:
-                  "Expected ${_formatDate(order.createdDate != null ? order.createdDate!.add(const Duration(days: 5)) : DateTime.now())}",
-              isActive: order.deliveryStatus == 'Shipped' ||
-                  order.deliveryStatus == 'Delivered',
-              icon: Icons.local_shipping,
-            ),
-            _buildTimelineTile(
-              isFirst: false,
-              isLast: true,
-              title: "Delivered",
-              date: order.deliveryStatus == 'Delivered'
-                  ? _formatDateTime(order.modifiedDate ?? DateTime.now())
-                  : "Expected ${_formatDate(order.createdDate != null ? order.createdDate!.add(const Duration(days: 7)) : DateTime.now())}",
-              isActive: order.deliveryStatus == 'Delivered',
-              icon: Icons.inventory,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomNavBar(OrderController orderController) {
-    return GetX<OrderController>(
-      init: orderController,
-      builder: (controller) {
-        final order = controller.getOrderById(orderId!);
-        if (order != null && order.deliveryStatus == 'Delivered') {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                final firstProduct = order.orderProducts.isNotEmpty
-                    ? order.orderProducts.first
-                    : null;
-                if (firstProduct != null) {
-                  try {
-                    Get.to(
-                      () => LeaveReviewPage(
-                        orderId: orderId!,
-                        product: firstProduct,
-                        onReviewSubmitted: () {
-                          // Refresh order details after review submission
-                          controller.getOrderById(
-                              orderId!); // Optional: Refresh cache
-                        },
-                      ),
-                      transition: Transition.rightToLeftWithFade,
-                      duration: const Duration(milliseconds: 500),
-                    );
-                  } catch (e) {
-                    print('Navigation error: $e');
-                    showFailureSnackbar('Failed to open review page');
-                  }
-                } else {
-                  showFailureSnackbar('Product information not available');
-                }
-              },
-              icon: Icon(Icons.rate_review, color: AppStyles.whiteColor),
-              label: Text(
-                "Leave A Review",
-                style: AppStyles.headLineStyle3
-                    .copyWith(color: AppStyles.whiteColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppStyles.primaryColor,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-          );
-        }
-        return const SizedBox.shrink();
-      },
-    );
-  }
-
-  Future<OrderModel?> _getOrderDetails(
-      OrderController controller, int orderId) async {
-    try {
-      OrderModel? cachedOrder = controller.getOrderById(orderId);
-      if (cachedOrder != null) {
-        return cachedOrder;
-      }
-
-      OrderModel? order = await OrderService.getOrderDetails(orderId);
-      if (order != null) {
-        _addOrderToControllerCache(controller, order);
-      }
-      return order;
-    } catch (e) {
-      print('Error getting order details: $e');
-      return null;
-    }
-  }
-
-  void _addOrderToControllerCache(
-      OrderController controller, OrderModel order) {
-    try {
-      switch (order.deliveryStatus) {
-        case 'Pending':
-        case 'Shipped':
-          if (!controller.pendingOrders.any((o) => o.id == order.id)) {
-            controller.pendingOrders.add(order);
-          }
-          break;
-        case 'Delivered':
-          if (!controller.deliveredOrders.any((o) => o.id == order.id)) {
-            controller.deliveredOrders.add(order);
-          }
-          break;
-        case 'Cancelled':
-          if (!controller.cancelledOrders.any((o) => o.id == order.id)) {
-            controller.cancelledOrders.add(order);
-          }
-          break;
-      }
-    } catch (e) {
-      print('Error adding order to controller cache: $e');
-    }
-  }
-
-  Widget _buildTimelineTile({
-    required bool isFirst,
-    required bool isLast,
-    required String title,
-    required String date,
-    required bool isActive,
-    required IconData icon,
-  }) {
-    return TimelineTile(
-      isFirst: isFirst,
-      isLast: isLast,
-      indicatorStyle: IndicatorStyle(
-        width: 30,
-        color: isActive ? AppStyles.primaryColor : Colors.grey.shade300,
-        iconStyle: IconStyle(
-          iconData: isActive ? Icons.check : Icons.circle_outlined,
-          color: Colors.white,
-        ),
-      ),
-      beforeLineStyle: LineStyle(
-        color: isActive ? AppStyles.primaryColor : Colors.grey.shade300,
-        thickness: 2,
-      ),
-      endChild: ListTile(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(date),
-        trailing:
-            Icon(icon, color: isActive ? AppStyles.primaryColor : Colors.grey),
-      ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
-  }
-
-  String _formatDateTime(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}, ${date.hour}:${date.minute.toString().padLeft(2, '0')} ${date.hour >= 12 ? 'PM' : 'AM'}';
+  Widget _row(String label, String value) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(child: Text(label)),
+          const SizedBox(width: 16),
+          Flexible(child: Text(value, textAlign: TextAlign.right)),
+        ]),
+      );
+  String _money(double? value) => _order!.formatAmount(value);
+  String _date(DateTime date) {
+    final local = date.toLocal();
+    return '${local.day}/${local.month}/${local.year}';
   }
 }

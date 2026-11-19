@@ -20,6 +20,7 @@ class ReviewService {
       final url = Uri.parse('$_baseUrl/products/submit-review/$productId/');
       
       final body = jsonEncode({
+        'product': productId,
         'subject': subject,
         'review': review,
         'rating': rating,

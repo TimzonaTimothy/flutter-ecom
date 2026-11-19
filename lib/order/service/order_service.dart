@@ -4,6 +4,15 @@ import '../../base/utils/my_request.dart';
 import '../models/order_model.dart';
 
 class OrderService {
+  static Future<Map<String, dynamic>?> buyAgain(int orderId) async {
+    final response = await MyRequest('orders/single/$orderId/buy-again/')
+        .init(showToast: false)
+        .postApi();
+    return response == null
+        ? null
+        : jsonDecode(response) as Map<String, dynamic>;
+  }
+
   static Future<List<OrderModel>?> getOrdersByStatus(String status) async {
     try {
       String? response = await MyRequest('orders/me/?status=$status')

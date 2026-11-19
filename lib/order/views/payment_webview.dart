@@ -824,31 +824,27 @@
 
 import 'dart:async';
 import 'dart:developer';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
-import '../../base/res/styles/app_styles.dart';
 import '../../base/utils/snackbar.dart';
 import '../controllers/payment_controller.dart';
-import 'payment_methods_screen.dart';
 
 class PaymentWebViewScreen extends StatefulWidget {
   final String url;
   final String reference;
   final String paymentMethod;
   final int orderId;
-  final Function(bool success, String? message, {int? orderId}) onPaymentComplete;
+  static const verified = 'verified';
 
   const PaymentWebViewScreen({
-    Key? key,
+    super.key,
     required this.url,
     required this.reference,
     required this.paymentMethod,
     required this.orderId,
-    required this.onPaymentComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<PaymentWebViewScreen> createState() => _PaymentWebViewScreenState();
@@ -861,6 +857,8 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
   Timer? _pollTimer;
   Timer? _timeoutTimer;
   bool _paymentCompleted = false;
+  bool _closeDialogOpen = false;
+  String? _pendingResult;
   bool _isVerifying = false;
   int _verificationAttempts = 0;
   static const int _maxVerificationAttempts = 15;
@@ -1016,7 +1014,8 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
         if (_isLoading && !_webViewInitialized && mounted) {
           log('⏰ URL loading timeout');
           setState(() {
-            _errorMessage = 'Payment page took too long to load. Please try again.';
+            _errorMessage =
+                'Payment page took too long to load. Please try again.';
             _isLoading = false;
           });
           _loadPaymentUrl(); // Retry loading
@@ -1048,7 +1047,7 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
     for (String pattern in successPatterns) {
       if (lowercaseUrl.contains(pattern.toLowerCase())) {
         log('🎉 Success pattern detected: $pattern in $url');
-        _handlePaymentSuccess();
+        _verifyPaymentStatus();
         return;
       }
     }
@@ -1076,10 +1075,10 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
           lowercaseUrl.contains('complete') ||
           lowercaseUrl.contains('paid')) {
         log('🚀 Special success redirect detected: $url');
-        _handlePaymentSuccess();
+        _verifyPaymentStatus();
       } else if (lowercaseUrl.contains('cancel') ||
-                 lowercaseUrl.contains('failed') ||
-                 lowercaseUrl.contains('error')) {
+          lowercaseUrl.contains('failed') ||
+          lowercaseUrl.contains('error')) {
         log('🛑 Special failure redirect detected: $url');
         _handlePaymentFailure('Payment was cancelled');
       }
@@ -1089,7 +1088,9 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
   void _startPaymentPolling() {
     log('🔄 Starting payment polling...');
     _pollTimer = Timer.periodic(const Duration(seconds: 8), (timer) {
-      if (!_paymentCompleted && !_isVerifying && _verificationAttempts < _maxVerificationAttempts) {
+      if (!_paymentCompleted &&
+          !_isVerifying &&
+          _verificationAttempts < _maxVerificationAttempts) {
         _verifyPaymentStatus();
       } else if (_verificationAttempts >= _maxVerificationAttempts) {
         timer.cancel();
@@ -1152,137 +1153,55 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
     }
   }
 
-  void _handlePaymentSuccess() {
-    if (_paymentCompleted) return;
+  void _handlePaymentSuccess() => _finishPayment(PaymentWebViewScreen.verified);
 
-    log('=== 🎉 PAYMENT SUCCESS HANDLER CALLED ===');
-    _paymentCompleted = true;
-    _pollTimer?.cancel();
-    _timeoutTimer?.cancel();
+  void _handlePaymentFailure(String message) => _finishPayment(message);
 
-    _showSuccessOverlay();
-
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        log('📞 Calling onPaymentComplete callback with success');
-        widget.onPaymentComplete(
-          true,
-          'Payment completed successfully',
-          orderId: widget.orderId,
-        );
+  void _finishPayment(String result) {
+    if (_paymentCompleted || !mounted) return;
+    if (_closeDialogOpen) {
+      if (_pendingResult != PaymentWebViewScreen.verified) {
+        _pendingResult = result;
       }
-    });
-  }
-
-  void _handlePaymentFailure(String message) {
-    if (_paymentCompleted) return;
-
-    log('=== 💥 PAYMENT FAILURE HANDLER CALLED ===');
-    log('Payment failed: $message');
-
+      return;
+    }
     _paymentCompleted = true;
     _pollTimer?.cancel();
     _timeoutTimer?.cancel();
-
-    if (mounted) {
-      widget.onPaymentComplete(false, message, orderId: widget.orderId);
-    }
-  }
-
-  void _showSuccessOverlay() {
-    if (!mounted) return;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => WillPopScope(
-        onWillPop: () async => false,
-        child: Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
-                    size: 48,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Payment Successful!',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Redirecting to order confirmation...',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+    Navigator.of(context).pop(result);
   }
 
   void _handleManualClose() {
-    if (_paymentCompleted) return;
-
-    Get.dialog(
-      AlertDialog(
-        title: const Text('Close Payment'),
+    if (_paymentCompleted || _closeDialogOpen) return;
+    _closeDialogOpen = true;
+    showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Close payment?'),
         content: const Text(
-          'Are you sure you want to close the payment page? Your payment may not be completed.',
+          'You can return to this order from My Orders to check or resume payment.',
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              Get.back();
-            },
-            child: const Text('Continue Payment'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Continue payment'),
           ),
           TextButton(
-            onPressed: () {
-              Get.to(
-                () => const PaymentMethodsScreen(),
-                transition: Transition.rightToLeftWithFade,
-                duration: const Duration(milliseconds: 500),
-              );
-              _handlePaymentFailure('Payment cancelled by user');
-            },
-            child: Text(
-              'Close Payment',
-              style: TextStyle(color: Colors.red.shade600),
-            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Close payment'),
           ),
         ],
       ),
-    );
+    ).then((close) {
+      _closeDialogOpen = false;
+      final result = _pendingResult;
+      _pendingResult = null;
+      if (result != null) {
+        _finishPayment(result);
+      } else if (close == true) {
+        _handlePaymentFailure('Payment has not been confirmed.');
+      }
+    });
   }
 
   void _handleRefresh() {

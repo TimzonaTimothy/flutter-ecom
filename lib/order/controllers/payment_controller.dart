@@ -1,6 +1,6 @@
 import 'dart:convert';
+import 'dart:math';
 
-import 'package:ecom_app/base/utils/snackbar.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
@@ -10,7 +10,6 @@ import '../../auth/service/auth_service.dart';
 import '../../base/res/base_url.dart';
 import '../../cart/controllers/address_controller.dart';
 import '../../cart/controllers/cart_controller.dart';
-import '../models/payment_request_model.dart';
 import '../views/payment_success_screen.dart';
 import '../views/payment_webview.dart';
 
@@ -19,92 +18,195 @@ final logger = Logger();
 const fullUrl = baseUrl;
 const baseURLGeneral = fullUrl;
 
-class BasePaymentController extends GetxController {
+abstract class BasePaymentController extends GetxController {
+  Future<bool> initiatePayment({
+    required double amount,
+    required int orderId,
+    bool resume = false,
+  });
+
+  Future<bool> verifyPayment(String reference);
+
   var isLoading = false.obs;
   var errorMessage = ''.obs;
 
-  Future<int?> createOrder() async {
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('user_id');
-      final token = await AuthService.instance.getToken();
-      if (userId == null || token == null) {
-        errorMessage.value = 'User authentication failed. Please log in again.';
-        logger.e('Missing user_id or token in SharedPreferences');
-        return null;
-      }
-
-      final cartController = Get.find<CartController>();
-      final addressController = Get.find<AddressController>();
-
-      if (cartController.cartItems.isEmpty) {
-        errorMessage.value = 'Cart is empty';
-        logger.w('Cart is empty');
-        return null;
-      }
-
-      if (addressController.selectedAddress.value == null) {
-        errorMessage.value = 'No shipping address selected';
-        logger.w('No shipping address selected');
-        return null;
-      }
-
-      // Validate cart items
-      for (var item in cartController.cartItems) {
-        if (item.product?.id == null) {
-          errorMessage.value = 'Invalid product in cart';
-          logger.e('Invalid product in cart: ${item.toJson()}');
-          return null;
-        }
-      }
-
-      final orderData = {
-        'order_products': cartController.cartItems
-            .map((item) => OrderItem.fromCartModel(item).toJson())
-            .toList(),
-        'address': addressController.selectedAddress.value!.id,
-        'customer_id': userId,
-        'total_quantity': cartController.totalQuantity,
-        'subtotal': cartController.totalPrice,
-        'total': cartController.totalPrice + 7.50, // shipping + tax
-        'delivery_status': 'Pending',
-        'payment_status': 'Unpaid',
-      };
-
-      logger.i('Order creation payload: $orderData');
-
-      final response = await http.post(
-        Uri.parse('$baseURLGeneral/orders/add/'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(orderData),
-      );
-
-      if (response.statusCode == 201) {
-        final responseData = jsonDecode(response.body);
-        final orderId = responseData['id'];
-        logger.i('Order created successfully: Order ID $orderId');
-        return orderId;
-      } else {
-        final errorData = jsonDecode(response.body);
-        errorMessage.value = errorData['message'] ?? 'Failed to create order';
-        logger.e(
-            'Order creation failed: ${response.statusCode} - ${response.body}');
-        return null;
-      }
-    } catch (e) {
-      errorMessage.value = 'Error creating order: $e';
-      logger.e('Order creation error: $e',
-          error: e, stackTrace: StackTrace.current);
+  Future<Map<String, dynamic>?> quoteCheckout() async {
+    final cart = Get.find<CartController>();
+    final addressId = Get.find<AddressController>().selectedAddress.value?.id;
+    if (addressId == null || cart.cartItems.isEmpty) {
+      errorMessage.value = 'Select an address and add items to your cart.';
       return null;
-    } finally {
-      isLoading.value = false;
     }
+    final items = cart.cartItems
+        .map((item) => jsonEncode({
+              'id': item.product?.id,
+              'quantity': item.quantity ?? 1,
+              'sizes': item.size,
+              'colors': item.color,
+            }))
+        .toList()
+      ..sort();
+
+    final draft = {
+      'address': addressId,
+      'order_products': items.map(jsonDecode).toList(),
+    };
+    final quote = await _checkoutRequest('quote', draft);
+    return quote == null ? null : {...quote, 'draft': draft};
+  }
+
+  Future<Map<String, dynamic>?> createOrder(Map<String, dynamic> quote) async {
+    final draft = quote['draft'] as Map<String, dynamic>;
+    final draftId = jsonEncode(draft);
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('user_id');
+    if (userId == null) {
+      errorMessage.value = 'Please sign in again.';
+      return null;
+    }
+
+    final cacheKey = 'checkout_drafts_$userId';
+    final drafts = _checkoutDrafts(prefs, cacheKey);
+    final saved = drafts[draftId] as Map<String, dynamic>?;
+    final key = saved?['key'] as String? ?? _newCheckoutKey();
+    if (saved == null) {
+      drafts[draftId] = {'key': key};
+      if (!await prefs.setString(cacheKey, jsonEncode(drafts))) {
+        errorMessage.value = 'Unable to save this checkout. Please try again.';
+        return null;
+      }
+    }
+
+    final order = await _checkoutRequest(
+      'add',
+      {...draft, 'expected_total': quote['total']},
+      key: key,
+    );
+    if (order != null) {
+      final current = _checkoutDrafts(prefs, cacheKey);
+      current[draftId] = {'key': key, 'order_id': order['id']};
+      await prefs.setString(cacheKey, jsonEncode(current));
+    }
+    return order;
+  }
+
+  Map<String, dynamic> _checkoutDrafts(SharedPreferences prefs, String key) {
+    final stored = prefs.getString(key);
+    return stored == null ? {} : jsonDecode(stored) as Map<String, dynamic>;
+  }
+
+  String _newCheckoutKey() {
+    final random = Random.secure();
+    final bytes = List.generate(16, (_) => random.nextInt(256));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    final value =
+        bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
+    return '${value.substring(0, 8)}-${value.substring(8, 12)}-'
+        '${value.substring(12, 16)}-${value.substring(16, 20)}-${value.substring(20)}';
+  }
+
+  Future<void> forgetCheckout(int orderId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'checkout_drafts_${prefs.getInt('user_id')}';
+    final drafts = _checkoutDrafts(prefs, cacheKey);
+    final length = drafts.length;
+    drafts.removeWhere((_, draft) => draft['order_id'] == orderId);
+    if (drafts.length != length) {
+      await prefs.setString(cacheKey, jsonEncode(drafts));
+    }
+  }
+
+  Future<Map<String, dynamic>?> _checkoutRequest(
+    String action,
+    Map<String, dynamic> body, {
+    String? key,
+  }) async {
+    errorMessage.value = '';
+    try {
+      final token = await AuthService.instance.getToken();
+      if (token == null) {
+        errorMessage.value = 'Please sign in again.';
+        return null;
+      }
+      final response = await http
+          .post(
+            Uri.parse('$baseURLGeneral/orders/$action/'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+              if (key != null) 'Idempotency-Key': key,
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 45));
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+      errorMessage.value = _initiationError(response.body);
+    } catch (_) {
+      errorMessage.value = 'Could not reach checkout. Please try again.';
+    }
+    return null;
+  }
+
+  Future<bool> _openPaymentWebView(
+    String url,
+    String reference,
+    String paymentMethod,
+    int orderId,
+    double amount,
+    bool resume,
+    bool reused,
+  ) async {
+    final alreadyVerified = reused && await verifyPayment(reference);
+    final message = alreadyVerified
+        ? PaymentWebViewScreen.verified
+        : await Get.to<String>(
+            () => PaymentWebViewScreen(
+              url: url,
+              reference: reference,
+              paymentMethod: paymentMethod,
+              orderId: orderId,
+            ),
+            transition: Transition.fadeIn,
+          );
+    if (message != PaymentWebViewScreen.verified) {
+      errorMessage.value = message ?? 'Payment has not been confirmed.';
+      return false;
+    }
+
+    try {
+      await forgetCheckout(orderId);
+    } catch (_) {
+      // A completed payment remains successful if local storage is unavailable.
+    }
+    if (!resume) {
+      await Get.find<CartController>().fetchCartItems();
+      Get.offAll(() => PaymentSuccessScreen(
+            orderId: orderId,
+            amount: amount,
+            paymentMethod: paymentMethod,
+            reference: reference,
+          ));
+    }
+    return true;
+  }
+
+  String _initiationError(String body) {
+    try {
+      final data = jsonDecode(body);
+      if (data is List && data.isNotEmpty && data.first is String) {
+        return data.first as String;
+      }
+      if (data is Map) {
+        final message = data['message'] ?? data['detail'];
+        if (message is String) return message;
+      }
+    } on FormatException {
+      // The provider or API may return a non-JSON error response.
+    }
+    return 'Unable to open checkout. Please try again from My Orders.';
   }
 
   void clearPaymentData() {
@@ -116,39 +218,40 @@ class BasePaymentController extends GetxController {
 class PaystackPaymentController extends BasePaymentController {
   static PaystackPaymentController get to => Get.find();
 
+  @override
   Future<bool> initiatePayment({
     required double amount,
     required int orderId,
+    bool resume = false,
   }) async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
 
-      final prefs = await SharedPreferences.getInstance();
       final token = await AuthService.instance.getToken();
       if (token == null) {
         errorMessage.value = 'Authentication token not found';
         return false;
       }
 
-      final payload = {'order_id': orderId};
+      final payload = {'order_id': orderId, if (resume) 'resume': true};
       logger.i('Paystack payment initiation payload: $payload');
 
-      final response = await http.post(
-        Uri.parse('$baseURLGeneral/payments/initiate-paystack-payment/'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(payload),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseURLGeneral/payments/initiate-paystack-payment/'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 45));
 
       logger.i('Paystack API response status: ${response.statusCode}');
-      logger.i('Paystack API response body: ${response.body}');
 
       if (response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
-        logger.i('Paystack response: $responseData');
 
         // Handle different response structures
         String? authorizationUrl;
@@ -178,13 +281,17 @@ class PaystackPaymentController extends BasePaymentController {
           return false;
         }
 
-        logger.i(
-            'Opening payment with URL: $authorizationUrl, Reference: $reference');
         return await _openPaymentWebView(
-            authorizationUrl, reference, 'PayStack', orderId);
+            authorizationUrl,
+            reference,
+            'PayStack',
+            orderId,
+            amount,
+            resume,
+            responseData['reused'] == true);
       } else {
         final errorBody = response.body;
-        errorMessage.value = 'Failed to initiate Paystack payment: $errorBody';
+        errorMessage.value = _initiationError(errorBody);
         logger.e(
             'Paystack initiation failed: ${response.statusCode} - $errorBody');
         return false;
@@ -198,12 +305,12 @@ class PaystackPaymentController extends BasePaymentController {
     }
   }
 
+  @override
   Future<bool> verifyPayment(String reference) async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
 
-      final prefs = await SharedPreferences.getInstance();
       final token = await AuthService.instance.getToken();
       if (token == null) {
         errorMessage.value = 'Authentication token not found';
@@ -216,7 +323,7 @@ class PaystackPaymentController extends BasePaymentController {
         headers: {
           'Authorization': 'Bearer $token',
         },
-      );
+      ).timeout(const Duration(seconds: 45));
 
       logger.i('Paystack verification response: ${response.body}');
 
@@ -246,93 +353,45 @@ class PaystackPaymentController extends BasePaymentController {
       return false;
     }
   }
-
-  Future<bool> _openPaymentWebView(
-      String url, String reference, String paymentMethod, int orderId) async {
-    if (url.isEmpty) {
-      errorMessage.value = 'Payment URL is empty';
-      return false;
-    }
-
-    // Validate URL one more time before opening WebView
-    if (!_isValidUrl(url)) {
-      errorMessage.value = 'Invalid payment URL format';
-      logger.e('Invalid URL format: $url');
-      return false;
-    }
-
-    logger.i('Opening Paystack WebView: $url, Reference: $reference');
-    print('Opening $paymentMethod WebView: $url, Reference: $reference');
-  print('URL details: scheme=${Uri.parse(url).scheme}, host=${Uri.parse(url).host}, path=${Uri.parse(url).path}');
-
-    try {
-      final result = await Get.to<bool>(
-        () => PaymentWebViewScreen(
-          url: url,
-          reference: reference,
-          paymentMethod: paymentMethod,
-          orderId: orderId,
-          onPaymentComplete: (success, message, {orderId}) {
-            if (success) {
-              Get.offAll(() => PaymentSuccessScreen(
-                    orderId: orderId!,
-                    amount: Get.find<CartController>().totalPrice + 7.50,
-                    paymentMethod: paymentMethod,
-                    reference: reference,
-                  ));
-            } else {
-              showFailureSnackbar('Payment Failed');
-            }
-          },
-        ),
-        transition: Transition.fadeIn,
-      );
-
-      return result ?? false;
-    } catch (e) {
-      logger.e('Error opening WebView: $e');
-      errorMessage.value = 'Failed to open payment page: $e';
-      return false;
-    }
-  }
 }
 
 class FlutterwavePaymentController extends BasePaymentController {
   static FlutterwavePaymentController get to => Get.find();
 
+  @override
   Future<bool> initiatePayment({
     required double amount,
     required int orderId,
+    bool resume = false,
   }) async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
 
-      final prefs = await SharedPreferences.getInstance();
       final token = await AuthService.instance.getToken();
       if (token == null) {
         errorMessage.value = 'Authentication token not found';
         return false;
       }
 
-      final payload = {'order_id': orderId};
+      final payload = {'order_id': orderId, if (resume) 'resume': true};
       logger.i('Flutterwave payment initiation payload: $payload');
 
-      final response = await http.post(
-        Uri.parse('$baseURLGeneral/payments/initiate-flutterwave-payment/'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(payload),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseURLGeneral/payments/initiate-flutterwave-payment/'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 45));
 
       logger.i('Flutterwave API response status: ${response.statusCode}');
-      logger.i('Flutterwave API response body: ${response.body}');
 
       if (response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
-        logger.i('Flutterwave response: $responseData');
 
         // Handle different response structures
         String? paymentLink;
@@ -360,14 +419,11 @@ class FlutterwavePaymentController extends BasePaymentController {
           return false;
         }
 
-        logger
-            .i('Opening payment with URL: $paymentLink, Reference: $reference');
-        return await _openPaymentWebView(
-            paymentLink, reference, 'Flutterwave', orderId);
+        return await _openPaymentWebView(paymentLink, reference, 'Flutterwave',
+            orderId, amount, resume, responseData['reused'] == true);
       } else {
         final errorBody = response.body;
-        errorMessage.value =
-            'Failed to initiate Flutterwave payment: $errorBody';
+        errorMessage.value = _initiationError(errorBody);
         logger.e(
             'Flutterwave initiation failed: ${response.statusCode} - $errorBody');
         return false;
@@ -382,12 +438,12 @@ class FlutterwavePaymentController extends BasePaymentController {
     }
   }
 
+  @override
   Future<bool> verifyPayment(String reference) async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
 
-      final prefs = await SharedPreferences.getInstance();
       final token = await AuthService.instance.getToken();
       if (token == null) {
         errorMessage.value = 'Authentication token not found';
@@ -400,7 +456,7 @@ class FlutterwavePaymentController extends BasePaymentController {
         headers: {
           'Authorization': 'Bearer $token',
         },
-      );
+      ).timeout(const Duration(seconds: 45));
 
       logger.i('Flutterwave verification response: ${response.body}');
 
@@ -430,91 +486,45 @@ class FlutterwavePaymentController extends BasePaymentController {
       return false;
     }
   }
-
-  Future<bool> _openPaymentWebView(
-      String url, String reference, String paymentMethod, int orderId) async {
-    if (url.isEmpty) {
-      errorMessage.value = 'Payment URL is empty';
-      return false;
-    }
-
-    // Validate URL one more time before opening WebView
-    if (!_isValidUrl(url)) {
-      errorMessage.value = 'Invalid payment URL format';
-      logger.e('Invalid URL format: $url');
-      return false;
-    }
-
-    logger.i('Opening Flutterwave WebView: $url, Reference: $reference');
-
-    try {
-      final result = await Get.to<bool>(
-        () => PaymentWebViewScreen(
-          url: url,
-          reference: reference,
-          paymentMethod: paymentMethod,
-          orderId: orderId,
-          onPaymentComplete: (success, message, {orderId}) {
-            if (success) {
-              Get.offAll(() => PaymentSuccessScreen(
-                    orderId: orderId!,
-                    amount: Get.find<CartController>().totalPrice + 7.50,
-                    paymentMethod: paymentMethod,
-                    reference: reference,
-                  ));
-            } else {
-              showFailureSnackbar('Payment Failed');
-            }
-          },
-        ),
-        transition: Transition.fadeIn,
-      );
-
-      return result ?? false;
-    } catch (e) {
-      logger.e('Error opening WebView: $e');
-      errorMessage.value = 'Failed to open payment page: $e';
-      return false;
-    }
-  }
 }
 
 class StripePaymentController extends BasePaymentController {
   static StripePaymentController get to => Get.find();
 
+  @override
   Future<bool> initiatePayment({
     required double amount,
     required int orderId,
+    bool resume = false,
   }) async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
 
-      final prefs = await SharedPreferences.getInstance();
       final token = await AuthService.instance.getToken();
       if (token == null) {
         errorMessage.value = 'Authentication token not found';
         return false;
       }
 
-      final payload = {'order_id': orderId};
+      final payload = {'order_id': orderId, if (resume) 'resume': true};
       logger.i('Stripe payment initiation payload: $payload');
 
-      final response = await http.post(
-        Uri.parse('$baseURLGeneral/payments/initiate-stripe-payment/'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(payload),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseURLGeneral/payments/initiate-stripe-payment/'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 45));
 
       logger.i('Stripe API response status: ${response.statusCode}');
-      logger.i('Stripe API response body: ${response.body}');
 
       if (response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
-        logger.i('Stripe response: $responseData');
 
         // Handle different response structures
         String? checkoutUrl;
@@ -542,13 +552,11 @@ class StripePaymentController extends BasePaymentController {
           return false;
         }
 
-        logger.i(
-            'Opening payment with URL: $checkoutUrl, Session ID: $sessionId');
-        return await _openPaymentWebView(
-            checkoutUrl, sessionId, 'Stripe', orderId);
+        return await _openPaymentWebView(checkoutUrl, sessionId, 'Stripe',
+            orderId, amount, resume, responseData['reused'] == true);
       } else {
         final errorBody = response.body;
-        errorMessage.value = 'Failed to initiate Stripe payment: $errorBody';
+        errorMessage.value = _initiationError(errorBody);
         logger
             .e('Stripe initiation failed: ${response.statusCode} - $errorBody');
         return false;
@@ -562,12 +570,12 @@ class StripePaymentController extends BasePaymentController {
     }
   }
 
+  @override
   Future<bool> verifyPayment(String sessionId) async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
 
-      final prefs = await SharedPreferences.getInstance();
       final token = await AuthService.instance.getToken();
       if (token == null) {
         errorMessage.value = 'Authentication token not found';
@@ -579,7 +587,7 @@ class StripePaymentController extends BasePaymentController {
         headers: {
           'Authorization': 'Bearer $token',
         },
-      );
+      ).timeout(const Duration(seconds: 45));
 
       logger.i('Stripe verification response: ${response.body}');
 
@@ -606,53 +614,6 @@ class StripePaymentController extends BasePaymentController {
           (uri.scheme == 'http' || uri.scheme == 'https') &&
           uri.hasAuthority;
     } catch (e) {
-      return false;
-    }
-  }
-
-  Future<bool> _openPaymentWebView(
-      String url, String reference, String paymentMethod, int orderId) async {
-    if (url.isEmpty) {
-      errorMessage.value = 'Payment URL is empty';
-      return false;
-    }
-
-    // Validate URL one more time before opening WebView
-    if (!_isValidUrl(url)) {
-      errorMessage.value = 'Invalid payment URL format';
-      logger.e('Invalid URL format: $url');
-      return false;
-    }
-
-    logger.i('Opening Stripe WebView: $url, Reference: $reference');
-
-    try {
-      final result = await Get.to<bool>(
-        () => PaymentWebViewScreen(
-          url: url,
-          reference: reference,
-          paymentMethod: paymentMethod,
-          orderId: orderId,
-          onPaymentComplete: (success, message, {orderId}) {
-            if (success) {
-              Get.offAll(() => PaymentSuccessScreen(
-                    orderId: orderId!,
-                    amount: Get.find<CartController>().totalPrice + 7.50,
-                    paymentMethod: paymentMethod,
-                    reference: reference,
-                  ));
-            } else {
-              showFailureSnackbar('Payment Failed');
-            }
-          },
-        ),
-        transition: Transition.fadeIn,
-      );
-
-      return result ?? false;
-    } catch (e) {
-      logger.e('Error opening WebView: $e');
-      errorMessage.value = 'Failed to open payment page: $e';
       return false;
     }
   }

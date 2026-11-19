@@ -33,18 +33,8 @@ class _LeaveReviewPageState extends State<LeaveReviewPage> {
   OrderProduct? currentProduct;
   final _formKey = GlobalKey<FormState>();
   bool _isInitialized = false;
+  late final String _reviewTag = 'review-${identityHashCode(this)}';
   bool _isDisposed = false; // New flag to track disposal
-
-  void _initializeDependencies() {
-    if (widget.orderId != null) {
-      try {
-        orderController = Get.find<OrderController>();
-      } catch (e) {
-        // If controller doesn't exist, create a new one
-        orderController = Get.put(OrderController());
-      }
-    }
-  }
 
   void _initializeProduct() {
     if (widget.product != null) {
@@ -59,17 +49,19 @@ class _LeaveReviewPageState extends State<LeaveReviewPage> {
     }
   }
 
-  void _loadProductFromOrder() {
-    if (widget.orderId != null && orderController != null) {
-      final order = orderController!.getOrderById(widget.orderId!);
-      if (order != null && order.orderProducts.isNotEmpty) {
-        setState(() {
-          currentProduct = order.orderProducts.first;
-        });
-        _loadExistingReview();
-      } else {
-        showFailureSnackbar('Order or product not found');
-      }
+  Future<void> _loadProductFromOrder() async {
+    final orderId = widget.orderId;
+    if (orderId == null || orderController == null) return;
+    final order = orderController!.getOrderById(orderId) ??
+        await orderController!.fetchOrder(orderId);
+    if (!mounted) return;
+    final product = widget.productId == null
+        ? order?.orderProducts.firstOrNull
+        : order?.orderProducts
+            .firstWhereOrNull((item) => item.id == widget.productId);
+    if (product != null) {
+      setState(() => currentProduct = product);
+      _loadExistingReview();
     }
   }
 
@@ -93,9 +85,9 @@ class _LeaveReviewPageState extends State<LeaveReviewPage> {
 
     final success = await reviewController.submitReview(productId);
     if (success) {
-      widget.onReviewSubmitted?.call(); // Trigger refresh in ProductDetail
-      await Future.delayed(const Duration(milliseconds: 1500));
-      Get.back();
+      if (!mounted) return;
+      widget.onReviewSubmitted?.call();
+      Navigator.of(context).pop(true);
     }
   }
 
@@ -108,7 +100,7 @@ class _LeaveReviewPageState extends State<LeaveReviewPage> {
 
   void _initializeControllers() {
     try {
-      reviewController = Get.put(ReviewController(), permanent: false);
+      reviewController = Get.put(ReviewController(), tag: _reviewTag);
       if (widget.orderId != null) {
         try {
           orderController = Get.find<OrderController>();
@@ -137,14 +129,12 @@ class _LeaveReviewPageState extends State<LeaveReviewPage> {
     }
   }
 
-  
-
   @override
   void dispose() {
     try {
       // Only delete if no other widgets depend on it
-      if (Get.isRegistered<ReviewController>()) {
-        Get.delete<ReviewController>(force: true);
+      if (Get.isRegistered<ReviewController>(tag: _reviewTag)) {
+        Get.delete<ReviewController>(tag: _reviewTag, force: true);
       }
     } catch (e) {
       print('Error disposing controllers: $e');
@@ -189,6 +179,7 @@ class _LeaveReviewPageState extends State<LeaveReviewPage> {
         elevation: 0,
         title: GetX<ReviewController>(
           init: reviewController,
+          tag: _reviewTag,
           builder: (controller) => Text(
             controller.hasExistingReview.value
                 ? "Update Review"
@@ -207,6 +198,7 @@ class _LeaveReviewPageState extends State<LeaveReviewPage> {
         padding: const EdgeInsets.all(20.0),
         child: GetX<ReviewController>(
           init: reviewController,
+          tag: _reviewTag,
           builder: (controller) {
             if (_isDisposed)
               return const SizedBox
@@ -273,6 +265,7 @@ class _LeaveReviewPageState extends State<LeaveReviewPage> {
       ),
       body: GetX<ReviewController>(
         init: reviewController,
+        tag: _reviewTag,
         builder: (controller) {
           if (_isDisposed)
             return const SizedBox.shrink(); // Prevent UI updates after disposal
@@ -625,7 +618,7 @@ class _LeaveReviewPageState extends State<LeaveReviewPage> {
                   setState(() {
                     _isInitialized = false; // Reset initialization state
                   });
-                  _initializeControllers(); // Reinitialize controllers
+                  setState(() => _isInitialized = true);
                   _initializeProduct(); // Retry product initialization
                 },
                 style: ElevatedButton.styleFrom(

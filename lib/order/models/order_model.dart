@@ -1,3 +1,12 @@
+int? _int(dynamic value) => value is int ? value : int.tryParse('$value');
+double? _double(dynamic value) =>
+    value is num ? value.toDouble() : double.tryParse('$value');
+List<String> _strings(dynamic value) =>
+    (value is List ? value : [if (value != null) value])
+        .map((item) => item.toString())
+        .where((item) => item.isNotEmpty)
+        .toList();
+
 class OrderModel {
   final int? id; // Made nullable
   final String? customerId; // Made nullable
@@ -6,8 +15,11 @@ class OrderModel {
   final List<int> rated;
   final int? totalQuantity; // Made nullable
   final double? subtotal; // Made nullable
+  final double? shipping;
+  final double? tax;
   final double? total; // Made nullable
   final String? deliveryStatus; // Made nullable
+  final String? paymentMode;
   final String? paymentStatus; // Made nullable
   final DateTime? createdDate; // Made nullable
   final DateTime? modifiedDate; // Made nullable
@@ -22,35 +34,57 @@ class OrderModel {
     this.totalQuantity,
     this.subtotal,
     this.total,
+    this.shipping,
+    this.tax,
     this.deliveryStatus,
     this.paymentStatus,
+    this.paymentMode,
     this.createdDate,
     this.modifiedDate,
     this.userId,
   });
 
+  String formatAmount(double? value) {
+    if (value == null) return 'Unavailable';
+    final usesNaira =
+        ['paystack', 'flutterwave'].contains(paymentMode?.toLowerCase());
+    final symbol = usesNaira ? '₦' : r'$';
+    return '$symbol${value.toStringAsFixed(2)}';
+  }
+
+  bool get canResumePayment =>
+      id != null &&
+      deliveryStatus == 'Pending' &&
+      (paymentStatus == 'Unpaid' || paymentStatus == 'Failed') &&
+      total != null &&
+      total!.isFinite &&
+      total! > 0;
+
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
-      id: json['id'] as int?,
+      id: _int(json['id']),
       customerId: json['customer_id'] as String?,
       address: Address.fromJson(json['address'] ?? {}),
       orderProducts: (json['order_products'] as List<dynamic>?)
               ?.map((product) => OrderProduct.fromJson(product))
               .toList() ??
           [],
-      rated: List<int>.from(json['rated'] ?? []),
-      totalQuantity: json['total_quantity'] as int?,
-      subtotal: (json['subtotal'] as num?)?.toDouble(),
-      total: (json['total'] as num?)?.toDouble(),
+      rated: (json['rated'] as List? ?? []).map(_int).whereType<int>().toList(),
+      totalQuantity: _int(json['total_quantity']),
+      subtotal: _double(json['subtotal']),
+      total: _double(json['total']),
+      shipping: _double(json['shipping']),
+      tax: _double(json['tax']),
       deliveryStatus: json['delivery_status'] as String?,
       paymentStatus: json['payment_status'] as String?,
+      paymentMode: json['payment_mode'] as String?,
       createdDate: json['created_date'] != null
           ? DateTime.parse(json['created_date'])
           : null,
       modifiedDate: json['modified_date'] != null
           ? DateTime.parse(json['modified_date'])
           : null,
-      userId: json['user'] as int?,
+      userId: _int(json['user']),
     );
   }
 }
@@ -98,27 +132,34 @@ class OrderProduct {
     this.modifiedDate,
   });
 
+  double? get unitPrice =>
+      double.tryParse(discountPrice ?? originalPrice ?? '');
+  double? get lineTotal =>
+      unitPrice == null ? null : unitPrice! * (quantity ?? 1);
+
   factory OrderProduct.fromJson(Map<String, dynamic> json) {
     return OrderProduct(
-      id: json['product_id'] as int?, // Changed from 'id' to 'product_id'
+      id: _int(json['product_id'] ??
+          json['id']), // Changed from 'id' to 'product_id'
       category: json['category'] != null
           ? ProductCategory.fromJson(json['category'])
           : null,
-      brand: json['brand'] != null ? ProductBrand.fromJson(json['brand']) : null,
-      colors: List<String>.from(json['colors'] ?? []),
-      sizes: List<String>.from(json['sizes'] ?? []),
+      brand:
+          json['brand'] != null ? ProductBrand.fromJson(json['brand']) : null,
+      colors: _strings(json['color'] ?? json['colors']),
+      sizes: _strings(json['size'] ?? json['sizes']),
       title: json['title'] as String?,
       slug: json['slug'] as String?,
       description: json['description'] as String?,
       stock: json['stock'] as int?,
       isFeatured: json['is_featured'] as bool?,
       isAvailable: json['is_available'] as bool?,
-      originalPrice: json['original_price'] as String?,
-      discountPrice: json['discount_price'] as String?,
+      originalPrice: json['original_price']?.toString(),
+      discountPrice: (json['price'] ?? json['discount_price'])?.toString(),
       rating: (json['rating'] as num?)?.toDouble(),
-      quantity: json['quantity'] as int?,
+      quantity: _int(json['quantity']),
       productType: json['product_type'] as String?,
-      imageUrls: List<String>.from(json['imageUrls'] ?? [json['imageUrl'] ?? '']),
+      imageUrls: _strings(json['imageUrls'] ?? json['imageUrl']),
       createdDate: json['created_date'] != null
           ? DateTime.parse(json['created_date'])
           : null,
@@ -144,7 +185,7 @@ class ProductCategory {
 
   factory ProductCategory.fromJson(Map<String, dynamic> json) {
     return ProductCategory(
-      id: json['id'],
+      id: _int(json['id']) ?? 0,
       title: json['title'],
       slug: json['slug'],
       image: json['image'],
@@ -165,7 +206,7 @@ class ProductBrand {
 
   factory ProductBrand.fromJson(Map<String, dynamic> json) {
     return ProductBrand(
-      id: json['id'],
+      id: _int(json['id']) ?? 0,
       title: json['title'],
       slug: json['slug'],
     );
@@ -199,16 +240,18 @@ class Address {
 
   factory Address.fromJson(Map<String, dynamic> json) {
     return Address(
-      id: json['id'],
-      lat: (json['lat'] as num).toDouble(),
-      lng: (json['lng'] as num).toDouble(),
-      isDefault: json['isDefault'],
-      address: json['address'],
-      phone: json['phone'],
-      addressType: json['addressType'],
-      createdDate: DateTime.parse(json['created_date']),
-      modifiedDate: DateTime.parse(json['modified_date']),
-      userId: json['user'],
+      id: _int(json['id']) ?? 0,
+      lat: _double(json['lat']) ?? 0,
+      lng: _double(json['lng']) ?? 0,
+      isDefault: json['isDefault'] == true,
+      address: json['address']?.toString() ?? '',
+      phone: json['phone']?.toString() ?? '',
+      addressType: json['addressType']?.toString() ?? '',
+      createdDate:
+          DateTime.tryParse('${json['created_date'] ?? ''}') ?? DateTime(1970),
+      modifiedDate:
+          DateTime.tryParse('${json['modified_date'] ?? ''}') ?? DateTime(1970),
+      userId: _int(json['user']) ?? 0,
     );
   }
 }

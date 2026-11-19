@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 import '../../base/utils/snackbar.dart';
@@ -30,6 +29,7 @@ class ReviewController extends GetxController {
     try {
       isLoading.value = true;
       final review = await ReviewService.getUserReviewForProduct(productId);
+      if (isClosed) return;
       if (review != null) {
         existingReview.value = review;
         hasExistingReview.value = true;
@@ -47,11 +47,12 @@ class ReviewController extends GetxController {
       print('Error loading existing review: $e');
       showFailureSnackbar('Error loading existing review');
     } finally {
-      isLoading.value = false;
+      if (!isClosed) isLoading.value = false;
     }
   }
 
   Future<bool> submitReview(int productId) async {
+    if (isLoading.value || isClosed) return false;
     if (subjectController.text.trim().isEmpty) {
       showFailureSnackbar('Please enter a subject for your review');
       return false;
@@ -77,6 +78,7 @@ class ReviewController extends GetxController {
         isUpdate: hasExistingReview.value,
       );
 
+      if (isClosed) return false;
       if (result != null) {
         final message = hasExistingReview.value
             ? 'Review updated successfully!'
@@ -93,7 +95,7 @@ class ReviewController extends GetxController {
       showFailureSnackbar('Error submitting review: ${e.toString()}');
       return false;
     } finally {
-      isLoading.value = false;
+      if (!isClosed) isLoading.value = false;
     }
   }
 

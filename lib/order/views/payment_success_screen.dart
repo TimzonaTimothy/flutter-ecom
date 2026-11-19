@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../auth/service/auth_service.dart';
 import '../../base/bottom_nav_bar.dart';
@@ -59,7 +58,6 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
         _errorMessage = null;
       });
 
-      final prefs = await SharedPreferences.getInstance();
       final token = await AuthService.instance.getToken();
       if (token == null) {
         setState(() {
@@ -109,20 +107,26 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
     final cartController = Get.find<CartController>();
     final addressController = Get.find<AddressController>();
 
-    // Calculate subtotal and shipping/tax (assuming $7.50 is shipping + tax)
-    final double subtotal = widget.amount - 7.50;
-    const double shippingTax = 7.50;
+    final currency = widget.paymentMethod == 'Stripe' ? 'USD' : 'NGN';
+    String money(Object? value) {
+      final amount = double.tryParse('$value');
+      return amount == null
+          ? 'Unavailable'
+          : '$currency ${amount.toStringAsFixed(2)}';
+    }
+
+    final total = _orderDetails?['total'] ?? widget.amount;
 
     return WillPopScope(
       onWillPop: () async {
-      // Prevent default back behavior and navigate to BottomNavBar
-      Get.offAll(
-        () => const BottomNavBar(),
-        transition: Transition.rightToLeftWithFade,
-        duration: const Duration(milliseconds: 500),
-      );
-      return false; // Prevent the default pop behavior
-    },
+        // Prevent default back behavior and navigate to BottomNavBar
+        Get.offAll(
+          () => const BottomNavBar(),
+          transition: Transition.rightToLeftWithFade,
+          duration: const Duration(milliseconds: 500),
+        );
+        return false; // Prevent the default pop behavior
+      },
       child: Scaffold(
         backgroundColor: AppStyles.bgColor,
         appBar: AppBar(
@@ -225,7 +229,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-      
+
                         // Payment Details Section
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -250,22 +254,26 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                               ),
                               const SizedBox(height: 12),
                               _buildDetailRow('Order ID', '#${widget.orderId}'),
-                              _buildDetailRow(
-                                  'Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
-                              _buildDetailRow('Shipping & Tax',
-                                  '\$${shippingTax.toStringAsFixed(2)}'),
-                              _buildDetailRow('Total Amount',
-                                  '\$${widget.amount.toStringAsFixed(2)}'),
+                              _buildDetailRow('Subtotal',
+                                  money(_orderDetails?['subtotal'])),
+                              if (_orderDetails?['shipping'] != null)
+                                _buildDetailRow('Shipping',
+                                    money(_orderDetails?['shipping'])),
+                              if (_orderDetails?['tax'] != null)
+                                _buildDetailRow(
+                                    'Tax', money(_orderDetails?['tax'])),
+                              _buildDetailRow('Total Amount', money(total)),
                               _buildDetailRow(
                                   'Payment Method', widget.paymentMethod),
                               _buildDetailRow(
                                   'Payment Reference', widget.reference),
-                              _buildDetailRow('Payment Date', _paymentTimestamp),
+                              _buildDetailRow(
+                                  'Payment Date', _paymentTimestamp),
                             ],
                           ),
                         ),
                         const SizedBox(height: 16),
-      
+
                         // Order Items Section
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -314,7 +322,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                                               ),
                                             ),
                                             Text(
-                                              '\$${item['price'].toStringAsFixed(2)}',
+                                              money(item['price']),
                                               style: TextStyle(
                                                 fontSize: 14,
                                                 color: Colors.grey.shade600,
@@ -413,7 +421,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-      
+
                         // Shipping Address Section
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -456,7 +464,8 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                                     color: Colors.grey.shade600,
                                   ),
                                 )
-                              else if (addressController.selectedAddress.value !=
+                              else if (addressController
+                                      .selectedAddress.value !=
                                   null)
                                 Text(
                                   '${addressController.selectedAddress.value!.address}, ${addressController.selectedAddress.value!.addressType}, ${addressController.selectedAddress.value!.phone}',
@@ -477,7 +486,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-      
+
                         // Action Buttons
                         Center(
                           child: Column(
@@ -511,9 +520,8 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
               horizontal: screenWidth * 0.05,
               vertical: screenWidth * 0.035,
             );
-            final textScaleFactor =
-                screenWidth < 400 ? 0.9 : 1.0; 
-      
+            final textScaleFactor = screenWidth < 400 ? 0.9 : 1.0;
+
             return Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: horizontalPadding,
@@ -543,7 +551,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                           ),
                           onPressed: () {
                             Get.to(
-                              const EReceiptScreen(),
+                              EReceiptScreen(orderId: widget.orderId),
                               transition: Transition.rightToLeftWithFade,
                               duration: const Duration(milliseconds: 500),
                             );
@@ -560,7 +568,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                         ElevatedButton.icon(
                           onPressed: () {
                             Get.to(
-                              const TrackOrderPage(),
+                              TrackOrderPage(orderId: widget.orderId),
                               transition: Transition.rightToLeftWithFade,
                               duration: const Duration(milliseconds: 500),
                             );
@@ -610,7 +618,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                             ),
                             onPressed: () {
                               Get.to(
-                                const EReceiptScreen(),
+                                EReceiptScreen(orderId: widget.orderId),
                                 transition: Transition.rightToLeftWithFade,
                                 duration: const Duration(milliseconds: 500),
                               );
@@ -629,7 +637,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                           child: ElevatedButton.icon(
                             onPressed: () {
                               Get.to(
-                                const TrackOrderPage(),
+                                TrackOrderPage(orderId: widget.orderId),
                                 transition: Transition.rightToLeftWithFade,
                                 duration: const Duration(milliseconds: 500),
                               );
