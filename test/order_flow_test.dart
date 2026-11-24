@@ -310,12 +310,23 @@ void main() {
     await tester.pump();
     expect(find.text('Embedded checkout'), findsOneWidget);
 
+    tester.binding.addPostFrameCallback((_) {
+      view.onLoadStop!.call(_CheckoutWebViewController(), WebUri(url));
+    });
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 13));
+    expect(find.textContaining('payment form hasn’t appeared'), findsOneWidget);
+    expect(find.text('Embedded checkout'), findsOneWidget);
+
     reportForbidden({});
     await tester.pump();
     await tester.pump();
     expect(
         find.textContaining('sandbox blocked this checkout'), findsOneWidget);
     expect(find.text('Check payment status'), findsOneWidget);
+    await tester.tap(find.text('Get help with this order'));
+    await tester.pumpAndSettle();
+    expect(find.text('Help with order #90'), findsOneWidget);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 

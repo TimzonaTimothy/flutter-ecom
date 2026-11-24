@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 
 import '../../base/res/base_url.dart';
 import '../controllers/payment_controller.dart';
+import 'order_help_screen.dart';
 
 class PaymentWebViewScreen extends StatefulWidget {
   const PaymentWebViewScreen({
@@ -34,6 +35,9 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
   static const _maxChecks = 15;
   final _api = Uri.parse(baseUrl);
   Timer? _pageTimer;
+  Timer? _recoveryTimer;
+  bool _showRecovery = false;
+  bool get _isFlutterwave => widget.paymentMethod == 'Flutterwave';
   Timer? _pollTimer;
   late final Uri? _checkoutUrl;
   int _attempt = 0;
@@ -42,7 +46,7 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
   bool _loading = true;
   bool _checking = false;
   bool _visibleCheck = false;
-  bool _closeDialogOpen = false;
+  bool _checkoutOverlayOpen = false;
   bool _finished = false;
   String? _deferredResult;
   String? _loadError;
@@ -61,11 +65,13 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       _loadError = 'This payment link could not be opened.';
     } else {
       _startPageTimer();
+      _startRecoveryTimer();
     }
   }
 
   @override
   void dispose() {
+    _recoveryTimer?.cancel();
     _pageTimer?.cancel();
     _pollTimer?.cancel();
     super.dispose();
@@ -76,6 +82,18 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
     _pageTimer = Timer(const Duration(seconds: 45), () {
       if (!mounted || _finished || !_loading) return;
       _showLoadError('The checkout page took too long to load. Try again.');
+    });
+  }
+
+  void _startRecoveryTimer() {
+    if (!_isFlutterwave) return;
+    _recoveryTimer?.cancel();
+    // A hosted page can finish navigating before its payment form appears.
+    _recoveryTimer = Timer(const Duration(seconds: 12), () {
+      if (!mounted || _finished || _returned != null || _loadError != null) {
+        return;
+      }
+      setState(() => _showRecovery = true);
     });
   }
 
@@ -97,6 +115,7 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
     _pollTimer?.cancel();
     setState(() {
       _attempt++;
+      _showRecovery = false;
       _checks = 0;
       _popupId = null;
       _returned = null;
@@ -105,6 +124,7 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       _loading = true;
     });
     _startPageTimer();
+    _startRecoveryTimer();
   }
 
   _CheckoutReturn? _checkoutReturn(WebUri? value) {
@@ -247,11 +267,12 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
 
   void _finish(String result) {
     if (!mounted || _finished) return;
-    if (_closeDialogOpen) {
+    if (_checkoutOverlayOpen) {
       _deferredResult = result;
       return;
     }
     _finished = true;
+    _recoveryTimer?.cancel();
     _pageTimer?.cancel();
     _pollTimer?.cancel();
     Navigator.of(context).pop(result);
@@ -272,12 +293,12 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       _closePopup();
       return;
     }
-    if (_finished || _closeDialogOpen) return;
+    if (_finished || _checkoutOverlayOpen) return;
     if (_returned != null) {
       _finish(PaymentWebViewScreen.dismissed);
       return;
     }
-    _closeDialogOpen = true;
+    _checkoutOverlayOpen = true;
     final close = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -295,12 +316,50 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
         ],
       ),
     );
-    _closeDialogOpen = false;
+    _checkoutOverlayOpen = false;
     if (_deferredResult case final result?) {
       _finish(result);
     } else if (close == true) {
       _finish(PaymentWebViewScreen.dismissed);
     }
+  }
+
+  Future<void> _openOrderHelp() async {
+    if (_finished || _checkoutOverlayOpen) return;
+    _checkoutOverlayOpen = true;
+    try {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => OrderHelpScreen(orderId: widget.orderId),
+        ),
+      );
+    } finally {
+      _checkoutOverlayOpen = false;
+      if (_deferredResult case final result?) _finish(result);
+    }
+  }
+
+  Widget _recoveryNotice() {
+    return Material(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+        child: Column(
+          children: [
+            const Text(
+                'If the payment form hasn’t appeared, you can reload Flutterwave or get help.'),
+            Wrap(
+              children: [
+                TextButton(
+                    onPressed: _retry, child: const Text('Reload checkout')),
+                TextButton(
+                    onPressed: _openOrderHelp, child: const Text('Get help')),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _webView({int? windowId}) {
@@ -377,12 +436,12 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
             request.isForMainFrame == true &&
             code == 403 &&
             !isChallenge &&
-            widget.paymentMethod == 'Flutterwave' &&
+            _isFlutterwave &&
             host == _checkoutUrl?.host &&
             host.endsWith('.dev-flutterwave.com')) {
           _pollTimer?.cancel();
           _showLoadError(
-            'Flutterwave’s sandbox blocked this checkout. Return to the order and use Get help with this order if it keeps happening.',
+            'Flutterwave’s sandbox blocked this checkout. You can retry, check payment status, or get help with this order.',
           );
           return;
         }
@@ -448,6 +507,10 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
                   : () => _checkPayment(visible: true, manual: true),
               child: const Text('Check payment status'),
             ),
+            if (_isFlutterwave && _loadError != null)
+              TextButton(
+                  onPressed: _openOrderHelp,
+                  child: const Text('Get help with this order')),
           ],
         ),
       ),
@@ -490,6 +553,11 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
           child: Column(
             children: [
               if (_loading || _visibleCheck) const LinearProgressIndicator(),
+              if (_showRecovery &&
+                  _loadError == null &&
+                  _returned == null &&
+                  _popupId == null)
+                _recoveryNotice(),
               if (_statusMessage case final message?)
                 Padding(
                     padding: const EdgeInsets.all(12), child: Text(message)),

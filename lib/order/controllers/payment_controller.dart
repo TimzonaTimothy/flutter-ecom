@@ -190,7 +190,13 @@ abstract class BasePaymentController extends GetxController {
     bool resume,
     bool reused,
   ) async {
-    final alreadyVerified = reused && await verifyPayment(reference);
+    final alreadyVerified = reused &&
+        await (paymentMethod == 'Flutterwave'
+            ? verifyPayment(reference).timeout(
+                const Duration(seconds: 4),
+                onTimeout: () => false,
+              )
+            : verifyPayment(reference));
     final message = alreadyVerified
         ? PaymentWebViewScreen.verified
         : await Get.to<String>(
