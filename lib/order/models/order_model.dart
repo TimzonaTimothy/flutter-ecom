@@ -20,6 +20,7 @@ class OrderModel {
   final double? total; // Made nullable
   final String? deliveryStatus; // Made nullable
   final String? paymentMode;
+  final bool canSwitchPaymentMethod;
   final String? paymentStatus; // Made nullable
   final DateTime? createdDate; // Made nullable
   final DateTime? modifiedDate; // Made nullable
@@ -39,6 +40,7 @@ class OrderModel {
     this.deliveryStatus,
     this.paymentStatus,
     this.paymentMode,
+    this.canSwitchPaymentMethod = false,
     this.createdDate,
     this.modifiedDate,
     this.userId,
@@ -78,6 +80,7 @@ class OrderModel {
       deliveryStatus: json['delivery_status'] as String?,
       paymentStatus: json['payment_status'] as String?,
       paymentMode: json['payment_mode'] as String?,
+      canSwitchPaymentMethod: json['can_switch_payment_method'] == true,
       createdDate: json['created_date'] != null
           ? DateTime.parse(json['created_date'])
           : null,

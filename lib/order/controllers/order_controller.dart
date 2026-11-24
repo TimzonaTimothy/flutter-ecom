@@ -18,14 +18,19 @@ class OrderController extends GetxController {
       }
       final added = (result['added'] as List).length;
       final skipped = (result['skipped'] as List).length;
-      if (added > 0) {
+      final inCart = (result['already_in_cart'] as List?)?.length ?? 0;
+      if (added > 0 || inCart > 0) {
         if (Get.isRegistered<CartController>()) {
           await Get.find<CartController>().fetchCartItems();
         }
         Get.to(() => const CartScreen());
       }
-      Get.snackbar(added > 0 ? 'Added to cart' : 'No items added',
-          '$added item(s) added, $skipped unavailable or short of stock. Review current prices before checkout.');
+      Get.snackbar(
+        added > 0
+            ? 'Added to cart'
+            : (inCart > 0 ? 'Items already in cart' : 'No items added'),
+        '$added added, $inCart already in your cart, $skipped unavailable. Review current prices before checkout.',
+      );
     } catch (_) {
       Get.snackbar('Could not reorder', 'Check your cart before trying again.');
     } finally {

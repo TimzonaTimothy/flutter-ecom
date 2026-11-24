@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -172,7 +173,9 @@ abstract class BasePaymentController extends GetxController {
             transition: Transition.fadeIn,
           );
     if (message != PaymentWebViewScreen.verified) {
-      errorMessage.value = message ?? 'Payment has not been confirmed.';
+      errorMessage.value = message == PaymentWebViewScreen.dismissed
+          ? ''
+          : 'Payment has not been confirmed.';
       return false;
     }
 
@@ -182,7 +185,9 @@ abstract class BasePaymentController extends GetxController {
       // A completed payment remains successful if local storage is unavailable.
     }
     if (!resume) {
-      await Get.find<CartController>().fetchCartItems();
+      if (Get.isRegistered<CartController>()) {
+        unawaited(Get.find<CartController>().fetchCartItems());
+      }
       Get.offAll(() => PaymentSuccessScreen(
             orderId: orderId,
             amount: amount,
@@ -200,6 +205,15 @@ abstract class BasePaymentController extends GetxController {
         return data.first as String;
       }
       if (data is Map) {
+        final error = data['error'];
+        if (error is Map) {
+          final details = error['details'];
+          if (details is List &&
+              details.isNotEmpty &&
+              details.first is String) {
+            return details.first as String;
+          }
+        }
         final message = data['message'] ?? data['detail'];
         if (message is String) return message;
       }

@@ -1,843 +1,14 @@
-// import 'dart:async';
-// import 'dart:developer';
-// import 'package:flutter/foundation.dart';
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-// import 'package:webview_flutter/webview_flutter.dart';
-
-// import '../../base/res/styles/app_styles.dart';
-// import '../../base/utils/snackbar.dart';
-// import '../controllers/payment_controller.dart';
-// import 'payment_methods_screen.dart';
-
-// class PaymentWebViewScreen extends StatefulWidget {
-//   final String url;
-//   final String reference;
-//   final String paymentMethod;
-//   final int orderId;
-//   final Function(bool success, String? message, {int? orderId}) onPaymentComplete;
-
-//   const PaymentWebViewScreen({
-//     Key? key,
-//     required this.url,
-//     required this.reference,
-//     required this.paymentMethod,
-//     required this.orderId,
-//     required this.onPaymentComplete,
-//   }) : super(key: key);
-
-//   @override
-//   State<PaymentWebViewScreen> createState() => _PaymentWebViewScreenState();
-// }
-
-// class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
-//   late final WebViewController _controller;
-//   bool _isLoading = true;
-//   String? _errorMessage;
-//   Timer? _pollTimer;
-//   Timer? _timeoutTimer;
-//   bool _paymentCompleted = false;
-//   bool _isVerifying = false;
-//   int _verificationAttempts = 0;
-//   static const int _maxVerificationAttempts = 15;
-//   bool _webViewInitialized = false;
-
-//   // Enhanced success/failure URL patterns
-//   final Map<String, Map<String, List<String>>> _urlPatterns = {
-//     'PayStack': {
-//       'success': [
-//         'callback',
-//         'success',
-//         'verify',
-//         'payment-success',
-//         'completed',
-//         'trxref=',
-//         'reference=',
-//         'paystack.co/pay/success',
-//         'status=success',
-//         'payment_status=success',
-//       ],
-//       'failure': [
-//         'cancel',
-//         'failed',
-//         'error',
-//         'payment-cancelled',
-//         'cancelled',
-//         'paystack.co/pay/cancel',
-//         'status=cancelled',
-//         'payment_status=failed',
-//       ],
-//     },
-//     'Flutterwave': {
-//       'success': [
-//         'callback',
-//         'success',
-//         'verify',
-//         'payment-success',
-//         'completed',
-//         'tx_ref=',
-//         'transaction_id=',
-//         'status=successful',
-//         'flutterwave.com/pay/success',
-//         'payment_status=successful',
-//       ],
-//       'failure': [
-//         'cancel',
-//         'failed',
-//         'error',
-//         'payment-cancelled',
-//         'cancelled',
-//         'status=cancelled',
-//         'flutterwave.com/pay/cancel',
-//         'payment_status=failed',
-//       ],
-//     },
-//     'Stripe': {
-//       'success': [
-//         'success',
-//         'payment/success',
-//         'checkout/success',
-//         'verify-stripe-payment',
-//         'session_id=cs_',
-//         'payment_status=paid',
-//         'stripe.com/pay/success',
-//         'payment_intent_status=succeeded',
-//       ],
-//       'failure': [
-//         'cancel',
-//         'payment/cancel',
-//         'checkout/cancel',
-//         'payment_status=unpaid',
-//         'cancelled',
-//         'stripe.com/pay/cancel',
-//         'payment_intent_status=canceled',
-//       ],
-//     },
-//   };
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     log('=== PaymentWebViewScreen INIT ===');
-//     log('URL: ${widget.url}');
-//     log('Reference: ${widget.reference}');
-//     log('Payment Method: ${widget.paymentMethod}');
-//     log('Order ID: ${widget.orderId}');
-    
-//     _validateUrl();
-//     _initializeWebView();
-//     _startPaymentPolling();
-//     _startTimeoutTimer();
-//   }
-
-//   // void _validateUrl() {
-//   //   if (widget.url.isEmpty) {
-//   //     setState(() {
-//   //       _errorMessage = 'Payment URL is empty';
-//   //       _isLoading = false;
-//   //     });
-//   //     return;
-//   //   }
-
-//   //   try {
-//   //     final uri = Uri.parse(widget.url);
-//   //     if (!uri.hasScheme || (!uri.scheme.startsWith('http'))) {
-//   //       setState(() {
-//   //         _errorMessage = 'Invalid payment URL format';
-//   //         _isLoading = false;
-//   //       });
-//   //       return;
-//   //     }
-//   //     log('URL validation passed: ${widget.url}');
-//   //   } catch (e) {
-//   //     log('URL validation failed: $e');
-//   //     setState(() {
-//   //       _errorMessage = 'Invalid payment URL: $e';
-//   //       _isLoading = false;
-//   //     });
-//   //   }
-//   // }
-//   void _validateUrl() {
-//   if (widget.url.isEmpty) {
-//     setState(() {
-//       _errorMessage = 'Payment URL is empty';
-//       _isLoading = false;
-//     });
-//     return;
-//   }
-
-//   try {
-//     final uri = Uri.parse(widget.url);
-//     if (!uri.hasScheme || !uri.scheme.startsWith('https')) {
-//       log('Invalid URL scheme: ${uri.scheme}');
-//       setState(() {
-//         _errorMessage = 'Payment URL must use HTTPS';
-//         _isLoading = false;
-//       });
-//       return;
-//     }
-//     log('URL validation passed: ${widget.url}');
-//   } catch (e) {
-//     log('URL validation failed: $e');
-//     setState(() {
-//       _errorMessage = 'Invalid payment URL: $e';
-//       _isLoading = false;
-//     });
-//   }
-// }
-
-//   @override
-//   void dispose() {
-//     log('=== PaymentWebViewScreen DISPOSE ===');
-//     _pollTimer?.cancel();
-//     _timeoutTimer?.cancel();
-//     super.dispose();
-//   }
-
-//   void _initializeWebView() {
-//     if (_errorMessage != null) return;
-
-//     log('Initializing WebView...');
-    
-//     try {
-//       _controller = WebViewController()
-//         ..setJavaScriptMode(JavaScriptMode.unrestricted)
-//         ..setUserAgent(
-//           'Mozilla/5.0 (Linux; Android 11; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Mobile Safari/537.36'
-//         )
-//         ..setBackgroundColor(Colors.white)
-//         ..clearCache()
-//         ..enableZoom(false)
-//         ..clearLocalStorage()
-//         ..setNavigationDelegate(
-//           NavigationDelegate(
-//             onPageStarted: (String url) {
-//               log('🔄 Page STARTED loading: $url');
-//               if (!_paymentCompleted) {
-//                 _checkUrlForPaymentStatus(url);
-//               }
-//             },
-//             onPageFinished: (String url) {
-//               log('✅ Page FINISHED loading: $url');
-//               setState(() {
-//                 _isLoading = false;
-//                 _webViewInitialized = true;
-//               });
-//               if (!_paymentCompleted) {
-//                 _checkUrlForPaymentStatus(url);
-//               }
-//             },
-//             onWebResourceError: (WebResourceError error) {
-//               log('❌ WebView error: ${error.description} (Code: ${error.errorCode})');
-//               setState(() {
-//                 _isLoading = false;
-//                 _errorMessage = 'Failed to load payment page: ${error.description}';
-//               });
-//             },
-//             onNavigationRequest: (NavigationRequest request) {
-//               log('🚀 Navigation request: ${request.url}');
-//               if (!_paymentCompleted) {
-//                 _checkUrlForPaymentStatus(request.url);
-//               }
-//               return NavigationDecision.navigate;
-//             },
-//             onHttpError: (HttpResponseError error) {
-//               log('🔥 HTTP error: ${error.response?.statusCode}');
-//             },
-//             onUrlChange: (UrlChange change) {
-//               log('🔄 URL changed: ${change.url}');
-//               if (change.url != null && !_paymentCompleted) {
-//                 _checkUrlForPaymentStatus(change.url!);
-//               }
-//             },
-//           ),
-//         );
-
-//       // Load the payment URL
-//       _loadPaymentUrl();
-      
-//     } catch (e) {
-//       log('Error initializing WebView: $e');
-//       setState(() {
-//         _errorMessage = 'Failed to initialize payment page: $e';
-//         _isLoading = false;
-//       });
-//     }
-//   }
-
-//   void _loadPaymentUrl() {
-//     try {
-//       log('🌐 Loading payment URL: ${widget.url}');
-//       _controller.loadRequest(Uri.parse(widget.url));
-      
-//       // Add a timeout for URL loading
-//       Timer(const Duration(seconds: 30), () {
-//         if (_isLoading && !_webViewInitialized && mounted) {
-//           log('⏰ URL loading timeout');
-//           setState(() {
-//             _errorMessage = 'Payment page took too long to load. Please check your internet connection.';
-//             _isLoading = false;
-//           });
-//         }
-//       });
-      
-//     } catch (e) {
-//       log('Error loading URL: $e');
-//       setState(() {
-//         _errorMessage = 'Invalid payment URL: $e';
-//         _isLoading = false;
-//       });
-//     }
-//   }
-
-//   void _checkUrlForPaymentStatus(String url) {
-//     if (_paymentCompleted || _isVerifying) return;
-
-//     final lowercaseUrl = url.toLowerCase();
-//     final patterns = _urlPatterns[widget.paymentMethod];
-    
-//     if (patterns == null) {
-//       log('⚠️ No URL patterns found for payment method: ${widget.paymentMethod}');
-//       return;
-//     }
-
-//     log('🔍 Checking URL for payment status: $lowercaseUrl');
-
-//     // Check for success patterns
-//     final successPatterns = patterns['success'] ?? [];
-//     for (String pattern in successPatterns) {
-//       if (lowercaseUrl.contains(pattern.toLowerCase())) {
-//         log('🎉 Success pattern detected: $pattern in $url');
-//         _handlePaymentSuccess();
-//         return;
-//       }
-//     }
-
-//     // Check for failure patterns
-//     final failurePatterns = patterns['failure'] ?? [];
-//     for (String pattern in failurePatterns) {
-//       if (lowercaseUrl.contains(pattern.toLowerCase())) {
-//         log('💥 Failure pattern detected: $pattern in $url');
-//         _handlePaymentFailure('Payment was cancelled or failed');
-//         return;
-//       }
-//     }
-
-//     // Special handling for redirect URLs
-//     _handleSpecialRedirects(url);
-//   }
-
-//   void _handleSpecialRedirects(String url) {
-//     final lowercaseUrl = url.toLowerCase();
-    
-//     if (lowercaseUrl.contains('localhost') || 
-//         lowercaseUrl.contains('127.0.0.1') || 
-//         lowercaseUrl.contains('callback') || 
-//         lowercaseUrl.contains('redirect')) {
-      
-//       if (lowercaseUrl.contains('success') || 
-//           lowercaseUrl.contains('verify') || 
-//           lowercaseUrl.contains('complete') || 
-//           lowercaseUrl.contains('paid')) {
-//         log('🚀 Special success redirect detected: $url');
-//         _handlePaymentSuccess();
-//       } else if (lowercaseUrl.contains('cancel') || 
-//                  lowercaseUrl.contains('failed') || 
-//                  lowercaseUrl.contains('error')) {
-//         log('🛑 Special failure redirect detected: $url');
-//         _handlePaymentFailure('Payment was cancelled');
-//       }
-//     }
-//   }
-
-//   void _startPaymentPolling() {
-//     log('🔄 Starting payment polling...');
-//     _pollTimer = Timer.periodic(const Duration(seconds: 8), (timer) {
-//       if (!_paymentCompleted && !_isVerifying && _verificationAttempts < _maxVerificationAttempts) {
-//         _verifyPaymentStatus();
-//       } else if (_verificationAttempts >= _maxVerificationAttempts) {
-//         timer.cancel();
-//         if (!_paymentCompleted) {
-//           log('⏰ Maximum verification attempts reached');
-//         }
-//       }
-//     });
-//   }
-
-//   void _startTimeoutTimer() {
-//     _timeoutTimer = Timer(const Duration(minutes: 15), () {
-//       if (!_paymentCompleted && mounted) {
-//         log('⏰ Payment session timed out');
-//         _handlePaymentFailure('Payment session timed out. Please try again.');
-//       }
-//     });
-//   }
-
-//   // Fixed verification method that uses the correct controllers
-//   Future<void> _verifyPaymentStatus() async {
-//     if (_isVerifying || _paymentCompleted) return;
-    
-//     _verificationAttempts++;
-    
-//     setState(() {
-//       _isVerifying = true;
-//     });
-
-//     try {
-//       log('🔍 Polling payment verification for reference: ${widget.reference} (Attempt: $_verificationAttempts)');
-      
-//       bool verified = false;
-      
-//       // Use the appropriate controller based on payment method
-//       switch (widget.paymentMethod) {
-//         case 'PayStack':
-//           final controller = Get.find<PaystackPaymentController>();
-//           verified = await controller.verifyPayment(widget.reference);
-//           break;
-//         case 'Flutterwave':
-//           final controller = Get.find<FlutterwavePaymentController>();
-//           verified = await controller.verifyPayment(widget.reference);
-//           break;
-//         case 'Stripe':
-//           final controller = Get.find<StripePaymentController>();
-//           verified = await controller.verifyPayment(widget.reference);
-//           break;
-//       }
-      
-//       log('✅ Payment verification result: $verified');
-      
-//       if (verified && !_paymentCompleted) {
-//         log('🎉 Payment verified through polling - Success!');
-//         _handlePaymentSuccess();
-//       } else if (_verificationAttempts >= _maxVerificationAttempts && !_paymentCompleted) {
-//         log('💥 Payment verification failed after maximum attempts');
-//         // Don't auto-fail here, let user manually verify or close
-//       }
-//     } catch (e) {
-//       log('❌ Error during payment polling: $e');
-//     } finally {
-//       if (mounted) {
-//         setState(() {
-//           _isVerifying = false;
-//         });
-//       }
-//     }
-//   }
-
-//   void _handlePaymentSuccess() {
-//     if (_paymentCompleted) return;
-    
-//     log('=== 🎉 PAYMENT SUCCESS HANDLER CALLED ===');
-//     _paymentCompleted = true;
-//     _pollTimer?.cancel();
-//     _timeoutTimer?.cancel();
-    
-//     _showSuccessOverlay();
-    
-//     Future.delayed(const Duration(seconds: 2), () {
-//       if (mounted) {
-//         log('📞 Calling onPaymentComplete callback with success');
-//         widget.onPaymentComplete(
-//           true, 
-//           'Payment completed successfully',
-//           orderId: widget.orderId,
-//         );
-//       }
-//     });
-//   }
-
-//   void _handlePaymentFailure(String message) {
-//     if (_paymentCompleted) return;
-    
-//     log('=== 💥 PAYMENT FAILURE HANDLER CALLED ===');
-//     log('Payment failed: $message');
-    
-//     _paymentCompleted = true;
-//     _pollTimer?.cancel();
-//     _timeoutTimer?.cancel();
-    
-//     if (mounted) {
-//       widget.onPaymentComplete(false, message, orderId: widget.orderId);
-//     }
-//   }
-
-//   void _showSuccessOverlay() {
-//     if (!mounted) return;
-    
-//     showDialog(
-//       context: context,
-//       barrierDismissible: false,
-//       builder: (context) => WillPopScope(
-//         onWillPop: () async => false,
-//         child: Dialog(
-//           backgroundColor: Colors.transparent,
-//           child: Container(
-//             padding: const EdgeInsets.all(24),
-//             decoration: BoxDecoration(
-//               color: Colors.white,
-//               borderRadius: BorderRadius.circular(16),
-//             ),
-//             child: Column(
-//               mainAxisSize: MainAxisSize.min,
-//               children: [
-//                 Container(
-//                   padding: const EdgeInsets.all(16),
-//                   decoration: BoxDecoration(
-//                     color: Colors.green.withOpacity(0.1),
-//                     shape: BoxShape.circle,
-//                   ),
-//                   child: const Icon(
-//                     Icons.check_circle,
-//                     color: Colors.green,
-//                     size: 48,
-//                   ),
-//                 ),
-//                 const SizedBox(height: 16),
-//                 const Text(
-//                   'Payment Successful!',
-//                   style: TextStyle(
-//                     fontSize: 20,
-//                     fontWeight: FontWeight.bold,
-//                   ),
-//                 ),
-//                 const SizedBox(height: 8),
-//                 Text(
-//                   'Redirecting to order confirmation...',
-//                   style: TextStyle(
-//                     color: Colors.grey.shade600,
-//                     fontSize: 14,
-//                   ),
-//                 ),
-//                 const SizedBox(height: 16),
-//                 const SizedBox(
-//                   width: 24,
-//                   height: 24,
-//                   child: CircularProgressIndicator(strokeWidth: 2),
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-
-//   void _handleManualClose() {
-//     if (_paymentCompleted) return;
-    
-//     Get.dialog(
-//       AlertDialog(
-//         title: const Text('Close Payment'),
-//         content: const Text(
-//           'Are you sure you want to close the payment page? Your payment may not be completed.'
-//         ),
-//         actions: [
-//           TextButton(
-//             onPressed: () {
-//               Get.back(); // Close dialog
-//             },
-//             child: const Text('Continue Payment'),
-//           ),
-//           TextButton(
-//             onPressed: () {
-//               Get.to(() => const PaymentMethodsScreen(), transition: Transition.rightToLeftWithFade,
-//                     duration: const Duration(milliseconds: 500),);
-              
-//               _handlePaymentFailure('Payment cancelled by user');
-//             },
-//             child: Text(
-//               'Close Payment',
-//               style: TextStyle(color: Colors.red.shade600),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   void _handleRefresh() {
-//     log('🔄 Refreshing WebView...');
-//     setState(() {
-//       _isLoading = true;
-//       _errorMessage = null;
-//       _webViewInitialized = false;
-//     });
-    
-//     try {
-//       _controller.reload();
-//     } catch (e) {
-//       log('Error refreshing WebView: $e');
-//       _loadPaymentUrl();
-//     }
-//   }
-
-//   Future<void> _handleManualVerification() async {
-//     if (_paymentCompleted || _isVerifying) return;
-
-//     log('🔍 Manual verification triggered...');
-//     setState(() {
-//       _isVerifying = true;
-//     });
-
-//     try {
-//       bool verified = false;
-      
-//       // Use the appropriate controller based on payment method
-//       switch (widget.paymentMethod) {
-//         case 'PayStack':
-//           final controller = Get.find<PaystackPaymentController>();
-//           verified = await controller.verifyPayment(widget.reference);
-//           break;
-//         case 'Flutterwave':
-//           final controller = Get.find<FlutterwavePaymentController>();
-//           verified = await controller.verifyPayment(widget.reference);
-//           break;
-//         case 'Stripe':
-//           final controller = Get.find<StripePaymentController>();
-//           verified = await controller.verifyPayment(widget.reference);
-//           break;
-//       }
-      
-//       if (verified) {
-//         _handlePaymentSuccess();
-//       } else {
-//         showFailureSnackbar('Verification Failed');
-       
-//       }
-//     } catch (e) {
-//       log('Manual verification error: $e');
-//       showFailureSnackbar('Verification Error');
-     
-//     } finally {
-//       if (mounted) {
-//         setState(() {
-//           _isVerifying = false;
-//         });
-//       }
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return WillPopScope(
-//       onWillPop: () async {
-//         _handleManualClose();
-//         return false;
-//       },
-//       child: Scaffold(
-//         appBar: AppBar(
-//           title: Text('${widget.paymentMethod} Payment'),
-//           backgroundColor: Colors.white,
-//           foregroundColor: Colors.black,
-//           elevation: 1,
-//           leading: IconButton(
-//             icon: const Icon(Icons.close),
-//             onPressed: _handleManualClose,
-//           ),
-//           actions: [
-//             if (_isLoading || _isVerifying)
-//               const Padding(
-//                 padding: EdgeInsets.all(16.0),
-//                 child: SizedBox(
-//                   width: 20,
-//                   height: 20,
-//                   child: CircularProgressIndicator(strokeWidth: 2),
-//                 ),
-//               ),
-//             IconButton(
-//               icon: const Icon(Icons.refresh),
-//               onPressed: _handleRefresh,
-//             ),
-//             IconButton(
-//               icon: const Icon(Icons.verified_user),
-//               onPressed: _isVerifying ? null : _handleManualVerification,
-//               tooltip: 'Verify Payment',
-//             ),
-//           ],
-//         ),
-//         body: Column(
-//           children: [
-//             // Progress indicator
-//             if (_isLoading)
-//               const LinearProgressIndicator(),
-            
-//             // Verification status
-//             if (_isVerifying)
-//               Container(
-//                 width: double.infinity,
-//                 padding: const EdgeInsets.all(12),
-//                 color: Colors.blue.shade50,
-//                 child: Row(
-//                   children: [
-//                     SizedBox(
-//                       width: 16,
-//                       height: 16,
-//                       child: CircularProgressIndicator(
-//                         strokeWidth: 2,
-//                         valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
-//                       ),
-//                     ),
-//                     const SizedBox(width: 12),
-//                     Expanded(
-//                       child: Text(
-//                         'Verifying payment... (Attempt $_verificationAttempts)',
-//                         style: TextStyle(
-//                           color: Colors.blue.shade700,
-//                           fontSize: 14,
-//                         ),
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-            
-//             // Error message
-//             if (_errorMessage != null)
-//               Container(
-//                 width: double.infinity,
-//                 padding: const EdgeInsets.all(16),
-//                 color: Colors.red.shade50,
-//                 child: Row(
-//                   children: [
-//                     Icon(Icons.error_outline, color: Colors.red.shade700),
-//                     const SizedBox(width: 8),
-//                     Expanded(
-//                       child: Text(
-//                         _errorMessage!,
-//                         style: TextStyle(color: Colors.red.shade700),
-//                       ),
-//                     ),
-//                     TextButton(
-//                       onPressed: _handleRefresh,
-//                       child: const Text('Retry'),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-            
-//             // WebView or Error Display
-//             Expanded(
-//               child: _errorMessage != null 
-//                 ? Center(
-//                     child: Column(
-//                       mainAxisAlignment: MainAxisAlignment.center,
-//                       children: [
-//                         Icon(Icons.error_outline, size: 64, color: Colors.red.shade400),
-//                         const SizedBox(height: 16),
-//                         Text(
-//                           'Failed to load payment page', 
-//                           style: TextStyle(
-//                             color: Colors.red.shade600,
-//                             fontSize: 16,
-//                             fontWeight: FontWeight.bold,
-//                           ),
-//                         ),
-//                         const SizedBox(height: 8),
-//                         Padding(
-//                           padding: const EdgeInsets.symmetric(horizontal: 32),
-//                           child: Text(
-//                             _errorMessage!,
-//                             textAlign: TextAlign.center,
-//                             style: TextStyle(
-//                               color: Colors.red.shade500,
-//                               fontSize: 14,
-//                             ),
-//                           ),
-//                         ),
-//                         const SizedBox(height: 16),
-//                         ElevatedButton(
-//                           onPressed: _handleRefresh,
-//                           child: const Text('Retry'),
-//                         ),
-//                         const SizedBox(height: 8),
-//                         TextButton(
-//                           onPressed: _handleManualVerification,
-//                           child: const Text('Verify Payment Manually'),
-//                         ),
-//                       ],
-//                     ),
-//                   )
-//                 : _webViewInitialized || !_isLoading
-//                   ? WebViewWidget(controller: _controller)
-//                   :  
-                  
-//                   Center(
-//                       child: Column(
-//                         mainAxisAlignment: MainAxisAlignment.center,
-//                         children: [
-//                           CircularProgressIndicator(color: AppStyles.primaryColor,),
-//                           SizedBox(height: 16),
-//                           Text('Loading payment page...'),
-//                           SizedBox(height: 8),
-//                           Text(
-//                             'This may take a few seconds...',
-//                             style: TextStyle(
-//                               fontSize: 12,
-//                               color: Colors.grey,
-//                             ),
-//                           ),
-//                         ],
-//                       ),
-//                     ),
-//             ),
-            
-//             // Bottom info bar
-//             Container(
-//               padding: const EdgeInsets.all(12),
-//               decoration: BoxDecoration(
-//                 color: Colors.grey.shade100,
-//                 border: Border(top: BorderSide(color: Colors.grey.shade300)),
-//               ),
-//               child: Row(
-//                 children: [
-//                   Icon(Icons.security, size: 16, color: Colors.green.shade600),
-//                   const SizedBox(width: 8),
-//                   Expanded(
-//                     child: Text(
-//                       'Secure ${widget.paymentMethod} payment processing',
-//                       style: TextStyle(
-//                         fontSize: 12,
-//                         color: Colors.grey.shade600,
-//                       ),
-//                     ),
-//                   ),
-//                   Text(
-//                     'Order #${widget.orderId}',
-//                     style: TextStyle(
-//                       fontSize: 10,
-//                       color: Colors.grey.shade500,
-//                       fontWeight: FontWeight.w500,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-
-
-
 import 'dart:async';
 import 'dart:developer';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
-import '../../base/utils/snackbar.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:get/get.dart';
+
+import '../../base/res/base_url.dart';
 import '../controllers/payment_controller.dart';
 
 class PaymentWebViewScreen extends StatefulWidget {
-  final String url;
-  final String reference;
-  final String paymentMethod;
-  final int orderId;
-  static const verified = 'verified';
-
   const PaymentWebViewScreen({
     super.key,
     required this.url,
@@ -846,672 +17,474 @@ class PaymentWebViewScreen extends StatefulWidget {
     required this.orderId,
   });
 
+  static const verified = 'verified';
+  static const dismissed = 'dismissed';
+  final String url;
+  final String reference;
+  final String paymentMethod;
+  final int orderId;
+
   @override
   State<PaymentWebViewScreen> createState() => _PaymentWebViewScreenState();
 }
 
-class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
-  InAppWebViewController? _controller;
-  bool _isLoading = true;
-  String? _errorMessage;
-  Timer? _pollTimer;
-  Timer? _timeoutTimer;
-  bool _paymentCompleted = false;
-  bool _closeDialogOpen = false;
-  String? _pendingResult;
-  bool _isVerifying = false;
-  int _verificationAttempts = 0;
-  static const int _maxVerificationAttempts = 15;
-  bool _webViewInitialized = false;
+enum _CheckoutReturn { complete, cancelled, paystackAuthorization }
 
-  // Enhanced success/failure URL patterns
-  final Map<String, Map<String, List<String>>> _urlPatterns = {
-    'PayStack': {
-      'success': [
-        'callback',
-        'success',
-        'verify',
-        'payment-success',
-        'completed',
-        'trxref=',
-        'reference=',
-        'paystack.co/pay/success',
-        'paystack.co/success',
-        'status=success',
-        'payment_status=success',
-      ],
-      'failure': [
-        'cancel',
-        'failed',
-        'error',
-        'payment-cancelled',
-        'cancelled',
-        'paystack.co/pay/cancel',
-        'status=cancelled',
-        'payment_status=failed',
-      ],
-    },
-    'Flutterwave': {
-      'success': [
-        'callback',
-        'success',
-        'verify',
-        'payment-success',
-        'completed',
-        'tx_ref=',
-        'transaction_id=',
-        'status=successful',
-        'flutterwave.com/pay/success',
-        'flw.live/success',
-        'payment_status=successful',
-      ],
-      'failure': [
-        'cancel',
-        'failed',
-        'error',
-        'payment-cancelled',
-        'cancelled',
-        'status=cancelled',
-        'flutterwave.com/pay/cancel',
-        'flw.live/cancel',
-        'payment_status=failed',
-      ],
-    },
-    'Stripe': {
-      'success': [
-        'success',
-        'payment/success',
-        'checkout/success',
-        'verify-stripe-payment',
-        'session_id=cs_',
-        'payment_status=paid',
-        'stripe.com/pay/success',
-        'payment_intent_status=succeeded',
-      ],
-      'failure': [
-        'cancel',
-        'payment/cancel',
-        'checkout/cancel',
-        'payment_status=unpaid',
-        'cancelled',
-        'stripe.com/pay/cancel',
-        'payment_intent_status=canceled',
-      ],
-    },
-  };
+class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
+  static const _maxChecks = 15;
+  final _api = Uri.parse(baseUrl);
+  Timer? _pageTimer;
+  Timer? _pollTimer;
+  late final Uri? _checkoutUrl;
+  int _attempt = 0;
+  int _checks = 0;
+  int? _popupId;
+  bool _loading = true;
+  bool _checking = false;
+  bool _visibleCheck = false;
+  bool _closeDialogOpen = false;
+  bool _finished = false;
+  String? _deferredResult;
+  String? _loadError;
+  String? _statusMessage;
+  _CheckoutReturn? _returned;
 
   @override
   void initState() {
     super.initState();
-    log('=== PaymentWebViewScreen INIT ===');
-    log('URL: ${widget.url}');
-    log('Reference: ${widget.reference}');
-    log('Payment Method: ${widget.paymentMethod}');
-    log('Order ID: ${widget.orderId}');
-
-    _validateUrl();
-    _startPaymentPolling();
-    _startTimeoutTimer();
-  }
-
-  void _validateUrl() {
-    if (widget.url.isEmpty) {
-      setState(() {
-        _errorMessage = 'Payment URL is empty';
-        _isLoading = false;
-      });
-      return;
-    }
-
-    try {
-      final uri = Uri.parse(widget.url);
-      if (!uri.hasScheme || uri.scheme != 'https') {
-        log('Invalid URL scheme: ${uri.scheme}');
-        setState(() {
-          _errorMessage = 'Payment URL must use HTTPS';
-          _isLoading = false;
-        });
-        return;
-      }
-      log('URL validation passed: ${widget.url}');
-    } catch (e) {
-      log('URL validation failed: $e');
-      setState(() {
-        _errorMessage = 'Invalid payment URL: $e';
-        _isLoading = false;
-      });
+    final url = Uri.tryParse(widget.url);
+    _checkoutUrl = url != null && url.scheme == 'https' && url.host.isNotEmpty
+        ? url
+        : null;
+    if (_checkoutUrl == null) {
+      _loading = false;
+      _loadError = 'This payment link could not be opened.';
+    } else {
+      _startPageTimer();
     }
   }
 
   @override
   void dispose() {
-    log('=== PaymentWebViewScreen DISPOSE ===');
+    _pageTimer?.cancel();
     _pollTimer?.cancel();
-    _timeoutTimer?.cancel();
     super.dispose();
   }
 
-  void _initializeWebView() {
-    if (_errorMessage != null) return;
-
-    log('Initializing InAppWebView...');
-    try {
-      WebStorageManager.instance().deleteAllData();
-    } catch (e) {
-      log('Error clearing WebView data: $e');
-      setState(() {
-        _errorMessage = 'Failed to initialize payment page: $e';
-        _isLoading = false;
-      });
-    }
+  void _startPageTimer() {
+    _pageTimer?.cancel();
+    _pageTimer = Timer(const Duration(seconds: 45), () {
+      if (!mounted || _finished || !_loading) return;
+      _showLoadError('The checkout page took too long to load. Try again.');
+    });
   }
 
-  void _loadPaymentUrl() {
-    try {
-      log('🌐 Loading payment URL: ${widget.url}');
-      _controller?.loadUrl(urlRequest: URLRequest(url: WebUri(widget.url)));
-      Timer(const Duration(seconds: 60), () {
-        if (_isLoading && !_webViewInitialized && mounted) {
-          log('⏰ URL loading timeout');
-          setState(() {
-            _errorMessage =
-                'Payment page took too long to load. Please try again.';
-            _isLoading = false;
-          });
-          _loadPaymentUrl(); // Retry loading
-        }
-      });
-    } catch (e) {
-      log('Error loading URL: $e');
-      setState(() {
-        _errorMessage = 'Invalid payment URL: $e';
-        _isLoading = false;
-      });
-    }
+  void _showLoadError(String message) {
+    _pageTimer?.cancel();
+    setState(() {
+      _loading = false;
+      if (_popupId != null) {
+        _popupId = null;
+        _statusMessage = message;
+      } else {
+        _loadError = message;
+      }
+    });
   }
 
-  void _checkUrlForPaymentStatus(String url) {
-    if (_paymentCompleted || _isVerifying) return;
+  void _retry() {
+    if (_checkoutUrl == null || _finished) return;
+    _pollTimer?.cancel();
+    setState(() {
+      _attempt++;
+      _checks = 0;
+      _popupId = null;
+      _returned = null;
+      _loadError = null;
+      _statusMessage = null;
+      _loading = true;
+    });
+    _startPageTimer();
+  }
 
-    final lowercaseUrl = url.toLowerCase();
-    final patterns = _urlPatterns[widget.paymentMethod];
+  _CheckoutReturn? _checkoutReturn(WebUri? value) {
+    final url = value == null ? null : Uri.tryParse(value.toString());
+    if (url == null) return null;
+    final gateway = widget.paymentMethod.toLowerCase();
+    final path = url.path.replaceFirst(RegExp(r'/$'), '');
+    if (gateway == 'paystack' &&
+        url.scheme == 'https' &&
+        url.host == 'standard.paystack.co' &&
+        url.port == 443 &&
+        path == '/close') {
+      return _CheckoutReturn.paystackAuthorization;
+    }
+    if (url.scheme != _api.scheme ||
+        url.host != _api.host ||
+        url.port != _api.port) {
+      return null;
+    }
 
-    if (patterns == null) {
-      log('⚠️ No URL patterns found for payment method: ${widget.paymentMethod}');
+    final apiPath = _api.path.replaceFirst(RegExp(r'/$'), '');
+    final payments = '$apiPath/payments';
+    final orderReturn = '$payments/checkout-return/$gateway/${widget.orderId}';
+    if (path == '$orderReturn/cancel' ||
+        (gateway == 'stripe' && path == '$payments/cancel')) {
+      return _CheckoutReturn.cancelled;
+    }
+
+    final reference = switch (gateway) {
+      'paystack' =>
+        url.queryParameters['reference'] ?? url.queryParameters['trxref'],
+      'flutterwave' => url.queryParameters['tx_ref'],
+      'stripe' => url.queryParameters['session_id'],
+      _ => null,
+    };
+    if (reference != null && reference != widget.reference) return null;
+
+    if (path == '$orderReturn/complete' ||
+        (gateway == 'stripe' &&
+            path == '$payments/verify-stripe-payment/${widget.reference}') ||
+        (gateway == 'flutterwave' &&
+            path ==
+                '$payments/verify-flutterwave-payment/${widget.reference}') ||
+        (gateway == 'paystack' &&
+            path == '$payments/verify-paystack-payment/${widget.reference}')) {
+      final status = url.queryParameters['status']?.toLowerCase();
+      return const ['cancelled', 'canceled', 'failed'].contains(status)
+          ? _CheckoutReturn.cancelled
+          : _CheckoutReturn.complete;
+    }
+    return null;
+  }
+
+  bool _handleReturn(WebUri? url, {required bool popup}) {
+    final result = _checkoutReturn(url);
+    if (result == null) return false;
+    if (_finished || _returned != null) return true;
+
+    _pageTimer?.cancel();
+    if (result == _CheckoutReturn.paystackAuthorization && popup) {
+      _closePopup();
+    } else {
+      setState(() {
+        _returned = result;
+        _popupId = null;
+        _loading = false;
+        _loadError = null;
+        _statusMessage = null;
+      });
+    }
+
+    // A redirect is a cue to check the current server-side reference.
+    _pollTimer?.cancel();
+    _checks = 0;
+    if (result != _CheckoutReturn.cancelled) _startPolling();
+    unawaited(_checkPayment(
+        visible: result != _CheckoutReturn.paystackAuthorization));
+    return true;
+  }
+
+  void _startPolling() {
+    if (_finished || _pollTimer?.isActive == true || _checks >= _maxChecks) {
       return;
     }
-
-    log('🔍 Checking URL for payment status: $lowercaseUrl');
-
-    final successPatterns = patterns['success'] ?? [];
-    for (String pattern in successPatterns) {
-      if (lowercaseUrl.contains(pattern.toLowerCase())) {
-        log('🎉 Success pattern detected: $pattern in $url');
-        _verifyPaymentStatus();
-        return;
-      }
-    }
-
-    final failurePatterns = patterns['failure'] ?? [];
-    for (String pattern in failurePatterns) {
-      if (lowercaseUrl.contains(pattern.toLowerCase())) {
-        log('💥 Failure pattern detected: $pattern in $url');
-        _handlePaymentFailure('Payment was cancelled or failed');
-        return;
-      }
-    }
-
-    _handleSpecialRedirects(url);
-  }
-
-  void _handleSpecialRedirects(String url) {
-    final lowercaseUrl = url.toLowerCase();
-    if (lowercaseUrl.contains('localhost') ||
-        lowercaseUrl.contains('127.0.0.1') ||
-        lowercaseUrl.contains('callback') ||
-        lowercaseUrl.contains('redirect')) {
-      if (lowercaseUrl.contains('success') ||
-          lowercaseUrl.contains('verify') ||
-          lowercaseUrl.contains('complete') ||
-          lowercaseUrl.contains('paid')) {
-        log('🚀 Special success redirect detected: $url');
-        _verifyPaymentStatus();
-      } else if (lowercaseUrl.contains('cancel') ||
-          lowercaseUrl.contains('failed') ||
-          lowercaseUrl.contains('error')) {
-        log('🛑 Special failure redirect detected: $url');
-        _handlePaymentFailure('Payment was cancelled');
-      }
-    }
-  }
-
-  void _startPaymentPolling() {
-    log('🔄 Starting payment polling...');
     _pollTimer = Timer.periodic(const Duration(seconds: 8), (timer) {
-      if (!_paymentCompleted &&
-          !_isVerifying &&
-          _verificationAttempts < _maxVerificationAttempts) {
-        _verifyPaymentStatus();
-      } else if (_verificationAttempts >= _maxVerificationAttempts) {
+      if (_checks >= _maxChecks) {
         timer.cancel();
-        if (!_paymentCompleted) {
-          log('⏰ Maximum verification attempts reached');
-        }
+      } else if (!_checking && !_finished) {
+        _checks++;
+        unawaited(_checkPayment());
       }
     });
   }
 
-  void _startTimeoutTimer() {
-    _timeoutTimer = Timer(const Duration(minutes: 15), () {
-      if (!_paymentCompleted && mounted) {
-        log('⏰ Payment session timed out');
-        _handlePaymentFailure('Payment session timed out. Please try again.');
-      }
-    });
-  }
-
-  Future<void> _verifyPaymentStatus() async {
-    if (_isVerifying || _paymentCompleted) return;
-
-    _verificationAttempts++;
+  Future<void> _checkPayment(
+      {bool visible = false, bool manual = false}) async {
+    if (!mounted || _finished) return;
+    if (_checking) {
+      if (visible && !_visibleCheck) setState(() => _visibleCheck = true);
+      return;
+    }
     setState(() {
-      _isVerifying = true;
+      _checking = true;
+      _visibleCheck = visible;
+      if (manual) _statusMessage = null;
     });
-
     try {
-      log('🔍 Polling payment verification for reference: ${widget.reference} (Attempt: $_verificationAttempts)');
-      bool verified = false;
-
-      switch (widget.paymentMethod) {
-        case 'PayStack':
-          final controller = Get.find<PaystackPaymentController>();
-          verified = await controller.verifyPayment(widget.reference);
-          break;
-        case 'Flutterwave':
-          final controller = Get.find<FlutterwavePaymentController>();
-          verified = await controller.verifyPayment(widget.reference);
-          break;
-        case 'Stripe':
-          final controller = Get.find<StripePaymentController>();
-          verified = await controller.verifyPayment(widget.reference);
-          break;
+      final controller = switch (widget.paymentMethod) {
+        'PayStack' => Get.find<PaystackPaymentController>(),
+        'Flutterwave' => Get.find<FlutterwavePaymentController>(),
+        _ => Get.find<StripePaymentController>(),
+      };
+      final paid = await controller.verifyPayment(widget.reference);
+      if (!mounted || _finished) return;
+      if (paid) {
+        _finish(PaymentWebViewScreen.verified);
+      } else if (manual) {
+        setState(() => _statusMessage = 'Payment has not been confirmed yet.');
       }
-
-      log('✅ Payment verification result: $verified');
-      if (verified && !_paymentCompleted) {
-        log('🎉 Payment verified through polling - Success!');
-        _handlePaymentSuccess();
+    } catch (error) {
+      log('Checkout verification unavailable: ${error.runtimeType}');
+      if (mounted && manual) {
+        setState(() => _statusMessage = 'Could not check payment. Try again.');
       }
-    } catch (e) {
-      log('❌ Error during payment polling: $e');
     } finally {
-      if (mounted) {
+      if (mounted && !_finished) {
         setState(() {
-          _isVerifying = false;
+          _checking = false;
+          _visibleCheck = false;
         });
       }
     }
   }
 
-  void _handlePaymentSuccess() => _finishPayment(PaymentWebViewScreen.verified);
-
-  void _handlePaymentFailure(String message) => _finishPayment(message);
-
-  void _finishPayment(String result) {
-    if (_paymentCompleted || !mounted) return;
+  void _finish(String result) {
+    if (!mounted || _finished) return;
     if (_closeDialogOpen) {
-      if (_pendingResult != PaymentWebViewScreen.verified) {
-        _pendingResult = result;
-      }
+      _deferredResult = result;
       return;
     }
-    _paymentCompleted = true;
+    _finished = true;
+    _pageTimer?.cancel();
     _pollTimer?.cancel();
-    _timeoutTimer?.cancel();
     Navigator.of(context).pop(result);
   }
 
-  void _handleManualClose() {
-    if (_paymentCompleted || _closeDialogOpen) return;
+  void _closePopup() {
+    if (_popupId == null) return;
+    _pageTimer?.cancel();
+    setState(() {
+      _popupId = null;
+      _loading = false;
+    });
+    unawaited(_checkPayment());
+  }
+
+  Future<void> _close() async {
+    if (_popupId != null) {
+      _closePopup();
+      return;
+    }
+    if (_finished || _closeDialogOpen) return;
+    if (_returned != null) {
+      _finish(PaymentWebViewScreen.dismissed);
+      return;
+    }
     _closeDialogOpen = true;
-    showDialog<bool>(
+    final close = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Close payment?'),
-        content: const Text(
-          'You can return to this order from My Orders to check or resume payment.',
-        ),
+      builder: (context) => AlertDialog(
+        title: const Text('Leave checkout?'),
+        content: const Text('You can resume payment from My Orders.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Continue payment'),
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Stay'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Close payment'),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Leave checkout'),
           ),
         ],
       ),
-    ).then((close) {
-      _closeDialogOpen = false;
-      final result = _pendingResult;
-      _pendingResult = null;
-      if (result != null) {
-        _finishPayment(result);
-      } else if (close == true) {
-        _handlePaymentFailure('Payment has not been confirmed.');
-      }
-    });
+    );
+    _closeDialogOpen = false;
+    if (_deferredResult case final result?) {
+      _finish(result);
+    } else if (close == true) {
+      _finish(PaymentWebViewScreen.dismissed);
+    }
   }
 
-  void _handleRefresh() {
-    log('🔄 Refreshing WebView...');
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-      _webViewInitialized = false;
-    });
+  Widget _webView({int? windowId}) {
+    final attempt = _attempt;
+    final isPopup = windowId != null;
+    bool current() =>
+        mounted &&
+        !_finished &&
+        attempt == _attempt &&
+        (!isPopup || windowId == _popupId);
 
-    try {
-      _controller?.reload();
-      Timer(const Duration(seconds: 5), () {
-        if (_isLoading && !_webViewInitialized && mounted) {
-          _loadPaymentUrl();
+    return InAppWebView(
+      key: ValueKey((attempt, windowId)),
+      windowId: windowId,
+      initialUrlRequest:
+          isPopup ? null : URLRequest(url: WebUri.uri(_checkoutUrl!)),
+      initialSettings: InAppWebViewSettings(
+        javaScriptEnabled: true,
+        javaScriptCanOpenWindowsAutomatically: true,
+        supportMultipleWindows: true,
+        useShouldOverrideUrlLoading: true,
+        allowsInlineMediaPlayback: true,
+        supportZoom: false,
+      ),
+      shouldOverrideUrlLoading: (_, action) async {
+        if (current() &&
+            action.isForMainFrame &&
+            _handleReturn(action.request.url, popup: isPopup)) {
+          return NavigationActionPolicy.CANCEL;
         }
-      });
-    } catch (e) {
-      log('Error refreshing WebView: $e');
-      _loadPaymentUrl();
-    }
+        return NavigationActionPolicy.ALLOW;
+      },
+      onLoadStart: (_, url) {
+        if (current()) _handleReturn(url, popup: isPopup);
+      },
+      onLoadStop: (_, url) {
+        if (!current() || _handleReturn(url, popup: isPopup)) return;
+        if (isPopup || _popupId == null) {
+          _pageTimer?.cancel();
+          if (_loading) setState(() => _loading = false);
+        }
+        if (!isPopup) _startPolling();
+      },
+      onProgressChanged: (_, progress) {
+        // Some hosted pages keep loading analytics after checkout is usable.
+        if (current() &&
+            !isPopup &&
+            _popupId == null &&
+            progress == 100 &&
+            _loading) {
+          _pageTimer?.cancel();
+          setState(() => _loading = false);
+          _startPolling();
+        }
+      },
+      onReceivedError: (_, request, error) {
+        if (current() &&
+            request.isForMainFrame != false &&
+            !_handleReturn(request.url, popup: isPopup)) {
+          log('Checkout WebView load error: ${error.type}');
+          _showLoadError(
+              'Could not load checkout. Check your connection and try again.');
+        }
+      },
+      onReceivedHttpError: (_, request, response) {
+        final code = response.statusCode ?? 0;
+        // A hosted checkout can serve a browser challenge as a 403 page.
+        // Let the native WebView render and run it.
+        if (current() &&
+            request.isForMainFrame == true &&
+            code >= 400 &&
+            code != 403 &&
+            !_handleReturn(request.url, popup: isPopup)) {
+          _showLoadError(
+            'The payment provider could not open this page. Try again.',
+          );
+        }
+      },
+      onCreateWindow: (_, action) async {
+        if (!current() || isPopup || _popupId != null || _returned != null) {
+          return false;
+        }
+        if (_handleReturn(action.request.url, popup: false)) return false;
+        setState(() {
+          _popupId = action.windowId;
+          _loading = true;
+        });
+        _startPageTimer();
+        return true;
+      },
+      onCloseWindow: (_) {
+        if (current() && isPopup) _closePopup();
+      },
+    );
   }
 
-  Future<void> _handleManualVerification() async {
-    if (_paymentCompleted || _isVerifying) return;
-
-    log('🔍 Manual verification triggered...');
-    setState(() {
-      _isVerifying = true;
-    });
-
-    try {
-      bool verified = false;
-
-      switch (widget.paymentMethod) {
-        case 'PayStack':
-          final controller = Get.find<PaystackPaymentController>();
-          verified = await controller.verifyPayment(widget.reference);
-          break;
-        case 'Flutterwave':
-          final controller = Get.find<FlutterwavePaymentController>();
-          verified = await controller.verifyPayment(widget.reference);
-          break;
-        case 'Stripe':
-          final controller = Get.find<StripePaymentController>();
-          verified = await controller.verifyPayment(widget.reference);
-          break;
-      }
-
-      if (verified) {
-        _handlePaymentSuccess();
-      } else {
-        showFailureSnackbar('Verification Failed');
-      }
-    } catch (e) {
-      log('Manual verification error: $e');
-      showFailureSnackbar('Verification Error');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isVerifying = false;
-        });
-      }
-    }
+  Widget _statusPanel() {
+    final cancelled = _returned == _CheckoutReturn.cancelled;
+    final title = _loadError != null
+        ? 'Checkout unavailable'
+        : cancelled
+            ? 'Checkout cancelled'
+            : 'Waiting for payment confirmation';
+    final description = _loadError ??
+        (cancelled
+            ? 'You can resume checkout or check for a payment already made.'
+            : 'You can check again or view this order later in My Orders.');
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(title,
+                style: Theme.of(context).textTheme.titleLarge,
+                textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            Text(description, textAlign: TextAlign.center),
+            if ((_loadError != null && _checkoutUrl != null) || cancelled)
+              FilledButton(
+                  onPressed: _retry,
+                  child: Text(cancelled ? 'Resume checkout' : 'Retry')),
+            TextButton(
+              onPressed: _checking
+                  ? null
+                  : () => _checkPayment(visible: true, manual: true),
+              child: const Text('Check payment status'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        _handleManualClose();
-        return false;
+    return PopScope<String>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) unawaited(_close());
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text('${widget.paymentMethod} Payment'),
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 1,
           leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: _handleManualClose,
+            tooltip: _popupId == null ? 'Close checkout' : 'Back to checkout',
+            icon: Icon(_popupId == null ? Icons.close : Icons.arrow_back),
+            onPressed: _close,
           ),
+          title: Text('${widget.paymentMethod} checkout'),
           actions: [
-            if (_isLoading || _isVerifying)
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
+            if (_returned == null && _loadError == null && _popupId == null)
+              IconButton(
+                  tooltip: 'Reload checkout',
+                  onPressed: _retry,
+                  icon: const Icon(Icons.refresh)),
+            if (_returned == null && _loadError == null)
+              IconButton(
+                tooltip: 'Check payment status',
+                onPressed: _checking
+                    ? null
+                    : () => _checkPayment(visible: true, manual: true),
+                icon: const Icon(Icons.verified_outlined),
               ),
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: _handleRefresh,
-            ),
-            IconButton(
-              icon: const Icon(Icons.verified_user),
-              onPressed: _isVerifying ? null : _handleManualVerification,
-              tooltip: 'Verify Payment',
-            ),
           ],
         ),
-        body: Column(
-          children: [
-            if (_isLoading)
-              const LinearProgressIndicator(),
-            if (_isVerifying)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                color: Colors.blue.shade50,
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Verifying payment...',
-                        style: TextStyle(
-                          color: Colors.blue.shade700,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (_errorMessage != null)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                color: Colors.red.shade50,
-                child: Row(
-                  children: [
-                    Icon(Icons.error_outline, color: Colors.red.shade700),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _errorMessage!,
-                        style: TextStyle(color: Colors.red.shade700),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: _handleRefresh,
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              ),
-            Expanded(
-              child: _errorMessage != null
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+        body: SafeArea(
+          top: false,
+          child: Column(
+            children: [
+              if (_loading || _visibleCheck) const LinearProgressIndicator(),
+              if (_statusMessage case final message?)
+                Padding(
+                    padding: const EdgeInsets.all(12), child: Text(message)),
+              Expanded(
+                child: _loadError != null || _returned != null
+                    ? _statusPanel()
+                    : Stack(
+                        fit: StackFit.expand,
                         children: [
-                          Icon(Icons.error_outline, size: 64, color: Colors.red.shade400),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Failed to load payment page',
-                            style: TextStyle(
-                              color: Colors.red.shade600,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32),
-                            child: Text(
-                              _errorMessage!,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.red.shade500,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _handleRefresh,
-                            child: const Text('Retry'),
-                          ),
-                          const SizedBox(height: 8),
-                          TextButton(
-                            onPressed: _handleManualVerification,
-                            child: const Text('Verify Payment Manually'),
-                          ),
+                          _webView(),
+                          if (_popupId case final popupId?)
+                            ColoredBox(
+                                color:
+                                    Theme.of(context).scaffoldBackgroundColor,
+                                child: _webView(windowId: popupId)),
                         ],
                       ),
-                    )
-                  : InAppWebView(
-                      initialUrlRequest: URLRequest(url: WebUri(widget.url)),
-                      initialOptions: InAppWebViewGroupOptions(
-                        crossPlatform: InAppWebViewOptions(
-                          javaScriptEnabled: true,
-                          userAgent:
-                              'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36',
-                          cacheEnabled: false,
-                          supportZoom: false,
-                          transparentBackground: false,
-                          // mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
-                          mediaPlaybackRequiresUserGesture: false,
-                          javaScriptCanOpenWindowsAutomatically: true,
-                          useShouldOverrideUrlLoading: true,
-                        ),
-                        android: AndroidInAppWebViewOptions(
-                          useHybridComposition: true,
-                          hardwareAcceleration: true,
-                          supportMultipleWindows: true,
-                        ),
-                        ios: IOSInAppWebViewOptions(
-                          allowsInlineMediaPlayback: true,
-                          allowsBackForwardNavigationGestures: false,
-                        ),
-                      ),
-                      onWebViewCreated: (controller) {
-                        _controller = controller;
-                        _initializeWebView();
-                        _loadPaymentUrl();
-                      },
-                      onLoadStart: (controller, url) {
-                        log('🔄 Page STARTED loading: $url');
-                        if (!_paymentCompleted && url != null) {
-                          _checkUrlForPaymentStatus(url.toString());
-                        }
-                      },
-                      onLoadStop: (controller, url) {
-                        log('✅ Page FINISHED loading: $url');
-                        setState(() {
-                          _isLoading = false;
-                          _webViewInitialized = true;
-                        });
-                        if (!_paymentCompleted && url != null) {
-                          _checkUrlForPaymentStatus(url.toString());
-                        }
-                      },
-                      onLoadError: (controller, url, code, message) {
-                        log('❌ WebView error: $message (Code: $code)');
-                        setState(() {
-                          _isLoading = false;
-                          _errorMessage = 'Failed to load payment page: $message';
-                        });
-                      },
-                      onReceivedHttpError: (controller, request, errorResponse) {
-                        log('🔥 HTTP error: ${errorResponse.statusCode}');
-                      },
-                      onUpdateVisitedHistory: (controller, url, androidIsReload) {
-                        log('🔄 URL changed: $url');
-                        if (url != null && !_paymentCompleted) {
-                          _checkUrlForPaymentStatus(url.toString());
-                        }
-                      },
-                      onCreateWindow: (controller, createWindowRequest) async {
-                        log('Pop-up window requested: ${createWindowRequest.request.url}');
-                        if (createWindowRequest.request.url != null) {
-                          _checkUrlForPaymentStatus(createWindowRequest.request.url!.toString());
-                          await controller.loadUrl(urlRequest: URLRequest(url: createWindowRequest.request.url));
-                          return true;
-                        }
-                        return false;
-                      },
-                      onReceivedServerTrustAuthRequest: (controller, challenge) async {
-                        log('SSL certificate issue: ${challenge.protectionSpace.host}');
-                        return ServerTrustAuthResponse(action: ServerTrustAuthResponseAction.PROCEED);
-                      },
-                      onConsoleMessage: (controller, consoleMessage) {
-                        log('WebView console: ${consoleMessage.message} (Level: ${consoleMessage.messageLevel})');
-                      },
-                    ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                border: Border(top: BorderSide(color: Colors.grey.shade300)),
               ),
-              child: Row(
-                children: [
-                  Icon(Icons.security, size: 16, color: Colors.green.shade600),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Secure ${widget.paymentMethod} payment processing',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    'Order #${widget.orderId}',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey.shade500,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

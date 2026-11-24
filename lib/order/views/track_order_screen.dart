@@ -1,3 +1,4 @@
+import 'order_help_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../base/res/styles/app_styles.dart';
@@ -132,6 +133,13 @@ class _TrackOrderPageState extends State<TrackOrderPage> {
                         if (_order!.address.phone.isNotEmpty)
                           Text(_order!.address.phone),
                         const SizedBox(height: 24),
+                        if (!widget.isReceipt && _order!.id != null)
+                          OutlinedButton.icon(
+                            onPressed: () => Get.to(
+                                () => OrderHelpScreen(orderId: _order!.id!)),
+                            icon: const Icon(Icons.help_outline),
+                            label: const Text('Get help with this order'),
+                          ),
                         if (!widget.isReceipt &&
                             _order!.paymentStatus == 'Paid')
                           OutlinedButton.icon(

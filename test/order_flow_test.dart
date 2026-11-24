@@ -4,12 +4,16 @@ import 'package:ecom_app/order/controllers/review_controller.dart';
 import 'package:ecom_app/order/views/review_screen.dart';
 import 'package:ecom_app/order/views/reciept_screen.dart';
 import 'package:ecom_app/auth/service/auth_service.dart';
+import 'package:ecom_app/base/res/base_url.dart';
 import 'package:ecom_app/base/res/styles/app_styles.dart';
 import 'package:ecom_app/order/controllers/order_controller.dart';
 import 'package:ecom_app/order/controllers/payment_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ecom_app/order/models/order_model.dart';
 import 'package:ecom_app/order/views/my_orders_screen.dart';
+import 'package:ecom_app/order/views/order_help_screen.dart';
+import 'package:ecom_app/order/views/payment_webview.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:ecom_app/order/views/track_order_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,6 +24,48 @@ import 'package:http/testing.dart';
 class _Auth extends AuthService {
   @override
   Future<String?> getToken() async => 'test';
+}
+
+class _CheckoutWebViewPlatform extends InAppWebViewPlatform {
+  final views = <_CheckoutWebView>[];
+
+  @override
+  PlatformInAppWebViewWidget createPlatformInAppWebViewWidget(
+    PlatformInAppWebViewWidgetCreationParams params,
+  ) {
+    final view = _CheckoutWebView(params);
+    views.add(view);
+    return view;
+  }
+}
+
+class _CheckoutWebView extends PlatformInAppWebViewWidget {
+  _CheckoutWebView(PlatformInAppWebViewWidgetCreationParams params)
+      : super.implementation(params);
+
+  @override
+  Widget build(BuildContext context) => const Text('Embedded checkout');
+
+  @override
+  T controllerFromPlatform<T>(PlatformInAppWebViewController controller) =>
+      throw UnimplementedError();
+
+  @override
+  void dispose() {}
+}
+
+class _CheckoutWebViewController extends Fake
+    implements InAppWebViewController {}
+
+class _PaystackVerification extends PaystackPaymentController {
+  int checks = 0;
+
+  @override
+  Future<bool> verifyPayment(String reference) async {
+    expect(reference, 'test-reference');
+    checks++;
+    return false;
+  }
 }
 
 Map<String, dynamic> orderJson(int id, String status) => {
@@ -140,6 +186,250 @@ void main() {
     expect(keys.first, isNotNull);
     expect(keys[1], keys.first);
     expect(keys[2], isNot(keys.first));
+  });
+
+  testWidgets('Paystack loads in-app before background verification starts',
+      (tester) async {
+    final original = InAppWebViewPlatform.instance;
+    final webView = _CheckoutWebViewPlatform();
+    InAppWebViewPlatform.instance = webView;
+    addTearDown(() {
+      if (original != null) InAppWebViewPlatform.instance = original;
+    });
+
+    final payment = _PaystackVerification();
+    Get.put<PaystackPaymentController>(payment);
+    const checkoutUrl = 'https://checkout.paystack.com/test-session';
+    await tester.pumpWidget(const GetMaterialApp(
+      home: PaymentWebViewScreen(
+        url: checkoutUrl,
+        reference: 'test-reference',
+        paymentMethod: 'PayStack',
+        orderId: 90,
+      ),
+    ));
+    final initialParams = webView.views.single.params;
+    tester.binding.addPostFrameCallback((_) {
+      initialParams.onReceivedHttpError!(
+        _CheckoutWebViewController(),
+        WebResourceRequest(url: WebUri(checkoutUrl), isForMainFrame: true),
+        WebResourceResponse(statusCode: 403),
+      );
+    });
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 9));
+    expect(find.text('Embedded checkout'), findsOneWidget);
+    expect(payment.checks, 0);
+
+    await tester.pump(const Duration(seconds: 52));
+    expect(find.textContaining('took too long'), findsWidgets);
+    await tester.tap(find.text('Retry').first);
+    await tester.pump();
+    expect(webView.views, hasLength(2));
+    final params = webView.views.last.params;
+    expect(params.initialUrlRequest?.url.toString(), checkoutUrl);
+    tester.binding.addPostFrameCallback((_) {
+      params.onLoadStop!
+          .call(_CheckoutWebViewController(), WebUri(checkoutUrl));
+    });
+    await tester.pump();
+    expect(Get.find<PaystackPaymentController>(), same(payment));
+    await tester.pump(const Duration(seconds: 9));
+    expect(payment.checks, 1);
+    expect(find.text('Verifying payment...'), findsNothing);
+
+    bool? acceptedPopup;
+    tester.binding.addPostFrameCallback((_) {
+      params.onCreateWindow!(
+        _CheckoutWebViewController(),
+        CreateWindowAction(
+          windowId: 42,
+          request: URLRequest(url: WebUri('https://bank.example.com/3ds')),
+          isForMainFrame: true,
+        ),
+      )
+          .then((result) => acceptedPopup = result);
+    });
+    await tester.pump();
+    await tester.pump();
+    expect(acceptedPopup, isTrue);
+    final popup = webView.views.last.params;
+    expect(popup.windowId, 42);
+    expect(popup.initialUrlRequest, isNull);
+    expect(find.byTooltip('Back to checkout'), findsOneWidget);
+
+    tester.binding.addPostFrameCallback((_) {
+      popup.shouldOverrideUrlLoading!(
+        _CheckoutWebViewController(),
+        NavigationAction(
+          request:
+              URLRequest(url: WebUri('https://standard.paystack.co/close')),
+          isForMainFrame: true,
+        ),
+      );
+    });
+    await tester.pump();
+    await tester.pump();
+    expect(find.byTooltip('Back to checkout'), findsNothing);
+    expect(find.text('Embedded checkout'), findsOneWidget);
+    expect(payment.checks, 2);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  for (final (label, gateway, referenceParameter) in [
+    ('PayStack', 'paystack', 'reference'),
+    ('Flutterwave', 'flutterwave', 'tx_ref'),
+    ('Stripe', 'stripe', 'session_id'),
+  ]) {
+    testWidgets('$label verifies the current session after a trusted return',
+        (tester) async {
+      final original = InAppWebViewPlatform.instance;
+      final webView = _CheckoutWebViewPlatform();
+      InAppWebViewPlatform.instance = webView;
+      addTearDown(() {
+        if (original != null) InAppWebViewPlatform.instance = original;
+      });
+      Get.put(PaystackPaymentController());
+      Get.put(FlutterwavePaymentController());
+      Get.put(StripePaymentController());
+
+      var checks = 0;
+      var paid = false;
+      String? result;
+      await http.runWithClient(() async {
+        await tester.pumpWidget(GetMaterialApp(
+          home: Builder(builder: (context) {
+            return TextButton(
+              onPressed: () async {
+                result = await Navigator.of(context).push<String>(
+                  MaterialPageRoute(
+                    builder: (_) => PaymentWebViewScreen(
+                      url: 'https://checkout.example.com/start',
+                      reference: 'test-reference',
+                      paymentMethod: label,
+                      orderId: 90,
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Open checkout'),
+            );
+          }),
+        ));
+        await tester.tap(find.text('Open checkout'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+
+        Future<NavigationActionPolicy?> navigateTo(String url) async {
+          NavigationActionPolicy? policy;
+          tester.binding.addPostFrameCallback((_) {
+            webView
+                .views
+                .last
+                .params
+                .shouldOverrideUrlLoading!(
+              _CheckoutWebViewController(),
+              NavigationAction(
+                request: URLRequest(url: WebUri(url)),
+                isForMainFrame: true,
+              ),
+            )
+                .then((value) => policy = value);
+          });
+          await tester.pump();
+          await tester.pump();
+          return policy;
+        }
+
+        final returnPath = 'payments/checkout-return/$gateway/90/complete/';
+        expect(
+          await navigateTo(
+              'https://unrelated.example.com/$returnPath?status=failed'),
+          NavigationActionPolicy.ALLOW,
+        );
+        expect(checks, 0);
+
+        expect(
+          await navigateTo(
+              '$baseUrl/$returnPath?$referenceParameter=other-order'),
+          NavigationActionPolicy.ALLOW,
+        );
+        expect(checks, 0);
+
+        expect(
+          await navigateTo(
+              '$baseUrl/$returnPath?$referenceParameter=test-reference'),
+          NavigationActionPolicy.CANCEL,
+        );
+        expect(checks, 1);
+        expect(result, isNull);
+        expect(find.text('Waiting for payment confirmation'), findsOneWidget);
+
+        paid = true;
+        await tester.tap(find.text('Check payment status'));
+        await tester.pumpAndSettle();
+        expect(checks, 2);
+        expect(result, PaymentWebViewScreen.verified);
+      },
+          () => MockClient((request) async {
+                expect(request.url.path,
+                    endsWith('/verify-$gateway-payment/test-reference/'));
+                checks++;
+                return jsonResponse(
+                    {'payment_status': paid ? 'Paid' : 'Unpaid'},
+                    paid ? 200 : 400);
+              }));
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
+  test('payment controllers surface the gateway error from Django', () async {
+    for (final controller in [
+      PaystackPaymentController(),
+      FlutterwavePaymentController(),
+      StripePaymentController(),
+    ]) {
+      await http.runWithClient(() async {
+        expect(
+            await controller.initiatePayment(amount: 65, orderId: 1), isFalse);
+        expect(controller.errorMessage.value,
+            'Continue this order with Paystack.');
+      },
+          () => MockClient((request) async {
+                expect(jsonDecode(request.body), {'order_id': 1});
+                return jsonResponse({
+                  'error': {
+                    'message': 'Bad request',
+                    'details': ['Continue this order with Paystack.'],
+                  }
+                }, 400);
+              }));
+    }
+  });
+
+  testWidgets('order help sends the issue and shows the support reference',
+      (tester) async {
+    await http.runWithClient(() async {
+      await tester.pumpWidget(
+        const GetMaterialApp(home: OrderHelpScreen(orderId: 15)),
+      );
+      expect(find.text('Help with order #15'), findsOneWidget);
+      await tester.enterText(find.byType(TextField), 'My parcel is missing.');
+      await tester.pump();
+      await tester.tap(find.text('Send request'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Request sent. Your support reference is #27.'),
+          findsOneWidget);
+    },
+        () => MockClient((request) async {
+              expect(request.url.path, endsWith('/orders/single/15/support/'));
+              expect(request.method, 'POST');
+              expect(jsonDecode(request.body),
+                  {'message': 'My parcel is missing.'});
+              return jsonResponse({'id': 27});
+            }));
+    await tester.pumpWidget(const SizedBox.shrink());
   });
 
   testWidgets('only an unpaid pending order can reopen its original checkout',

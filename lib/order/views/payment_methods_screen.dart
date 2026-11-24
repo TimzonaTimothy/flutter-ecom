@@ -1,3 +1,4 @@
+import 'order_help_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -29,11 +30,13 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
   String? _orderError;
 
   bool get _resuming => widget.existingOrder != null;
-  int get _fixedMethodIndex => paymentTypes.indexWhere(
-        (method) =>
-            (method['label'] as String).toLowerCase() ==
-            _existingOrder?.paymentMode?.toLowerCase(),
-      );
+  int get _fixedMethodIndex => _existingOrder?.canSwitchPaymentMethod == true
+      ? -1
+      : paymentTypes.indexWhere(
+          (method) =>
+              (method['label'] as String).toLowerCase() ==
+              _existingOrder?.paymentMode?.toLowerCase(),
+        );
   late PaystackPaymentController paystackController;
   late FlutterwavePaymentController flutterwaveController;
   late StripePaymentController stripeController;
@@ -99,7 +102,9 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         _orderError = 'Could not check this order. Try again.';
       } else if (!order.canResumePayment) {
         _orderError = 'This order is no longer awaiting payment.';
-      } else if (order.paymentMode != null && _fixedMethodIndex < 0) {
+      } else if (order.paymentMode != null &&
+          !order.canSwitchPaymentMethod &&
+          _fixedMethodIndex < 0) {
         _orderError = 'Contact support to continue payment for this order.';
       } else if (_fixedMethodIndex >= 0) {
         selectedPaymentTypeIndex = _fixedMethodIndex;
@@ -177,6 +182,13 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                     : _handlePaymentConfirmation,
               ),
             ),
+            if ((_existingOrder?.id ?? _createdOrder?['id']) case final int id)
+              TextButton(
+                onPressed: _submitting
+                    ? null
+                    : () => Get.to(() => OrderHelpScreen(orderId: id)),
+                child: const Text('Get help with this order'),
+              ),
           ],
         ),
       ),
@@ -309,10 +321,10 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         Get.back();
         showSuccessSnackbar('Payment confirmed for order #$orderId.');
       } else if (!success) {
-        showFailureSnackbar(
-          controller.errorMessage.value,
-          title: 'Payment not confirmed',
-        );
+        final message = controller.errorMessage.value;
+        if (message.isNotEmpty) {
+          showFailureSnackbar(message, title: 'Payment not confirmed');
+        }
         if (_resuming) await _refreshOrder();
       }
     } finally {
