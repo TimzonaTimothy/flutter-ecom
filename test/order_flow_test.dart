@@ -13,6 +13,7 @@ import 'package:ecom_app/order/models/order_model.dart';
 import 'package:ecom_app/order/views/my_orders_screen.dart';
 import 'package:ecom_app/order/views/order_help_screen.dart';
 import 'package:ecom_app/order/views/payment_webview.dart';
+import 'package:ecom_app/order/views/payment_success_screen.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:ecom_app/order/views/track_order_screen.dart';
 import 'package:flutter/material.dart';
@@ -276,6 +277,48 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  testWidgets('Flutterwave distinguishes a sandbox block from a challenge',
+      (tester) async {
+    final original = InAppWebViewPlatform.instance;
+    final platform = _CheckoutWebViewPlatform();
+    InAppWebViewPlatform.instance = platform;
+    addTearDown(() {
+      if (original != null) InAppWebViewPlatform.instance = original;
+    });
+    const url = 'https://checkout-v2.dev-flutterwave.com/test';
+    await tester.pumpWidget(const GetMaterialApp(
+      home: PaymentWebViewScreen(
+        url: url,
+        reference: 'test-reference',
+        paymentMethod: 'Flutterwave',
+        orderId: 90,
+      ),
+    ));
+    final view = platform.views.single.params;
+    void reportForbidden(Map<String, String> headers) {
+      tester.binding.addPostFrameCallback((_) {
+        view.onReceivedHttpError!(
+          _CheckoutWebViewController(),
+          WebResourceRequest(url: WebUri(url), isForMainFrame: true),
+          WebResourceResponse(statusCode: 403, headers: headers),
+        );
+      });
+    }
+
+    reportForbidden({'CF-Mitigated': 'challenge'});
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Embedded checkout'), findsOneWidget);
+
+    reportForbidden({});
+    await tester.pump();
+    await tester.pump();
+    expect(
+        find.textContaining('sandbox blocked this checkout'), findsOneWidget);
+    expect(find.text('Check payment status'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   for (final (label, gateway, referenceParameter) in [
     ('PayStack', 'paystack', 'reference'),
     ('Flutterwave', 'flutterwave', 'tx_ref'),
@@ -365,16 +408,24 @@ void main() {
         expect(result, isNull);
         expect(find.text('Waiting for payment confirmation'), findsOneWidget);
 
-        paid = true;
         await tester.tap(find.text('Check payment status'));
         await tester.pumpAndSettle();
         expect(checks, 2);
+        expect(result, isNull);
+        expect(find.textContaining('temporarily unavailable'), findsOneWidget);
+
+        paid = true;
+        await tester.tap(find.text('Check payment status'));
+        await tester.pumpAndSettle();
+        expect(checks, 3);
         expect(result, PaymentWebViewScreen.verified);
       },
           () => MockClient((request) async {
                 expect(request.url.path,
                     endsWith('/verify-$gateway-payment/test-reference/'));
                 checks++;
+                if (checks == 2)
+                  return http.Response("<html>Unavailable</html>", 500);
                 return jsonResponse(
                     {'payment_status': paid ? 'Paid' : 'Unpaid'},
                     paid ? 200 : 400);
@@ -382,6 +433,30 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     });
   }
+
+  testWidgets('payment confirmation uses the saved order after checkout closes',
+      (tester) async {
+    await http.runWithClient(() async {
+      await tester.pumpWidget(const GetMaterialApp(
+        home: PaymentSuccessScreen(
+          orderId: 90,
+          amount: 1,
+          paymentMethod: 'PayStack',
+          reference: 'paid-reference',
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('NGN 65.00'), findsWidgets);
+      expect(find.text('Shirt'), findsOneWidget);
+    },
+        () => MockClient((request) async {
+              expect(request.url.path, endsWith('/orders/single/90/'));
+              return jsonResponse(orderJson(90, 'Pending'));
+            }));
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 
   test('payment controllers surface the gateway error from Django', () async {
     for (final controller in [

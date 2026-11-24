@@ -27,6 +27,36 @@ abstract class BasePaymentController extends GetxController {
   });
 
   Future<bool> verifyPayment(String reference);
+  bool verificationUnavailable = false;
+
+  Future<bool> _verifyGateway(String gateway, String reference) async {
+    verificationUnavailable = false;
+    try {
+      final token = await AuthService.instance.getToken();
+      if (token == null) {
+        verificationUnavailable = true;
+        return false;
+      }
+      final response = await http.get(
+        Uri.parse(
+            '$baseURLGeneral/payments/verify-$gateway-payment/${Uri.encodeComponent(reference)}/'),
+        headers: {'Authorization': 'Bearer $token'},
+      ).timeout(const Duration(seconds: 20));
+      if (response.statusCode != 200 && response.statusCode != 400) {
+        verificationUnavailable = true;
+        logger.w('$gateway verification returned HTTP ${response.statusCode}');
+        return false;
+      }
+      final body = jsonDecode(response.body);
+      final status = body is Map ? body['payment_status'] : null;
+      verificationUnavailable = status != 'Paid' && status != 'Unpaid';
+      return response.statusCode == 200 && status == 'Paid';
+    } catch (error) {
+      verificationUnavailable = true;
+      logger.w('$gateway verification unavailable: ${error.runtimeType}');
+      return false;
+    }
+  }
 
   var isLoading = false.obs;
   var errorMessage = ''.obs;
@@ -320,42 +350,8 @@ class PaystackPaymentController extends BasePaymentController {
   }
 
   @override
-  Future<bool> verifyPayment(String reference) async {
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-
-      final token = await AuthService.instance.getToken();
-      if (token == null) {
-        errorMessage.value = 'Authentication token not found';
-        return false;
-      }
-
-      final response = await http.get(
-        Uri.parse(
-            '$baseURLGeneral/payments/verify-paystack-payment/$reference/'),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(const Duration(seconds: 45));
-
-      logger.i('Paystack verification response: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        return responseData['payment_status'] == 'Paid';
-      } else {
-        errorMessage.value = 'Payment verification failed: ${response.body}';
-        return false;
-      }
-    } catch (e) {
-      errorMessage.value = 'Error verifying payment: $e';
-      logger.e('Paystack verification error: $e');
-      return false;
-    } finally {
-      isLoading.value = false;
-    }
-  }
+  Future<bool> verifyPayment(String reference) =>
+      _verifyGateway('paystack', reference);
 
   bool _isValidUrl(String url) {
     try {
@@ -453,42 +449,8 @@ class FlutterwavePaymentController extends BasePaymentController {
   }
 
   @override
-  Future<bool> verifyPayment(String reference) async {
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-
-      final token = await AuthService.instance.getToken();
-      if (token == null) {
-        errorMessage.value = 'Authentication token not found';
-        return false;
-      }
-
-      final response = await http.get(
-        Uri.parse(
-            '$baseURLGeneral/payments/verify-flutterwave-payment/$reference/'),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(const Duration(seconds: 45));
-
-      logger.i('Flutterwave verification response: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        return responseData['payment_status'] == 'Paid';
-      } else {
-        errorMessage.value = 'Payment verification failed: ${response.body}';
-        return false;
-      }
-    } catch (e) {
-      errorMessage.value = 'Error verifying payment: $e';
-      logger.e('Flutterwave verification error: $e');
-      return false;
-    } finally {
-      isLoading.value = false;
-    }
-  }
+  Future<bool> verifyPayment(String reference) =>
+      _verifyGateway('flutterwave', reference);
 
   bool _isValidUrl(String url) {
     try {
@@ -585,41 +547,8 @@ class StripePaymentController extends BasePaymentController {
   }
 
   @override
-  Future<bool> verifyPayment(String sessionId) async {
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-
-      final token = await AuthService.instance.getToken();
-      if (token == null) {
-        errorMessage.value = 'Authentication token not found';
-        return false;
-      }
-
-      final response = await http.get(
-        Uri.parse('$baseURLGeneral/payments/verify-stripe-payment/$sessionId/'),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(const Duration(seconds: 45));
-
-      logger.i('Stripe verification response: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        return responseData['payment_status'] == 'Paid';
-      } else {
-        errorMessage.value = 'Payment verification failed: ${response.body}';
-        return false;
-      }
-    } catch (e) {
-      errorMessage.value = 'Error verifying payment: $e';
-      logger.e('Stripe verification error: $e');
-      return false;
-    } finally {
-      isLoading.value = false;
-    }
-  }
+  Future<bool> verifyPayment(String reference) =>
+      _verifyGateway('stripe', reference);
 
   bool _isValidUrl(String url) {
     try {

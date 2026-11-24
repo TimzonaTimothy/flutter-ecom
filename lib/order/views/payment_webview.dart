@@ -221,8 +221,14 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       if (!mounted || _finished) return;
       if (paid) {
         _finish(PaymentWebViewScreen.verified);
+      } else if (controller.verificationUnavailable &&
+          (manual || _returned != null)) {
+        setState(() => _statusMessage =
+            'Payment status is temporarily unavailable. You can check again shortly.');
       } else if (manual) {
         setState(() => _statusMessage = 'Payment has not been confirmed yet.');
+      } else if (_returned != null && _statusMessage != null) {
+        setState(() => _statusMessage = null);
       }
     } catch (error) {
       log('Checkout verification unavailable: ${error.runtimeType}');
@@ -361,6 +367,25 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       },
       onReceivedHttpError: (_, request, response) {
         final code = response.statusCode ?? 0;
+        final host = request.url.host.toLowerCase();
+        final isChallenge = response.headers?.entries.any((entry) =>
+                entry.key.toLowerCase() == 'cf-mitigated' &&
+                entry.value.toLowerCase() == 'challenge') ??
+            false;
+        if (current() &&
+            !isPopup &&
+            request.isForMainFrame == true &&
+            code == 403 &&
+            !isChallenge &&
+            widget.paymentMethod == 'Flutterwave' &&
+            host == _checkoutUrl?.host &&
+            host.endsWith('.dev-flutterwave.com')) {
+          _pollTimer?.cancel();
+          _showLoadError(
+            'Flutterwave’s sandbox blocked this checkout. Return to the order and use Get help with this order if it keeps happening.',
+          );
+          return;
+        }
         // A hosted checkout can serve a browser challenge as a 403 page.
         // Let the native WebView render and run it.
         if (current() &&

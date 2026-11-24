@@ -11,8 +11,6 @@ import '../../base/bottom_nav_bar.dart';
 import '../../base/res/base_url.dart';
 import '../../base/res/styles/app_styles.dart';
 import '../../base/widgets/primary_button.dart';
-import '../../cart/controllers/address_controller.dart';
-import '../../cart/controllers/cart_controller.dart';
 import 'reciept_screen.dart';
 import 'track_order_screen.dart';
 
@@ -59,6 +57,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
       });
 
       final token = await AuthService.instance.getToken();
+      if (!mounted) return;
       if (token == null) {
         setState(() {
           _errorMessage =
@@ -74,9 +73,8 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
         headers: {
           'Authorization': 'Bearer $token',
         },
-      );
-
-      logger.i('Order details response: ${response.body}');
+      ).timeout(const Duration(seconds: 30));
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -86,15 +84,16 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
         });
       } else {
         setState(() {
-          _errorMessage = 'Failed to fetch order details: ${response.body}';
+          _errorMessage = 'Could not load the order details. Please try again.';
           _isLoading = false;
         });
-        logger.e(
-            'Failed to fetch order details: ${response.statusCode} - ${response.body}');
+        logger
+            .e('Order details request failed with HTTP ${response.statusCode}');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _errorMessage = 'Error fetching order details: $e';
+        _errorMessage = 'Could not load the order details. Please try again.';
         _isLoading = false;
       });
       logger.e('Error fetching order details: $e',
@@ -104,9 +103,6 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cartController = Get.find<CartController>();
-    final addressController = Get.find<AddressController>();
-
     final currency = widget.paymentMethod == 'Stripe' ? 'USD' : 'NGN';
     String money(Object? value) {
       final amount = double.tryParse('$value');
@@ -359,64 +355,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                                   );
                                 })
                               else
-                                ...cartController.cartItems.map((item) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 12),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                item.product?.title ??
-                                                    'Unknown Product',
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ),
-                                            Text(
-                                              '\$${item.product?.discountPrice ?? item.product?.originalPrice ?? '0.00'}',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.grey.shade600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Quantity: ${item.quantity}',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey.shade600,
-                                          ),
-                                        ),
-                                        if (item.size != null)
-                                          Text(
-                                            'Size: ${item.size}',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey.shade600,
-                                            ),
-                                          ),
-                                        if (item.color != null)
-                                          Text(
-                                            'Color: ${item.color}',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey.shade600,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  );
-                                }),
+                                const Text('Order items unavailable'),
                             ],
                           ),
                         ),
@@ -459,16 +398,6 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                                   _orderDetails!['address'] is int)
                                 Text(
                                   'Address ID: ${_orderDetails!['address']}',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                )
-                              else if (addressController
-                                      .selectedAddress.value !=
-                                  null)
-                                Text(
-                                  '${addressController.selectedAddress.value!.address}, ${addressController.selectedAddress.value!.addressType}, ${addressController.selectedAddress.value!.phone}',
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey.shade600,
